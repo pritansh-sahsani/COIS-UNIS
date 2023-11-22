@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Manage Users
+{% endblock %}
+
+{% block main %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<script type=text/javascript>
+var user_len = 0;
+{% for user in users %}
+    user_len +=1;
+{% endfor %}
+
+    {% for user in users %}
+        $(function() {
+            $('#delete_user{{ user.id }}').on('click', function(e) {
+                e.preventDefault()
+                $.getJSON('{{ url_for("delete_user", user_id = user.id) }}',function(data) {});
+                $("#user{{ user.id }}").hide();
+                
+                $("#flash_text").text("{{ del_flash }}");
+                $("#flash_text_div").show();
+                
+                user_len = user_len-1;
+                if(user_len==0)
+                {
+                    $('#no_user').text("No Users Found");
+                    $("#no_user").toggle();
+                }
+            });
+        });
+    {% endfor %}
+
+    function getUrlVars(){
+        var vars = [], hash;
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for(var i = 0; i < hashes.length; i++)
+        {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+
+    $(function() {
+        $('#apply').on('click', function(e) {
+            var sort = $("#sort").val();
+            var sort_direction = $("#sort_direction").val();
+            var keyword = $("#search-input").val();
+            window.location = "/manage_users?sort="+sort+"&sort_direction="+sort_direction+"&keyword="+keyword;
+        });
+    });
+    $(document).ready(function(){
+        vars= getUrlVars();
+        $("#sort").val(vars['sort']).change();
+        $("#sort_direction").val(vars['sort_direction']).change();
+        var keyword = decodeURI(vars['keyword']);
+        if(keyword == 'undefined'){keyword='';}
+        $("#search-input").val(keyword).change();
+        
+        if(user_len==0)
+            {
+                $('#no_user').text("No Users Found");
+                $("#no_user").toggle();
+            }
+    });
+    $(function() {
+        $('#show_sort_div').on('click', function(e) {
+            if ($("#sort_div").css("display") == "none")
+            {
+                $("#sort_div").css("display", "flex");
+                $("#apply").css("display", "inline-block");
+                $("#show_sort_div").addClass("xsm:float-right");
+                $("#show_sort_div").addClass("xsm:w-47.5%");
+                $("#show_sort_div").text("Hide Sorting");
+            }
+            else{
+                $("#sort_div").css("display", "none");
+                $("#apply").css("display", "none");
+                $("#show_sort_div").removeClass("xsm:float-right");
+                $("#show_sort_div").removeClass("xsm:w-47.5%");
+                $("#show_sort_div").text("Show Sorting");
+            }
+        });
+    });
+
+    $(function() {
+        $('#search_button').on('click', function(e) {
+            var sort = $("#sort").val();
+            var sort_direction = $("#sort_direction").val();
+            var keyword = $("#search-input").val();
+            window.location = "/manage_users?sort="+sort+"&sort_direction="+sort_direction+"&keyword="+keyword;
+        });
+    });
+    
+    $(function() {
+        var availableTags = [];
+        {% for user in users %}
+            p = "{{ user.username | safe }} - {{ user.email | safe }}"
+            availableTags.push(p);
+        {% endfor %}
+        $( "#search-input" ).autocomplete({
+            source: availableTags,
+            open: function() {
+                $("ul.ui-menu").width( $("#search-div").innerWidth() );
+            }
+        });
+    });
+</script>
+
+<div class="w-100% md:w-80% 880:w-47.5% md:mx-auto">
+<div class="input-group mb-2" id="sort_div">
+    <div class="input-group-prepend">
+        <label class="input-group-text" for="sort">Sort By</label>
+    </div>
+    <select class="custom-select" id="sort">
+        <option value="created_at">Date Created</option>  
+        <option value="username">Username</option>  
+        <option value="email">Email</option>
+    </select>
+    <select class="custom-select" id="sort_direction">
+        <option value="false">Ascending</option>
+        <option value="true">Decending</option>
+    </select>
+</div>
+<button class="inline-block btn btn-primary w-100% xsm:w-47.5% mb-2" id="apply">Apply Sorting</button>
+<button class="inline-block btn btn-primary w-100% mb-2" id="show_sort_div">Show Sorting</button>
+</div>
+
+<div id="search-div" class="w-100% md:w-80% 880:w-47.5% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
+<input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
+<button id="search_button" class="float-right">
+    <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
+</button>
+</div>
+
+<center>
+    <div>
+        <h3 id="no_user" class="hidden my-3 text-4xl"></h3>
+        {% for user in users %}
+            <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md" id="user{{ user.id }}">
+                <div class="m-2">
+                    <p class="float-left"></p>
+                    <p class="float-right">{{ user.created_at.strftime("%d %B %Y") }}</p><br>
+                    <p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ user.username }} - {{ user.email }}</p>
+                    
+                    <a href="{{ url_for('edit_user', user_id=user.id) }}"><button class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button></a>
+                    <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_user{{ user.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</center>
+{% endblock %}

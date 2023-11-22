@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- flowbite tailwind extension -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
+      
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <!-- css -->
+    <link rel="stylesheet" href="{{url_for('static',filename='css/custom.css')}}">
+    <link rel="stylesheet" href="{{url_for('static',filename='css/output.css')}}">
+
+    <title>COIS UNIS-{% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="../static/assets/logo.png">
+  </head>
+  <body>
+
+    <!-- navbar -->
+
+		<div>
+			<!-- pc navbar -->
+			<nav class="hidden md:inline justify-between items-center relative">
+				<div class="inline items-center">
+					<a href="/" class="ml-2">
+						<img src="../static/assets/logo.png" class="ml-4 w-12 inline" alt="" id="website-logo"/>
+					</a>
+					{% if current_user.is_authenticated %}
+						<div class="inline">
+							<a class="navbar-link" href="/">
+								<button class="underline-btn ml-8 960:ml-14">Visitor's Home</button>
+							</a>
+							<a class="navbar-link" href="/admin">
+								<button class="underline-btn ml-8 960:ml-14">Admin</button>
+							</a>
+							<a class="navbar-link" href="/manage_unis">
+								<button class="underline-btn ml-8 960:ml-14">Manage Universities</button>
+							</a>
+							{% if current_user.username == "SUPERUSER" %}
+								<a class="navbar-link" href="/manage_users">
+									<button class="underline-btn ml-8 960:ml-14">Manage Users</button>
+								</a>
+							{% endif %}
+							<a class="navbar-link" href="/messages">
+								<button class="underline-btn ml-8 960:ml-14">Messages</button>
+							</a>
+							<a class="navbar-link" href="/logout">
+								<button class="underline-btn ml-8 960:ml-14">Log Out</button>
+							</a>
+						</div>
+					{% else %}
+						<div class="pr-8 inline mx-5">
+							<a class="navbar-link" href="/">
+								<button class="underline-btn">Home</button>
+							</a>
+							<a class="navbar-link" href="/contact">
+								<button class="underline-btn">Contact</button>
+							</a>
+						</div>
+					{% endif %}
+				</div>
+
+				<div class="inline float-right mr-10 mt-2.5">
+					<p class="inline text-base xsm:text-lg">By Pritansh Sahsani</p>
+				</div>
+
+				<hr class="w-100% m-0 p-0 border-gradient" id="navbar-hr"/>
+			</nav>
+			
+			<!-- phone navbar -->
+			<div id="phone_top_navbar" class="block md:hidden">
+				<div class="flex justify-between items-center">
+					<a href="/" class="ml-6">
+						<img src="../static/assets/logo.png" class="w-12 inline" alt="" />
+					</a>
+					
+					<p class="inline text-base xsm:text-lg">By Pritansh Sahsani</p>
+
+					<div class="mr-6 cursor-pointer inline">
+						<svg
+							id="phone_navbar_button"
+							class="w-6 h-6 inline"
+							fill="black"
+							stroke=black
+							viewBox="0 0 24 24"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								strokeWidth="2"
+								d="M4 6h16M4 12h16M4 18h16"
+							></path>
+						</svg>
+					</div>
+				</div>
+
+				<hr class="w-100% m-0 p-0 border-gradient" />
+				<div class="block">
+					<div id="phone_bottom_navbar" class="block">
+						{% if current_user.is_authenticated %}
+							<div class="z-10 fixed items-center w-screen h-screen mobile-navbar-background">
+								<div class="w-50% xsm:w-30% h-screen bg-white float-right rounded-lg" id="navbar-default">
+									<ul class="font-medium flex flex-col p-3">
+										<li>
+											<a href="/" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Visitor's Home</a>
+										</li>
+										<li>
+											<a href="/admin" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Admin</a>
+										</li>
+										<li>
+											<a href="/manage_unis" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Mange Universities</a>
+										</li>
+										<li>
+											<a href="/messages" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Messages</a>
+										</li>
+										<li>
+											<a href="/logout" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Log Out</a>
+										</li>
+									</ul>
+								</div>
+							</div>
+						{% else %}
+							<div class="fixed items-center w-screen h-screen mobile-navbar-background">
+								<div class="w-50% xsm:w-30% h-screen bg-white float-right rounded-lg" id="navbar-default">
+									<ul class="font-medium flex flex-col p-3">
+										<li>
+											<a href="/" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Home</a>
+										</li>
+										<li>
+											<a href="/contact" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Contact</a>
+										</li>
+										<li>
+											<a href="/subscribe" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Subscribe</a>
+										</li>
+									</ul>
+								</div>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	
+    <!-- notifications/error messages/other -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="z-10 fixed bottom-3 left-1% bg-blue-600 rounded-lg w-98% sm:w-30% md:25% p-1% md:p-0 ">
+            <p class="text-sm text-white text-center w-90% ml-5% my-1% sm:mt-3% sm:mb-4% sm:text-base">{{ message }}</p>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="z-10 fixed bottom-3 left-1% bg-blue-600 rounded-lg w-98% sm:w-30% md:25% p-1% md:p-0 hidden" id="flash_text_div">
+      <p class="text-sm text-white text-center w-90% ml-5% my-1% sm:mt-3% sm:mb-4% sm:text-base" id="flash_text"></p>
+    </div>      
+
+    <!-- Individual page content -->
+    <main class="ml-5% py-2 w-90%">
+      {% block main %}{% endblock main %}
+    </main>
+  </body>
+</html>

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Reply To {{ message.name }}'s Message
+{% endblock %}
+
+{% block main %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+    
+    function raise_error() {
+        {% if reply_form.reply.errors %} 
+            {% for error in reply_form.reply.errors %}
+                $("#flash_text").text("{{error}}");
+                $("#flash_text_div").show();
+            {% endfor %}
+        {% endif %}
+    }
+    setInterval('raise_error()', 1);
+</script>
+
+<div class="border-solid border-black rounded-md my-5% items-center border-0.5">
+    <p class="text-center text-base xsm:text-2xl w-80% mt-5% mx-auto">Reply To {{ message.name }}'s Message</p>
+    <form action='' method="POST" class="w-80% mx-auto">
+        <div class="w-90% mx-auto">
+            <p class="float-left">By: {{ message.name }}</p>
+            <p class="float-right">{{ message.date.strftime("%d %B %Y") }}</p><br>
+            <p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ message.message }}</p>
+            <hr class="border-black mx-auto my-3%" />
+        </div>
+
+            {% if message.replied == True %}
+                <p>You have already replied to the message.</p>
+                <p>reply: {{ reply.reply }}</p>
+                <a href="/messages"><button>Back To Messages</button></a><br>
+            {% else %}
+                    {{ reply_form.hidden_tag() }}
+
+                    {{ reply_form.reply(rows="1", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder="Reply") }} 
+                    {{ reply_form.submit(class="btn btn-primary mt-2% sm:ml-35% w-100% sm:w-30% mb-5% text-base xsm:text-xl sm:text-2xl") }}
+            {% endif %}
+        </div>
+    </div>
+</center>
+{% endblock main %}
