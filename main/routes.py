@@ -41,7 +41,7 @@ def add_uni():
 
         if form.ib_cutoff.data:
                 if form.ib_cutoff.data.isdigit():
-                    if form.ib_cutoff.data < 0 or form.ib_cutoff.data > 45:
+                    if int(form.ib_cutoff.data) < 0 or int(form.ib_cutoff.data) > 45:
                         flash('Please enter a valid IB grade for cut off (0 to 45).')
                         return render_template("add_uni.html", form=form)
                 else:
@@ -58,7 +58,7 @@ def add_uni():
             filename = None
             is_draft = True
         
-        uni = Uni(name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, is_draft=is_draft)
+        uni = Uni(name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, is_draft=is_draft)
         db.session.add(uni)
         db.session.commit()
 

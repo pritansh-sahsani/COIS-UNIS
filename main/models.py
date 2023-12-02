@@ -56,6 +56,8 @@ class Uni(db.Model):
     added_at= db.Column(db.DateTime, default=datetime.now)
     ib_cutoff= db.Column(db.Integer)
     website = db.Column(db.String(1000))
+    scholarships = db.Column(db.String(1000))
+    requirements = db.Column(db.String(1000))
     is_draft = db.Column(db.Boolean, nullable=False)
 
     locations = db.relationship(

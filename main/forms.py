@@ -12,6 +12,8 @@ class AddUniversityForm(FlaskForm):
     logo = FileField('logo', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
     website = StringField('University Official Website', validators=[Length(max=1000, message=min_max_error_message.format(field='Website', min=0, max='%(max)d'))])
     ib_cutoff = StringField('Cut off/required grade for IBDP')
+    requirements = StringField('Requirements for admission')
+    scholarships = StringField('Scholarships offered')
     courses = SelectMultipleField('Courses Offered', choices=[])
     location = SelectMultipleField('Location', choices=[])
     
