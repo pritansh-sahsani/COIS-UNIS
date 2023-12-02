@@ -1,8 +1,8 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_user, logout_user, login_required
-from main.forms import LoginForm, RegistrationForm, ContactForm, MessageReplyForm, EditUserForm
+from main.forms import LoginForm, RegistrationForm, EditUserForm, AddUniversityForm
 from main.setup import app, db
-from main.models import User, Messages, MessageReply
+from main.models import User, Uni, Location, Course
 from main import bcrypt
 from dotenv import load_dotenv
 from operator import attrgetter
@@ -17,38 +17,177 @@ def index():
     # todo: overview of unis
     return render_template("index.html")
 
-@app.route('/contact', methods=['GET', 'POST'])
-def contact():
-    contact_form=ContactForm(formdata = request.form)
-    if contact_form.validate_on_submit():
-        contact=Messages(name=contact_form.name.data, email=contact_form.email.data, message=contact_form.message.data)
-        db.session.add(contact)
+@app.route("/add_uni", methods=['GET', 'POST'])
+@login_required
+def add_uni():
+    courses = []
+    locations=[]
+    courses_query= Course.query.with_entities(Course.name).all()
+    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+
+    for course in courses_query:
+        courses.append((course.name, course.name))
+
+    for location in locations_query:
+        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+
+    form = AddUniversityForm(formdata = request.form, courses=courses, locations=locations)
+
+    if form.validate_on_submit():
+        if not form.logo.data or not form.website.data or not form.ib_cutoff.data:
+            is_draft = True
+        else:
+            is_draft = 'save_draft' in request.form
+
+        if form.ib_cutoff.data:
+                if form.ib_cutoff.data.isdigit():
+                    if form.ib_cutoff.data < 0 or form.ib_cutoff.data > 45:
+                        flash('Please enter a valid IB grade for cut off (0 to 45).')
+                        return render_template("add_uni.html", form=form)
+                else:
+                    flash('Please enter a valid IB grade.')
+                    return render_template("add_uni.html", form=form)
+
+        print(form.courses.data)
+
+        f = form.logo.data
+        if f:
+            filename = form.name.data + '.' + f.filename.rsplit('.', 1)[1].lower()
+            f.save(os.path.join(app.root_path, 'university_logos', filename))
+        else:
+            filename = None
+            is_draft = True
+        
+        uni = Uni(name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, is_draft=is_draft)
+        db.session.add(uni)
         db.session.commit()
-        flash('Message sent successfully! We will respond shorty by mail!', 'success')
 
-        return redirect(url_for('index'))
-    return render_template("contact.html", contact_form=contact_form)
+        if is_draft:
+            flash("University saved as draft!", 'success')
+        else:
+            flash("University added successfully!", 'success')
+
+        return redirect(url_for('manage_unis'))
+
+    return render_template("add_uni.html", form=form)
 
 
-@app.route("/manage_users", methods=["GET", "POST"])
-# @login_required
-def manage_users():
-    # if current_user.username != "SUPERUSER":
-    #     return render_template("403.html")
-
-    sort = request.args.get('sort') if request.args.get('sort')!=None else None
+@app.route("/manage_unis", methods=['GET', 'POST'])
+@login_required
+def manage_unis():
+    sort = request.args.get('sort')
     sort_direction = request.args.get('sort_direction')
     keyword = request.args.get('keyword')
     
     if sort is None or sort_direction is None:
-        return redirect("/manage_users?sort=username&sort_direction=false")
-
+        return redirect("/manage_unis?sort=added_at&sort_direction=true")
+    if sort not in ['name','ib_cutoff', 'added_at']:
+        abort(404)
     if sort_direction == "true":
         sort_direction = True
     elif sort_direction == "false":
         sort_direction = False
     else:
-        sort_direction = None
+        abort(404)
+    
+    if keyword is None or keyword == '':
+        draft_unis_query = Uni.query.filter_by(is_draft=True).all()
+        published_unis_query = Uni.query.filter_by(is_draft=False).all()
+    else:
+        draft_unis_query = Uni.query.msearch(keyword).filter_by(is_draft=True).all()
+        published_unis_query = Uni.query.msearch(keyword).filter_by(is_draft=False).all()
+
+
+    draft_unis = []
+    published_unis = []
+    for uni in draft_unis_query:
+        draft_unis.append(uni)
+    for uni in published_unis_query:
+        published_unis.append(uni)
+
+    for category, reverse in [('name', False), ('ib_cutoff', False), ('added_at', True)]:
+        if category != sort:
+            draft_unis.sort(key=attrgetter(category), reverse=reverse)
+            published_unis.sort(key=attrgetter(category), reverse=reverse)
+
+    draft_unis.sort(key=attrgetter(sort), reverse=sort_direction)
+    published_unis.sort(key=attrgetter(sort), reverse=sort_direction)
+    
+    d_unis_len=len(draft_unis_query)
+    p_unis_len=len(published_unis_query)
+    flash = "University Deleted Successfully!"
+
+    return render_template("manage_unis.html", published_unis = published_unis, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, flash=flash)
+
+
+@app.route('/uni/<string:uni_name>', methods=['GET', 'POST'])
+@login_required
+def uni(uni_name):
+    return render_template("uni.html")
+
+
+@app.route('/delete_uni/<int:uni_id>', methods=['GET', 'POST'])
+@login_required
+def delete_uni(uni_id):
+    uni = Uni.query.filter_by(id = uni_id).first_or_404()
+    db.session.delete(uni)
+    db.session.commit()
+    return redirect(url_for('manage_unis'))
+
+
+@app.route('/edit_uni/<string:uni_name>', methods=['GET', 'POST'])
+def edit_uni(uni_name):
+    return render_template("edit_uni.html")
+
+
+@app.route('/add_course/<string:name>')
+@login_required
+def add_course(name):
+    existing = Course.query.filter_by(name = name).first()
+    if not existing:
+        course = Course(name = name)
+        db.session.add(course)
+        db.session.commit()
+    return redirect(url_for("add_uni"))
+# 
+@app.route('/add_location/<string:name>')
+@login_required
+def add_location(name):
+    if ',' in name:
+        name = name.split(",")
+        city=name[0]
+        country=name[1]
+    else:
+        city=name
+        country="Unknown"
+    
+    location=Location(city=city, country=country)
+    existing = Location.query.filter_by(city=city, country=country).first()
+    if not existing:
+        db.session.add(location)
+        db.session.commit()
+    return redirect(url_for("add_uni"))
+
+@app.route("/manage_users", methods=["GET", "POST"])
+@login_required
+def manage_users():
+    if current_user.username != "SUPERUSER":
+        return render_template("403.html")
+    
+    sort = request.args.get('sort')
+    sort_direction = request.args.get('sort_direction')
+    keyword = request.args.get('keyword')
+
+    if sort is None or sort_direction is None:
+        return redirect("/manage_users?sort=username&sort_direction=false")
+    if sort not in ['added_at','email','username']:
+        abort(404)
+    if sort_direction == "true":
+        sort_direction = True
+    elif sort_direction == "false":
+        sort_direction = False
+    else:
+        abort(404)
     
     if keyword is None or keyword=='':
         user_query = User.query.all()
@@ -66,7 +205,7 @@ def manage_users():
     if len(users) == 0:
         return render_template("manage_users.html", users=users)
         
-    for category, reverse in [('created_at', True), ('email', False), ('username', False)]:
+    for category, reverse in [('added_at', True), ('email', False), ('username', False)]:
         if category != sort:
             users.sort(key=attrgetter(category), reverse=reverse)
     users.sort(key=attrgetter(sort), reverse=sort_direction)
@@ -105,103 +244,6 @@ def edit_user(user_id):
     return render_template('edit_user.html', form=form, old_user=old_user)
 
 
-@app.route("/messages")
-@login_required
-def view_messages():
-    sort = request.args.get('sort') if request.args.get('sort')!=None else None
-    sort_direction = request.args.get('sort_direction')
-    keyword = request.args.get('keyword')
-
-    if sort_direction == "true":
-        sort_direction = True
-    elif sort_direction == "false":
-        sort_direction = False
-    else:
-        sort_direction = None
-    
-    if sort is None or sort_direction is None:
-        return redirect("/messages?sort=read&sort_direction=false")
-    
-    if keyword is None or keyword=='':
-        message_query = Messages.query.all()
-    else:
-        message_query = Messages.query.msearch(keyword).all()
-    reply_query = MessageReply.query.all()
-    
-    messages = []
-    replies = {}
-    for message in message_query:
-        messages.append(message)
-    for reply in reply_query:
-        replies[reply.message_id] = reply.reply
-    
-    if len(messages) == 0:
-        return render_template("messages.html", no_msg=True)
-    else:
-        for category, reverse in [('created_at', True), ('replied', False), ('read', False)]:
-            if category != sort:
-                messages.sort(key=attrgetter(category), reverse=reverse)
-                
-        messages.sort(key=attrgetter(sort), reverse=sort_direction)
-        
-        read_flash = 'Message Marked As Read Successfully!'
-        unread_flash = 'Message Marked As Unread Successfully!'
-        del_flash = "Message Deleted successfully!"
-
-        return render_template("messages.html", no_msg=False, del_flash=del_flash, read_flash=read_flash, unread_flash=unread_flash, messages=messages, replies=replies)
-    
-@app.route('/delete_message/<int:message_id>', methods=['GET', 'POST'])
-@login_required
-def delete_message(message_id):
-    message = Messages.query.filter_by(id = message_id).first_or_404()
-    message_reply = MessageReply.query.filter_by(message_id = message_id).first()
-    db.session.delete(message)
-    if message_reply is not None:
-        db.session.delete(message_reply)
-    db.session.commit()
-    return redirect(url_for('view_messages'))
-
-@app.route('/read_message/<int:message_id>', methods=['GET', 'POST'])
-@login_required
-def read_message(message_id):
-    message = Messages.query.filter_by(id = message_id).first_or_404()
-    Messages.query.filter_by(id = message_id).update(dict(read = (not message.read)))
-    db.session.commit()
-    return redirect(url_for('view_messages'))
-
-@app.route('/reply_message/<string:message_id>', methods=['GET', 'POST'])
-@login_required
-def reply_message(message_id):
-    message = Messages.query.filter_by(id = message_id).first_or_404()
-    # reply if exists
-    reply = MessageReply.query.filter_by(message_id = message_id).first()
-    reply_form = MessageReplyForm(formdata = request.form)
-
-    if reply_form.validate_on_submit():
-        subject = "Reply to your message"
-        body = f"""Hello { message.name }!
-        I am mailing regarding your message on my blog, The Bland Mirror.
-        
-        { reply_form.reply.data }"""
-        
-        # todo: mail setup
-        # msg = Message(subject = subject, sender=app.config['MAIL_USERNAME'], body=body, recipients=[message.email])
-        # mail.send(msg)
-
-        Messages.query.filter_by(id = message_id).update(dict(replied = True, read = True))
-        db.session.commit()
-        reply = MessageReply(message_id = message_id, reply=reply_form.reply.data)
-        db.session.add(reply)
-        db.session.commit()
-
-        flash("Reply Sent Sucessfully!")
-        return redirect(url_for('view_messages'))
-
-    return render_template("reply_message.html", reply_form = reply_form, message = message, reply= reply)
-
-
-
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
@@ -215,7 +257,7 @@ def login():
             next_page = request.args.get('next')
 
             if user.username != "SUPERUSER":
-                return redirect(next_page) if next_page else redirect(url_for('manage_universities'))
+                return redirect(next_page) if next_page else redirect(url_for('manage_unis'))
             else:
                 return redirect(next_page) if next_page else redirect(url_for('manage_users'))
         else:
@@ -257,5 +299,5 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 @app.errorhandler(403)
-def page_not_found(e):
+def access_restricted(e):
     return render_template('403.html'), 403

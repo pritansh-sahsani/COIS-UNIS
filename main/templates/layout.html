@@ -17,9 +17,19 @@
     <link rel="stylesheet" href="{{url_for('static',filename='css/output.css')}}">
 
     <title>COIS UNIS-{% block title %}{% endblock %}</title>
-    <link rel="icon" type="image/x-icon" href="../static/assets/logo.png">
+    <link rel="icon" type="image/x-icon" href="../static/assets/icon.png">
   </head>
   <body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+	<!-- script for phone navbar -->
+	<script type=text/javascript>
+		$(function() {
+			$('#phone_navbar_button').on('click', function(e) {		
+				$("#phone_bottom_navbar").toggle();
+			});
+		});
+	</script>
 
     <!-- navbar -->
 
@@ -35,9 +45,6 @@
 							<a class="navbar-link" href="/">
 								<button class="underline-btn ml-8 960:ml-14">Visitor's Home</button>
 							</a>
-							<a class="navbar-link" href="/admin">
-								<button class="underline-btn ml-8 960:ml-14">Admin</button>
-							</a>
 							<a class="navbar-link" href="/manage_unis">
 								<button class="underline-btn ml-8 960:ml-14">Manage Universities</button>
 							</a>
@@ -46,27 +53,21 @@
 									<button class="underline-btn ml-8 960:ml-14">Manage Users</button>
 								</a>
 							{% endif %}
-							<a class="navbar-link" href="/messages">
-								<button class="underline-btn ml-8 960:ml-14">Messages</button>
-							</a>
 							<a class="navbar-link" href="/logout">
 								<button class="underline-btn ml-8 960:ml-14">Log Out</button>
 							</a>
 						</div>
 					{% else %}
-						<div class="pr-8 inline mx-5">
+						<div class="pr-8 inline">
 							<a class="navbar-link" href="/">
 								<button class="underline-btn">Home</button>
-							</a>
-							<a class="navbar-link" href="/contact">
-								<button class="underline-btn">Contact</button>
 							</a>
 						</div>
 					{% endif %}
 				</div>
 
-				<div class="inline float-right mr-10 mt-2.5">
-					<p class="inline text-base xsm:text-lg">By Pritansh Sahsani</p>
+				<div class="inline float-right mr-3 mt-2">
+					<img src="../static/assets/cois_logo.png" class="ml-4 w-36 inline" alt="" id="website-logo"/>
 				</div>
 
 				<hr class="w-100% m-0 p-0 border-gradient" id="navbar-hr"/>
@@ -79,7 +80,7 @@
 						<img src="../static/assets/logo.png" class="w-12 inline" alt="" />
 					</a>
 					
-					<p class="inline text-base xsm:text-lg">By Pritansh Sahsani</p>
+					<img src="../static/assets/cois_logo.png" class="ml-4 w-12 inline" alt="" id="website-logo"/>
 
 					<div class="mr-6 cursor-pointer inline">
 						<svg
@@ -111,13 +112,7 @@
 											<a href="/" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Visitor's Home</a>
 										</li>
 										<li>
-											<a href="/admin" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Admin</a>
-										</li>
-										<li>
 											<a href="/manage_unis" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Mange Universities</a>
-										</li>
-										<li>
-											<a href="/messages" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Messages</a>
 										</li>
 										<li>
 											<a href="/logout" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Log Out</a>
@@ -131,12 +126,6 @@
 									<ul class="font-medium flex flex-col p-3">
 										<li>
 											<a href="/" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Home</a>
-										</li>
-										<li>
-											<a href="/contact" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Contact</a>
-										</li>
-										<li>
-											<a href="/subscribe" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Subscribe</a>
 										</li>
 									</ul>
 								</div>

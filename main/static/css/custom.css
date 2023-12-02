@@ -65,12 +65,8 @@ body{
     padding-bottom: 0.5rem;
     border-radius: 0.5rem;
 }
- 
-.underline-btn:hover {
-    color: var(--gradient);
-}
-  
-.underline-btn {
+
+.underline-btn, .underline-btn-active {
     background-color: var(--main);
     color: var(--gradient);
     margin-top: 0.75rem;
@@ -79,19 +75,21 @@ body{
     border-radius: 0.5rem;
 }
   
-.underline-btn:hover::after {
+.underline-btn-active::after, .underline-btn:hover::after {
     width: 100%;
 }
+
+.underline-btn::after{
+    width: 0%;
+    transition: all ease-in-out 250ms;
+}
   
-.underline-btn::after {
+.underline-btn::after, .underline-btn-active::after{
     margin-top: 0.625rem;
     content: "";
     display: flex;
     height: 0.25rem;
     background-color: var(--gradient);
-    width: 0%;
-  
-    transition: all ease-in-out 250ms;
 }
 
 .post_font{
@@ -290,3 +288,22 @@ input:focus, textarea:focus, select:focus{
 
 #sort_div{display: none;}
 #apply{display: none;}
+
+.ms_clear_button{
+  margin-right: 7px;
+  margin-left: 3px;
+}
+
+.filter-multi-select{
+  border-radius: 0.5rem; 
+  border-color: #000000; 
+  font-size: 1rem;
+  line-height: 1.5rem; 
+  text-align: center; 
+  padding: 2px 0;
+}
+
+.viewbar{
+  border: 0px;
+  border-radius: 0.5rem; 
+}

@@ -16,7 +16,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(30), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    added_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -35,21 +35,49 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
 
-class Messages(db.Model):
-    __searchable__ = ['message', 'name']
+
+locations_table = db.Table(
+    'location_association',
+    db.Column('uni_id', db.ForeignKey('uni.id'), primary_key=True),
+    db.Column('location_id', db.ForeignKey('location.id'), primary_key=True),
+)
+
+courses_table = db.Table(
+    'course_association',
+    db.Column('uni_id', db.ForeignKey('uni.id'), primary_key=True),
+    db.Column('course_id', db.ForeignKey('course.id'), primary_key=True),
+)
+
+class Uni(db.Model):
+    __searchable__ = ['name']
     id= db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    message = db.Column(db.String(4000), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.now)
-    read = db.Column(db.Boolean, nullable = False, default=False)
-    replied = db.Column(db.Boolean, nullable = False, default=False)
+    logo = db.Column(db.String(104))
+    added_at= db.Column(db.DateTime, default=datetime.now)
+    ib_cutoff= db.Column(db.Integer)
+    website = db.Column(db.String(1000))
+    is_draft = db.Column(db.Boolean, nullable=False)
+
+    locations = db.relationship(
+        'Location',
+        secondary=locations_table,
+        backref=db.backref('Uni', lazy='dynamic'))
+    courses = db.relationship(
+        'Course',
+        secondary=courses_table,
+        backref=db.backref('Uni', lazy='dynamic'))
+
+
+class Location(db.Model):
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    city = db.Column(db.String(100), nullable=False)
+    country = db.Column(db.String(100), nullable=False)
+
+
+class Course(db.Model):
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
     
-class MessageReply(db.Model):
-    id= db.Column(db.Integer, nullable=False, primary_key=True)
-    message_id = db.Column(db.Integer, nullable=False)
-    reply = db.Column(db.String(4000), nullable=False)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
 with app.app_context():
     db.create_all()

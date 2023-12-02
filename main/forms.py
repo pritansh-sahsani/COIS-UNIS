@@ -1,10 +1,28 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, TextAreaField
-from wtforms.validators import EqualTo, Email, Length, ValidationError
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectMultipleField, IntegerField
+from wtforms.validators import EqualTo, Email, Length, ValidationError, DataRequired
+from flask_wtf.file import FileAllowed, FileField
 
 from main.models import User
 
 min_max_error_message = """{field} Length Must Be Between {min} and {max} characters!"""
+
+class AddUniversityForm(FlaskForm):
+    name = StringField('University Name', validators=[Length(min=1, max=100, message=min_max_error_message.format(field='University Name', min='%(min)d', max='%(max)d'))])
+    logo = FileField('logo', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
+    website = StringField('University Official Website', validators=[Length(max=1000, message=min_max_error_message.format(field='Website', min=0, max='%(max)d'))])
+    ib_cutoff = StringField('Cut off/required grade for IBDP')
+    courses = SelectMultipleField('Courses Offered', choices=[])
+    location = SelectMultipleField('Location', choices=[])
+    
+    save_draft = SubmitField('Save As Draft')
+    submit = SubmitField('Add University')
+
+    def __init__(self, formdata=None, **kwargs):
+        super(AddUniversityForm, self).__init__(formdata=formdata, **kwargs)
+        self.courses.choices = kwargs['courses']
+        self.location.choices = kwargs['locations']
+    
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Username', min='%(min)d', max='%(max)d'))])
@@ -50,21 +68,3 @@ class EditUserForm(FlaskForm):
 
     def __init__(self, formdata=None, **kwargs):
         super(EditUserForm, self).__init__(formdata=formdata, **kwargs)
-
-        
-class ContactForm(FlaskForm):
-    name = StringField('Name', validators=[Length(min=1, max=100, message=min_max_error_message.format(field='Name', min='%(min)d', max='%(max)d'))])
-    email = StringField('Email', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Email', min='%(min)d', max='%(max)d')), Email()])
-    message = TextAreaField('Message', validators=[Length(min=1, max=4000, message=min_max_error_message.format(field='Message', min='%(min)d', max='%(max)d'))])
-    submit = SubmitField('Submit')
-    
-    def __init__(self, formdata=None, **kwargs):
-        super(ContactForm, self).__init__(formdata=formdata, **kwargs)
-
-
-class MessageReplyForm(FlaskForm):
-    reply = TextAreaField('reply', validators=[Length(min=1, max=10000, message=min_max_error_message.format(field='Reply', min='%(min)d', max='%(max)d'))])
-    submit = SubmitField('Reply')
-    
-    def __init__(self, formdata=None, **kwargs):
-        super(MessageReplyForm, self).__init__(formdata=formdata, **kwargs)
