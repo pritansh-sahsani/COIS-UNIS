@@ -136,8 +136,64 @@ def delete_uni(uni_id):
 
 
 @app.route('/edit_uni/<string:uni_name>', methods=['GET', 'POST'])
+@login_required
 def edit_uni(uni_name):
-    return render_template("edit_uni.html")
+    old_uni = Uni.query.filter_by(name = uni_name).first_or_404()
+
+    courses = []
+    locations=[]
+    courses_query= Course.query.with_entities(Course.name).all()
+    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+
+    for course in courses_query:
+        courses.append((course.name, course.name))
+
+    for location in locations_query:
+        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+
+    form = AddUniversityForm(obj=old_uni, formdata = request.form, courses=courses, locations=locations)
+
+
+    if form.validate_on_submit():
+        if not form.logo.data or not form.website.data or not form.ib_cutoff.data:
+            is_draft = True
+        else:
+            is_draft = 'save_draft' in request.form
+
+        if form.ib_cutoff.data:
+                if form.ib_cutoff.data.isdigit():
+                    if int(form.ib_cutoff.data) < 0 or int(form.ib_cutoff.data) > 45:
+                        flash('Please enter a valid IB grade for cut off (0 to 45).')
+                        return render_template("add_uni.html", form=form)
+                else:
+                    flash('Please enter a valid IB grade.')
+                    return render_template("add_uni.html", form=form)
+
+        f = form.logo.data
+        if f:
+            filename = form.name.data + '.' + f.filename.rsplit('.', 1)[1].lower()
+            f.save(os.path.join(app.root_path, 'university_logos', filename))
+        else:
+            filename = None
+            is_draft = True
+        
+        new_uni = Uni(id=old_uni.id, name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, is_draft=is_draft)
+        print("olduni", old_uni)
+        print("\n\n\n\n\n\n")
+
+        db.session.add(new_uni)
+        db.session.delete(old_uni)
+        db.session.commit()
+
+        if is_draft:
+            flash("University saved as draft!", 'success')
+        else:
+            flash("University added successfully!", 'success')
+
+        return redirect(url_for('manage_unis'))
+
+
+    return render_template("edit_uni.html", form=form, old_uni=old_uni)
 
 
 @app.route('/add_course/<string:name>')

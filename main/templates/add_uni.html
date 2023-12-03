@@ -49,6 +49,20 @@
                 {% endfor %}
             {% endif %}
             
+            {% if form.scholarships.errors %} 
+                {% for error in form.scholarships.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
+            {% if form.requirements.errors %} 
+                {% for error in form.requirements.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
             {% if form.website.errors %} 
                 {% for error in form.website.errors %}
                     $("#flash_text").text("{{error}}");

@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit University
+{% endblock %}
+
+{% block main %}
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
+    <script src="../static/extensions/filter-multi-select-bundle.min.js"></script>
+
+
+
+    <script type=text/javascript>
+        function raise_error() {
+            {% if form.name.errors %} 
+                {% for error in form.name.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.logo.errors %} 
+                {% for error in form.logo.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.courses.errors %} 
+                {% for error in form.courses.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.location.errors %} 
+                {% for error in form.location.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.ib_cutoff.errors %} 
+                {% for error in form.ib_cutoff.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.scholarships.errors %} 
+                {% for error in form.scholarships.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
+            {% if form.requirements.errors %} 
+                {% for error in form.requirements.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
+            {% if form.website.errors %} 
+                {% for error in form.website.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+        }
+        setInterval('raise_error()', 1);
+
+        $(document).ready(function() {
+            $('input[type="file"]').change(function(e) {
+                var filename = e.target.files[0].name;
+                $("#file-upload_label").text(filename); 
+            });
+
+            const courses = $('#courses_ms').filterMultiSelect();
+            const locations = $('#locations_ms').filterMultiSelect();
+        });
+
+        // add course
+        $(function() {
+            $('#courses_ms_newitem').on('click', function(e) {
+                var new_course_name = $('#courses_ms_filterinput').val()
+                $.getJSON('add_course/'+new_course_name, function(data) {});
+            });
+        });
+
+        // add location
+        $(function() {
+            $('#locations_ms_newitem').on('click', function(e) {
+                var new_location_name = $('#locations_ms_filterinput').val()
+                $.getJSON("add_location/"+new_location_name,function(data) {});
+            });
+        });
+    </script>
+
+    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
+        <p class="text-center text-base xsm:text-4xl w-80% mt-3% mx-auto">Edit University</p>
+        <hr class="border-black w-80% mx-auto my-3% sm:my-2%" />
+        
+        <div class="w-100%">
+            <form action="{{ url_for('edit_uni', uni_name=old_uni.name) }}", method="POST" class="w-80% mx-auto"  enctype="multipart/form-data">
+                
+                {{ form.hidden_tag() }}
+                
+                {{ form.name(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Name", value=old_uni.name )}} 
+                
+                <div class="custom-file mt-3%">
+                    <label class="custom-file-label border-0.5 border-black text-center" id="file-upload_label" for="file-upload">Upload University Logo</label>
+                    {{ form.logo(class="custom-file-input", id="file-upload", type="file") }}
+                </div>
+
+                <h3 class="w-100% text-center text-xl mb-1 mt-2%">Locations</h3>
+                {{ form.location(id="locations_ms") }} 
+                
+                <h3 class="w-100% text-center text-xl mb-1 mt-2%">Courses</h3>
+                {{ form.courses(id="courses_ms") }}
+
+                {{ form.website(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Website", value=old_uni.website )}} 
+                {{ form.requirements(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Requirements", value=old_uni.requirements )}} 
+                {{ form.scholarships(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Scholarships", value=old_uni.scholarships )}} 
+                {{ form.ib_cutoff(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="Cut off/required grade for IBDP", value=old_uni.ib_cutoff )}} 
+
+                <center>
+                    {{ form.save_draft(class="inline-block btn btn-primary mt-3% w-100% sm:w-30% sm:mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
+                    {{ form.submit(class="inline_block btn btn-primary mt-3% w-100% sm:w-30% mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
+                </center>
+            </form>
+        </div>
+    </div>
+{% endblock %}
