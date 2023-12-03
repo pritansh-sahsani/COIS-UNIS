@@ -47,6 +47,8 @@ def add_uni():
                 else:
                     flash('Please enter a valid IB grade.')
                     return render_template("add_uni.html", form=form)
+        else:
+            form.ib_cutoff.data = 0
 
         print(form.courses.data)
 
@@ -168,6 +170,8 @@ def edit_uni(uni_name):
                 else:
                     flash('Please enter a valid IB grade.')
                     return render_template("add_uni.html", form=form)
+        else:
+            form.ib_cutoff.data = 0
 
         f = form.logo.data
         if f:
