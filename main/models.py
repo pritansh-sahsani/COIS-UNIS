@@ -4,6 +4,7 @@ from flask_login import UserMixin
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime
+from sqlalchemy.orm import relationship
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -51,7 +52,7 @@ courses_table = db.Table(
 class Uni(db.Model):
     __searchable__ = ['name']
     id= db.Column(db.Integer, nullable=False, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=False, unique=True)
     logo = db.Column(db.String(104))
     added_at= db.Column(db.DateTime, default=datetime.now)
     ib_cutoff= db.Column(db.Integer)
@@ -60,25 +61,20 @@ class Uni(db.Model):
     requirements = db.Column(db.String(1000))
     is_draft = db.Column(db.Boolean, nullable=False)
 
-    locations = db.relationship(
-        'Location',
-        secondary=locations_table,
-        backref=db.backref('Uni', lazy='dynamic'))
-    courses = db.relationship(
-        'Course',
-        secondary=courses_table,
-        backref=db.backref('Uni', lazy='dynamic'))
-
+    locations = relationship('Location', secondary=locations_table, back_populates='unis')
+    courses = relationship('Course', secondary=courses_table, back_populates='unis')
 
 class Location(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     city = db.Column(db.String(100), nullable=False)
     country = db.Column(db.String(100), nullable=False)
+    unis = relationship('Uni', secondary=locations_table, back_populates='locations')
 
 
 class Course(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    unis = relationship('Uni', secondary=courses_table, back_populates='courses')
     
 
 with app.app_context():
