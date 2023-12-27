@@ -72,16 +72,6 @@
         }
         setInterval('raise_error()', 1);
 
-        function getBase64Image(img) {
-            var canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            var ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0);
-            var dataURL = canvas.toDataURL("image/png");
-            return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
-        }
-
         $(document).ready(function() {
             const courses = $('#courses_ms').filterMultiSelect();
             const locations = $('#locations_ms').filterMultiSelect();
@@ -102,21 +92,21 @@
             var Ib_cutoff = sessionStorage.getItem('Ib_cutoff');
             if (Ib_cutoff !== null) $('#inputIb_cutoff').val(Ib_cutoff);
             
-            var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'))["courses"];
-            var selectedLocations = JSON.parse(sessionStorage.getItem('Locations'))["location"];
+            var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'));
+            var selectedLocations = JSON.parse(sessionStorage.getItem('Locations'));
             
             if (selectedCourses != null)
             {
                 for(var i = 0; i < selectedCourses.length ; i++)
                 {
-                    courses.selectOption(selectedCourses[i])
+                    courses.selectOption(selectedCourses["courses"][i])
                 }
             }
             if (selectedLocations != null)
             {
                 for(var i = 0; i < selectedLocations.length ; i++)
                 {
-                    locations.selectOption(selectedLocations[i])
+                    locations.selectOption(selectedLocations["location"][i])
                 }
             }
 
@@ -133,7 +123,7 @@
 
             $('input[type="file"]').change(function(e) {
                 var filename = e.target.files[0].name;
-                $("#file-upload_label").text(filename); 
+                $("#file-upload_label").text(filename);
             });
         });
 
