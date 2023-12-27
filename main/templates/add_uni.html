@@ -72,7 +72,20 @@
         }
         setInterval('raise_error()', 1);
 
-        window.onload = function() {
+        function getBase64Image(img) {
+            var canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            var dataURL = canvas.toDataURL("image/png");
+            return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+        }
+
+        $(document).ready(function() {
+            const courses = $('#courses_ms').filterMultiSelect();
+            const locations = $('#locations_ms').filterMultiSelect();
+            
             // If values are not blank, restore them to the fields
             var Name = sessionStorage.getItem('Name');
             if (Name !== null) $('#inputName').val(Name);
@@ -89,25 +102,39 @@
             var Ib_cutoff = sessionStorage.getItem('Ib_cutoff');
             if (Ib_cutoff !== null) $('#inputIb_cutoff').val(Ib_cutoff);
             
+            var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'))["courses"];
+            var selectedLocations = JSON.parse(sessionStorage.getItem('Locations'))["location"];
+            
+            if (selectedCourses != null)
+            {
+                for(var i = 0; i < selectedCourses.length ; i++)
+                {
+                    courses.selectOption(selectedCourses[i])
+                }
+            }
+            if (selectedLocations != null)
+            {
+                for(var i = 0; i < selectedLocations.length ; i++)
+                {
+                    locations.selectOption(selectedLocations[i])
+                }
             }
 
-            
-        // Before refreshing the page, save the form data to sessionStorage
-        window.onbeforeunload = function() {
-            sessionStorage.setItem("Name", $('#inputName').val());
-            sessionStorage.setItem("Website", $('#inputWebsite').val());
-            sessionStorage.setItem("Requirements", $('#inputRequirements').val());
-            sessionStorage.setItem("Scholarships", $('#inputScholarships').val());
-            sessionStorage.setItem("Ib_cutoff", $('#inputIb_cutoff').val());
-        }
-        $(document).ready(function() {
+            // Before refreshing the page, save the form data to sessionStorage
+            window.onbeforeunload = function() {
+                sessionStorage.setItem("Name", $('#inputName').val());
+                sessionStorage.setItem("Website", $('#inputWebsite').val());
+                sessionStorage.setItem("Requirements", $('#inputRequirements').val());
+                sessionStorage.setItem("Scholarships", $('#inputScholarships').val());
+                sessionStorage.setItem("Ib_cutoff", $('#inputIb_cutoff').val());
+                sessionStorage.setItem("Courses", courses.getSelectedOptionsAsJson(includeDisabled=true));
+                sessionStorage.setItem("Locations", locations.getSelectedOptionsAsJson(includeDisabled=true));
+            }
+
             $('input[type="file"]').change(function(e) {
                 var filename = e.target.files[0].name;
                 $("#file-upload_label").text(filename); 
             });
-
-            const courses = $('#courses_ms').filterMultiSelect();
-            const locations = $('#locations_ms').filterMultiSelect();
         });
 
         // add course
