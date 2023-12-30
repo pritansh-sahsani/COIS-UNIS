@@ -179,46 +179,46 @@ def edit_uni(uni_name):
 
     form = AddUniversityForm(obj=old_uni, formdata = request.form, courses=courses, locations=locations)
 
-
     if form.validate_on_submit():
-        if not form.logo.data or not form.website.data or not form.ib_cutoff.data:
+        if Uni.query.filter_by(name = form.name.data).first():
+            flash('A university with this name has been added eariler.')
+            return render_template("add_uni.html", form=form)
+        
+        if not form.website.data or not form.ib_cutoff.data or not form.requirements.data or len(form.courses.data) == 0 or len(form.location.data) == 0:
             is_draft = True
         else:
             is_draft = form.save_draft.data
-
+        
         if form.ib_cutoff.data:
-                if form.ib_cutoff.data.isdigit():
-                    if int(form.ib_cutoff.data) < 0 or int(form.ib_cutoff.data) > 45:
-                        flash('Please enter a valid IB grade for cut off (0 to 45).')
-                        return render_template("add_uni.html", form=form)
-                else:
-                    flash('Please enter a valid IB grade.')
+            if form.ib_cutoff.data.isdigit():
+                if int(form.ib_cutoff.data) < 0 or int(form.ib_cutoff.data) > 45:
+                    flash('Please enter a valid IB grade for cut off (0 to 45).')
                     return render_template("add_uni.html", form=form)
+            else:
+                flash('Please enter a valid IB grade.')
+                return render_template("add_uni.html", form=form)
         else:
             form.ib_cutoff.data = 0
 
-        f = form.logo.data
+        f = request.files['logo']
         if f:
             filename = form.name.data + '.' + f.filename.rsplit('.', 1)[1].lower()
             f.save(os.path.join(app.root_path, 'university_logos', filename))
         else:
             filename = None
             is_draft = True
-        
-        if len(form.courses.data) == 0 or len(form.location.data):
-            is_draft = True
 
         new_uni = Uni(id=old_uni.id, name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, is_draft=is_draft)
         
         for course_name in form.courses.data:
             course = Course.query.filter_by(name=course_name).first()
-            uni.courses.append(course)
-            course.unis.append(uni)
+            new_uni.courses.append(course)
+            course.unis.append(new_uni)
         for location_name in form.location.data:
             name = location_name.split(", ")
             location = Location.query.filter_by(city=name[0], country=name[1]).first()
-            uni.locations.append(location)
-            location.unis.append(uni)
+            new_uni.locations.append(location)
+            location.unis.append(new_uni)
 
         db.session.delete(old_uni)
         db.session.add(new_uni)
@@ -230,7 +230,6 @@ def edit_uni(uni_name):
             flash("University added successfully!", 'success')
 
         return redirect(url_for('manage_unis'))
-
 
     return render_template("edit_uni.html", form=form, old_uni=old_uni)
 

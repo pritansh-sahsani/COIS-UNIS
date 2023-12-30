@@ -16,56 +16,56 @@
         function raise_error() {
             {% if form.name.errors %} 
                 {% for error in form.name.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.logo.errors %} 
                 {% for error in form.logo.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.courses.errors %} 
                 {% for error in form.courses.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.location.errors %} 
                 {% for error in form.location.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.ib_cutoff.errors %} 
                 {% for error in form.ib_cutoff.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.scholarships.errors %} 
                 {% for error in form.scholarships.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
 
             {% if form.requirements.errors %} 
                 {% for error in form.requirements.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
 
             {% if form.website.errors %} 
                 {% for error in form.website.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
@@ -95,17 +95,13 @@
             var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'));
             var selectedLocations = JSON.parse(sessionStorage.getItem('Locations'));
             
-            if (selectedCourses != null)
-            {
-                for(var i = 0; i < selectedCourses.length ; i++)
-                {
+            if (selectedCourses != null){
+                for(var i = 0; i < selectedCourses["courses"].length ; i++){
                     courses.selectOption(selectedCourses["courses"][i])
                 }
             }
-            if (selectedLocations != null)
-            {
-                for(var i = 0; i < selectedLocations.length ; i++)
-                {
+            if (selectedLocations != null){
+                for(var i = 0; i < selectedLocations["location"].length ; i++){
                     locations.selectOption(selectedLocations["location"][i])
                 }
             }

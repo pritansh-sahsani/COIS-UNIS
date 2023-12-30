@@ -16,56 +16,56 @@
         function raise_error() {
             {% if form.name.errors %} 
                 {% for error in form.name.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.logo.errors %} 
                 {% for error in form.logo.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.courses.errors %} 
                 {% for error in form.courses.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.location.errors %} 
                 {% for error in form.location.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.ib_cutoff.errors %} 
                 {% for error in form.ib_cutoff.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.scholarships.errors %} 
                 {% for error in form.scholarships.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
 
             {% if form.requirements.errors %} 
                 {% for error in form.requirements.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
 
             {% if form.website.errors %} 
                 {% for error in form.website.errors %}
-                    $("#flash_text").text("{{error}}");
+                    $("#flash_text").text("{{error | safe}}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
@@ -73,28 +73,71 @@
         setInterval('raise_error()', 1);
 
         $(document).ready(function() {
-            $('input[type="file"]').change(function(e) {
-                var filename = e.target.files[0].name;
-                $("#file-upload_label").text(filename); 
-            });
-
             const courses = $('#courses_ms').filterMultiSelect();
             const locations = $('#locations_ms').filterMultiSelect();
+            
+            // If values are not blank, restore them to the fields
+            var Name = sessionStorage.getItem('Name');
+            if (Name !== null) $('#inputName').val(Name);
+            
+            var Website = sessionStorage.getItem('Website');
+            if (Website !== null) $('#inputWebsite').val(Website);
+
+            var Requirements = sessionStorage.getItem('Requirements');
+            if (Requirements !== null) $('#inputRequirements').val(Requirements);
+
+            var Scholarships = sessionStorage.getItem('Scholarships');
+            if (Scholarships !== null) $('#inputScholarships').val(Scholarships);
+            
+            var Ib_cutoff = sessionStorage.getItem('Ib_cutoff');
+            if (Ib_cutoff !== null) $('#inputIb_cutoff').val(Ib_cutoff);
+            
+            var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'));
+            var selectedLocations = JSON.parse(sessionStorage.getItem('Locations'));
+            
+            if (selectedCourses != null){
+                for(var i = 0; i < selectedCourses["courses"].length ; i++){
+                    courses.selectOption(selectedCourses["courses"][i])
+                }
+            }
+            if (selectedLocations != null){
+                for(var i = 0; i < selectedLocations["location"].length ; i++){
+                    locations.selectOption(selectedLocations["location"][i])
+                }
+            }
+
+            // Before refreshing the page, save the form data to sessionStorage
+            window.onbeforeunload = function() {
+                sessionStorage.setItem("Name", $('#inputName').val());
+                sessionStorage.setItem("Website", $('#inputWebsite').val());
+                sessionStorage.setItem("Requirements", $('#inputRequirements').val());
+                sessionStorage.setItem("Scholarships", $('#inputScholarships').val());
+                sessionStorage.setItem("Ib_cutoff", $('#inputIb_cutoff').val());
+                sessionStorage.setItem("Courses", courses.getSelectedOptionsAsJson(includeDisabled=true));
+                sessionStorage.setItem("Locations", locations.getSelectedOptionsAsJson(includeDisabled=true));
+            }
+
+            $('input[type="file"]').change(function(e) {
+                var filename = e.target.files[0].name;
+                $("#file-upload_label").text(filename);
+            });
         });
 
         // add course
         $(function() {
             $('#courses_ms_newitem').on('click', function(e) {
-                var new_course_name = $('#courses_ms_filterinput').val()
+                var new_course_name = $('#courses_ms_filterinput').val();
                 $.getJSON('add_course/'+new_course_name, function(data) {});
+                history.go(0);
             });
         });
 
         // add location
         $(function() {
             $('#locations_ms_newitem').on('click', function(e) {
-                var new_location_name = $('#locations_ms_filterinput').val()
+                var new_location_name = $('#locations_ms_filterinput').val();
                 $.getJSON("add_location/"+new_location_name,function(data) {});
+                history.go(0);
             });
         });
     </script>
@@ -108,10 +151,12 @@
                 
                 {{ form.hidden_tag() }}
                 
-                {{ form.name(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Name", value=old_uni.name )}} 
+                {{ form.name(id="inputName", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Name", value=old_uni.name )}} 
                 
                 <div class="custom-file mt-3%">
-                    <label class="custom-file-label border-0.5 border-black text-center" id="file-upload_label" for="file-upload">Upload University Logo</label>
+                    <label class="custom-file-label border-0.5 border-black text-center" id="file-upload_label" for="file-upload">
+                        {% if old_uni.logo %}{{ old_uni.logo }}{% else %}Upload University Logo{% endif %}
+                    </label>
                     {{ form.logo(class="custom-file-input", id="file-upload", type="file") }}
                 </div>
 
@@ -121,14 +166,14 @@
                 <h3 class="w-100% text-center text-xl mb-1 mt-2%">Courses</h3>
                 {{ form.courses(id="courses_ms") }}
 
-                {{ form.website(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Website", value=old_uni.website )}} 
-                {{ form.requirements(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Requirements", value=old_uni.requirements )}} 
-                {{ form.scholarships(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Scholarships", value=old_uni.scholarships )}} 
-                {{ form.ib_cutoff(class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="Cut off/required grade for IBDP", value=old_uni.ib_cutoff )}} 
+                {{ form.website(id="inputWebsite", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Website", value=old_uni.website )}} 
+                {{ form.requirements(id="inputRequirements", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Requirements", value=old_uni.requirements )}} 
+                {{ form.scholarships(id="inputScholarships", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Scholarships", value=old_uni.scholarships )}} 
+                {{ form.ib_cutoff(id="inputIb_cutoff", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="Cut off/required grade for IBDP", value=old_uni.ib_cutoff )}} 
 
                 <center>
-                    {{ form.save_draft(class="inline-block btn btn-primary mt-3% w-100% sm:w-30% sm:mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
-                    {{ form.submit(class="inline_block btn btn-primary mt-3% w-100% sm:w-30% mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
+                    {{ form.save_draft(class="submit inline-block btn btn-primary mt-3% w-100% sm:w-30% sm:mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
+                    {{ form.submit(class="submit inline_block btn btn-primary mt-3% w-100% sm:w-30% mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
                 </center>
             </form>
         </div>
