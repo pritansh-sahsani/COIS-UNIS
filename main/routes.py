@@ -180,10 +180,6 @@ def edit_uni(uni_name):
     form = AddUniversityForm(obj=old_uni, formdata = request.form, courses=courses, locations=locations)
 
     if form.validate_on_submit():
-        if Uni.query.filter_by(name = form.name.data).first():
-            flash('A university with this name has been added eariler.')
-            return render_template("add_uni.html", form=form)
-        
         if not form.website.data or not form.ib_cutoff.data or not form.requirements.data or len(form.courses.data) == 0 or len(form.location.data) == 0:
             is_draft = True
         else:
@@ -209,6 +205,8 @@ def edit_uni(uni_name):
             is_draft = True
 
         new_uni = Uni(id=old_uni.id, name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, is_draft=is_draft)
+        db.session.delete(old_uni)
+        db.session.add(new_uni)
         
         for course_name in form.courses.data:
             course = Course.query.filter_by(name=course_name).first()
@@ -220,8 +218,6 @@ def edit_uni(uni_name):
             new_uni.locations.append(location)
             location.unis.append(new_uni)
 
-        db.session.delete(old_uni)
-        db.session.add(new_uni)
         db.session.commit()
 
         if is_draft:

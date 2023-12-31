@@ -100,10 +100,20 @@
                     courses.selectOption(selectedCourses["courses"][i])
                 }
             }
+            else{
+                {% for course in old_uni.courses %}
+                    courses.selectOption('{{course.name | safe}}');
+                {% endfor %}
+            }
             if (selectedLocations != null){
                 for(var i = 0; i < selectedLocations["location"].length ; i++){
                     locations.selectOption(selectedLocations["location"][i])
                 }
+            }
+            else{
+                {% for location in old_uni.locations %}
+                    locations.selectOption('{{location.name | safe}}');
+                {% endfor %}
             }
 
             // Before refreshing the page, save the form data to sessionStorage
