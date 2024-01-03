@@ -208,29 +208,9 @@
             {% if p_unis_len != 0 %}
                 {% for uni in published_unis %}
                     <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
-                        <div class="m-2"><a href="{{ url_for('uni', uni_name=uni.name) }}">
-                            <p class="float-right">{{ uni.added_at.strftime("%d %B %Y") }}</p>
-                            <p class="">{{ uni.name }}</p>
-                            <p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ uni.summary }}</p></a>
-                            <div class="w-100% flex mb-2">
-                                {% if uni.views == 1 %}
-                                    <p class="m-0 w-1/3">{{ uni.views }} view</p>
-                                {% else %}
-                                    <p class="m-0 w-1/3">{{ uni.views }} views</p>
-                                {% endif %}
-                                    {% if uni.comments == 1 %}
-                                        <p class="m-0 w-1/3 text-center">{{ uni.comments }} comment</p>
-                                    {% else %}
-                                        <p class="m-0 w-1/3 text-center">{{ uni.comments }} comments</p>
-                                    {% endif %} 
-                                {% if uni.likes == 1 %}
-                                    <p class="m-0 w-1/3 text-right">{{ uni.likes }} like</p>
-                                {% else %}
-                                    <p class="m-0 w-1/3 text-right">{{ uni.likes }} likes</p>
-                                {% endif %}
-                            </div>
-
-                            <div class="w-100% text-center">
+                        <div class="m-2 mx-3 text-right">
+                            <p class="inline-block float-left mt-13px"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
+                            <div class="inline-block">
                                 <button  class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_uni{{ uni.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
                                 <a href="{{ url_for('edit_uni', uni_name=uni.name) }}"><button class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button></a>
                             </div>
@@ -247,11 +227,9 @@
         {% if d_unis_len != 0 %}
             {% for uni in draft_unis %}
                 <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
-                    <div class="m-2"><a href="{{ url_for('uni', uni_name=uni.name) }}">
-                        <p class="">{{ uni.name }}</p>
-                        <img src="">
-                        
-                        <div class="w-100% text-center">
+                    <div class="m-2 mx-3 text-right">
+                        <p class="inline-block float-left mt-2.5"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
+                        <div class="inline-block">
                             <button  class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_uni{{ uni.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
                             <a href="{{ url_for('edit_uni', uni_name=uni.name) }}"><button class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button></a>
                         </div>

@@ -5,5 +5,81 @@
 {% endblock %}
 
 {% block main %}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-{% endblock %}
+    <script type=text/javascript>
+        var unis_len = 0
+        {% for uni in unis %}unis_len = unis_len+1
+        {% endfor %}
+
+        function getUrlVars(){
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+
+        $(document).ready(function(){
+            vars= getUrlVars();
+            var keyword = decodeURI(vars['keyword']);
+            if(keyword == 'undefined'){keyword='';}
+            $("#search-input").val(keyword).change();
+        });
+        
+        $(function() {
+            $('#search_button').on('click', function(e) {
+                var keyword = $("#search-input").val();
+                window.location = "/manage_unis?keyword="+keyword;
+            });
+        });
+        
+        $(function() {
+            var availableTags = [];
+            {% for uni in unis %}
+                p = "{{ uni.name | safe }}"
+                availableTags.push(p);
+            {% endfor %}
+            $( "#search-input" ).autocomplete({
+                source: availableTags,
+                open: function() {
+                    $("ul.ui-menu").width( $("#search-div").innerWidth() );
+                }
+            });
+        });
+    </script>
+
+
+    <div class="mt-5 mb-3">
+        <div id="search-div" class="w-100% md:w-80% 880:w-47.5% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
+            <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
+            <button id="search_button" class="float-right">
+                <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
+            </button>
+        </div>
+    </div>
+
+    <div id="unis">
+        <h3 id="no_unis" class="hidden w-100% text-center my-3 text-4xl"></h3>
+            {% if not no_unis %}
+                {% for uni in unis %}
+                    
+                <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
+                    <div class="m-2 mx-3">
+                        <p class="inline-block"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <h3 class="w-100% text-center text-4xl">No Universities Found</h3>
+            {% endif %}
+    </div>
+
+{% endblock main %}

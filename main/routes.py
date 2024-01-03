@@ -14,8 +14,10 @@ SUPER_USER_KEY = os.getenv('SUPER_USER_KEY')
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    # todo: overview of unis
-    return render_template("index.html")
+    unis = Uni.query.filter_by(is_draft=False).all()
+    if len(unis) == 0:
+        return render_template("index.html", no_unis=True)
+    return render_template("index.html", unis=unis)
 
 @app.route("/add_uni", methods=['GET', 'POST'])
 @login_required
