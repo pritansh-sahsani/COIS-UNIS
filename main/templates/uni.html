@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    
+    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
+        <p>name: {{ uni.name }}</p>
+        <p>logo: {{ uni.logo }}</p>
+        <p>added_at: {{ uni.added_at }}</p>
+        <p>ib_cutoff: {{ uni.ib_cutoff }}</p>
+        <p>website: {{ uni.website }}</p>
+        <p>scholarships: {{ uni.scholarships }}</p>
+        <p>requirements: {{ uni.requirements }}</p>
+        <p>is_draft: {{ uni.is_draft }}</p>
+        <p>locations: {{ uni.locations }}</p>
+        <p>courses: {{ uni.courses  }}</p>
+    </div>
+
+{% endblock main %}

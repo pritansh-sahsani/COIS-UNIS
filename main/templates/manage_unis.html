@@ -5,14 +5,51 @@
 {% endblock %}
 
 {% block main %}
-    
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="../static/extensions/filter-multi-select-bundle-base.min.js"></script>
 
     <script type=text/javascript>
+        function raise_error() {
+            {% if form.courses.errors %} 
+                {% for error in form.courses.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
     
+            {% if form.location.errors %} 
+                {% for error in form.location.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.ib_cutoff.errors %} 
+                {% for error in form.ib_cutoff.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.scholarships.errors %} 
+                {% for error in form.scholarships.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
+            {% if form.requirements.errors %} 
+                {% for error in form.requirements.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+        }
+        setInterval('raise_error()', 1);
         var p_unis_len = {{ p_unis_len }}
         var d_unis_len = {{ d_unis_len }}
         var published_shown = true
@@ -34,6 +71,27 @@
                 });
             });
         {% endfor %}
+
+        $(document).ready(function() {
+            const COURSES = $('#courses_ms').filterMultiSelect();
+            const LOCATIONS = $('#locations_ms').filterMultiSelect();
+
+            $(function() {
+                $('#clear_filter').on('click', function(e) {
+                    $('#ib_cutoff').val('').change();
+                    $('#requirements').val('').change();
+                    $('#scholarships').val('').change();
+                    {% for course in courses %}
+                        COURSES.deselectOption({{course | safe}});
+                    {% endfor %}
+                    {% for location in locations %}
+                        LOCATIONS.deselectOption({{location | safe}});
+                    {% endfor %}
+                    
+                });
+            });
+        });
+
         {% for uni in published_unis %}
             $(function() {
                 $('#delete_uni{{ uni.id }}').on('click', function(e) {
@@ -93,18 +151,8 @@
             return vars;
         }
 
-        $(function() {
-            $('#apply').on('click', function(e) {
-                var sort = $("#sort").val();
-                var sort_direction = $("#sort_direction").val();
-                var keyword = $("#search-input").val();
-                window.location = "/manage_unis?sort="+sort+"&sort_direction="+sort_direction+"&keyword="+keyword;
-            });
-        });
         $(document).ready(function(){
             vars= getUrlVars();
-            $("#sort").val(vars['sort']).change();
-            $("#sort_direction").val(vars['sort_direction']).change();
             var keyword = decodeURI(vars['keyword']);
             if(keyword == 'undefined'){keyword='';}
             $("#search-input").val(keyword).change();
@@ -120,33 +168,29 @@
             sessionStorage.removeItem("Courses");
             sessionStorage.removeItem("Locations");
             
-        });
-        $(function() {
-            $('#show_sort_div').on('click', function(e) {
-                if ($("#sort_div").css("display") == "none")
+            var filter_id = '#applied_filters_';
+            var input_id = '#FilterInput-';
+			var filters = ['ib_cutoff','requirements','scholarships','location','courses'];
+			var filters_name = ['Ib Cutoff','Requirements','Scholarships','Locations','Courses'];
+            var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
+			for(var i = 0; i<5; i++)
+            {
+                if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null)
                 {
-                    $("#sort_div").css("display", "flex");
-                    $("#apply").css("display", "inline-block");
-                    $("#show_sort_div").addClass("xsm:float-right");
-                    $("#show_sort_div").addClass("xsm:w-47.5%");
-                    $("#show_sort_div").text("Hide Sorting");
+                    $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
+                    $(filter_id+filters[i]).attr('class', text_style);
                 }
-                else{
-                    $("#sort_div").css("display", "none");
-                    $("#apply").css("display", "none");
-                    $("#show_sort_div").removeClass("xsm:float-right");
-                    $("#show_sort_div").removeClass("xsm:w-47.5%");
-                    $("#show_sort_div").text("Show Sorting");
+                else
+                {
+                    $(filter_id+filters[i]).attr('class', 'hidden '+text_style);
                 }
-            });
+            }
         });
         
         $(function() {
             $('#search_button').on('click', function(e) {
-                var sort = $("#sort").val();
-                var sort_direction = $("#sort_direction").val();
                 var keyword = $("#search-input").val();
-                window.location = "/manage_unis?sort="+sort+"&sort_direction="+sort_direction+"&keyword="+keyword;
+                window.location = "/manage_unis?keyword="+keyword;
             });
         });
         
@@ -167,36 +211,92 @@
                 }
             });
         });
+
+    $(function() {
+        $('#ShowFilter').on('click', function(e) {
+            var ImageSrc = $('#ShowFilterImg');
+            var TextSrc = $('#ShowFilterText');
+            if ( ImageSrc.attr('src') == '../static/assets/dropdown-icon.svg')
+                    {
+                        ImageSrc.attr('src', '../static/assets/dropdown-icon-clicked.svg');
+                        TextSrc.text('Hide Filters');
+                    }
+                    else
+                    {
+                        ImageSrc.attr('src', '../static/assets/dropdown-icon.svg');
+                        TextSrc.text('Show Filters');
+                    }
+                });
+            });
+
+        $(function() {
+		    $('.FilterInput').on('change', function(e) {
+			    var filter_id = '#applied_filters_';
+                var input_id = '#FilterInput-';
+			    var filters = ['ib_cutoff','requirements','scholarships','location','courses'];
+			    var filters_name = ['Ib Cutoff','Requirements','Scholarships','Locations','Courses'];
+                var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
+				for(var i = 0; i<5; i++)
+                {
+                    if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null)
+                    {
+                        $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
+                        $(filter_id+filters[i]).attr('class', text_style);
+                    }
+                    else
+                    {
+                        $(filter_id+filters[i]).attr('class', 'hidden '+text_style);
+                    }
+                }
+			});
+		});
     </script>
 
+<div id="dropdownHover" class="hidden w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
+    <div class="mx-auto w-80%">
+        <form action='' method="POST" class="w-100% mx-auto">
+            {{ form.hidden_tag() }}
+            {{ form.ib_cutoff(id="FilterInput-ib_cutoff", class="FilterInput text-base w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-5%", placeholder='Cut off/required grade for IBDP') }}
+            {{ form.requirements(id="FilterInput-requirements", class="FilterInput text-base w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-5% float-right", placeholder='Requirements for admission') }} 
+            {{ form.scholarships(id="FilterInput-scholarships", class="FilterInput text-base w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3%", placeholder='Scholarships') }}
+            
+            <div class="w-47.5% inline-block">
+                <h3 class="w-100% text-center mb-1 mt-2%">Locations</h3>
+                {{ form.location(class="FilterInput", id="locations_ms") }} 
+            </div>
+            <div class="w-47.5% inline-block float-right">
+                <h3 class="w-100% text-center mb-1 mt-2%">Courses</h3>
+                {{ form.courses(class="FilterInput", id="courses_ms") }}
+            </div>    
+            {{ form.submit(class="btn btn-primary w-47.5% my-5% text-base") }}
+            {{ form.clear(id="clear_filter", class="btn btn-primary w-47.5% my-5% text-base float-right") }}
+        </form>
+    </div>
+</div>
 
     <div class="mt-5 mb-3">
         <button class="underline-btn-active text-2xl ml-0" id="show_published">Published</button>
         <button class="underline-btn text-2xl ml-8 960:ml-14" id="show_drafts">Drafts</button>
-        <hr class="mx-auto border-black mb-3" id="manage-unis-hr">
-        
-        <div class="w-100% md:w-80% 880:w-47.5% md:mx-auto mt-4">
-            <div class="input-group mb-2" id="sort_div">
-                <div class="input-group-prepend">
-                    <label class="input-group-text" for="sort">Sort By</label>
-                </div>
-                <select class="custom-select" id="sort">
-                    <option value="name">Name</option>
-                    <option value="ib_cutoff">IB cut off</option>
-                    <option value="added_at">Added Recently</option>
-                </select>
-                <select class="custom-select" id="sort_direction">
-                    <option value="false">Ascending</option>
-                    <option value="true">Decending</option>
-                </select>
+        <hr class="mx-auto border-black mb-3" id="manage-unis-hr"><div class="w-100% text-center items-center mb-3 mt-5" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="click"  id="ShowFilter">
+    </div> 
+    
+    <div class="w-100% text-center items-center mt-5" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="click"  id="ShowFilter">
+        <p class="inline-block" id="ShowFilterText">Show Filters</p>
+        <img class="inline-block mb-1 w-4 h-4" id="ShowFilterImg" src="../static/assets/dropdown-icon.svg">
+    </div>
+    
+    <div class="mt-2">
+        <div class="w-100% md:w-80% 880:w-50% mx-auto mb-2">
+            <div class="w-fit mx-auto">
+                <p id="applied_filters_ib_cutoff"></p>
+                <p id="applied_filters_requirements"></p>
+                <p id="applied_filters_scholarships"></p>
+                <p id="applied_filters_location"></p>
+                <p id="applied_filters_courses"></p>
             </div>
-            <button class="inline-block btn btn-primary w-100% xsm:w-47.5% mb-2" id="apply">Apply Sorting</button>
-
-            <button class="inline-block btn btn-primary w-100% mb-2" id="show_sort_div">Show Sorting</button>
         </div>
-        
-        <div id="search-div" class="w-100% md:w-80% 880:w-47.5% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
-            <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
+        <div id="search-div" class="w-100% md:w-80% 880:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
+        <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
             <button id="search_button" class="float-right">
                 <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
             </button>
@@ -207,7 +307,7 @@
         <h3 id="no_published_unis" class="hidden w-100% text-center my-3 text-4xl"></h3>
             {% if p_unis_len != 0 %}
                 {% for uni in published_unis %}
-                    <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
+                    <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
                         <div class="m-2 mx-3 text-right">
                             <p class="inline-block float-left mt-13px"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
                             <div class="inline-block">

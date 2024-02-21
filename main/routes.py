@@ -1,9 +1,11 @@
-from flask import render_template, url_for, flash, redirect, request, abort
-from flask_login import current_user, login_user, logout_user, login_required
-from main.forms import LoginForm, RegistrationForm, EditUserForm, AddUniversityForm
+from main.forms import LoginForm, RegistrationForm, EditUserForm, AddUniversityForm, FilterForm
 from main.setup import app, db
 from main.models import User, Uni, Location, Course
+from main.helper import sort_by_similarity, similarity_of_2_strings
 from main import bcrypt
+
+from flask import render_template, url_for, flash, redirect, request, abort
+from flask_login import current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
 from operator import attrgetter
 import os
@@ -13,16 +15,51 @@ load_dotenv()
 SUPER_USER_KEY = os.getenv('SUPER_USER_KEY')
 
 @app.route("/", methods=["GET", "POST"])
+@app.route("/index", methods=["GET", "POST"])
 def index():
+    keyword = request.args.get('keyword')
     unis = Uni.query.filter_by(is_draft=False).all()
+
+    if keyword is not None and keyword != '':
+        unis=sort_by_similarity(unis, keyword, column='name')
+    
+    courses = []
+    locations=[]
+    courses_query= Course.query.with_entities(Course.name).all()
+    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+
+    for course in courses_query:
+        courses.append((course.name, course.name))
+
+    for location in locations_query:
+        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+
+    form = FilterForm(formdata = request.form, courses=courses, locations=locations)
+
+    if form.validate_on_submit():
+        if form.submit.data:
+            for filter in ['ib_cutoff', 'requirements', 'scholarships']:
+                if getattr(form, filter).data!="":
+                    unis=sort_by_similarity(unis, getattr(form, filter).data, filter)
+            for filter in ['courses', 'location']:
+                if len(getattr(form, filter).data)!=0:
+                    for item in getattr(form, filter).data:
+                        unis=sort_by_similarity(unis, item, filter)
+
+        if form.submit.data:
+            for uni in Uni.query.filter_by(is_draft=False).all():
+                if not uni in unis:
+                    unis.append(uni)
+        
     if len(unis) == 0:
-        return render_template("index.html", no_unis=True)
-    return render_template("index.html", unis=unis)
+        return render_template("index.html", no_unis=True, form=form, courses=courses, locations=locations)
+
+    return render_template("index.html", unis=unis, form=form, courses=courses, locations=locations)
 
 @app.route("/add_uni", methods=['GET', 'POST'])
 @login_required
 def add_uni():
-    courses = []
+    courses=[]
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
     locations_query = Location.query.with_entities(Location.city, Location.country).all()
@@ -92,56 +129,62 @@ def add_uni():
 @app.route("/manage_unis", methods=['GET', 'POST'])
 @login_required
 def manage_unis():
-    sort = request.args.get('sort')
-    sort_direction = request.args.get('sort_direction')
     keyword = request.args.get('keyword')
+    draft_unis_query = Uni.query.filter_by(is_draft=True).all()
+    published_unis_query = Uni.query.filter_by(is_draft=False).all()
     
-    if sort is None or sort_direction is None:
-        return redirect("/manage_unis?sort=added_at&sort_direction=true")
-    if sort not in ['name','ib_cutoff', 'added_at']:
-        abort(404)
-    if sort_direction == "true":
-        sort_direction = True
-    elif sort_direction == "false":
-        sort_direction = False
-    else:
-        abort(404)
-    
-    if keyword is None or keyword == '':
-        draft_unis_query = Uni.query.filter_by(is_draft=True).all()
-        published_unis_query = Uni.query.filter_by(is_draft=False).all()
-    else:
-        draft_unis_query = Uni.query.msearch(keyword).filter_by(is_draft=True).all()
-        published_unis_query = Uni.query.msearch(keyword).filter_by(is_draft=False).all()
+    if keyword is not None and keyword != '':
+        draft_unis_query=sort_by_similarity(draft_unis_query, keyword, 'name')
+        published_unis_query=sort_by_similarity(published_unis_query, keyword, 'name')
 
+    courses = []
+    locations=[]
+    courses_query= Course.query.with_entities(Course.name).all()
+    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+    
+    for course in courses_query:
+        courses.append((course.name, course.name))
+
+    for location in locations_query:
+        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+
+    form = FilterForm(formdata = request.form, courses=courses, locations=locations)
 
     draft_unis = []
     published_unis = []
+    
     for uni in draft_unis_query:
         draft_unis.append(uni)
     for uni in published_unis_query:
         published_unis.append(uni)
-
-    for category, reverse in [('name', False), ('ib_cutoff', False), ('added_at', True)]:
-        if category != sort:
-            draft_unis.sort(key=attrgetter(category), reverse=reverse)
-            published_unis.sort(key=attrgetter(category), reverse=reverse)
-
-    draft_unis.sort(key=attrgetter(sort), reverse=sort_direction)
-    published_unis.sort(key=attrgetter(sort), reverse=sort_direction)
     
+    for unis in [draft_unis, published_unis]:
+        if form.validate_on_submit():
+            if form.submit.data:
+                for filter in ['ib_cutoff', 'requirements', 'scholarships']:
+                    if getattr(form, filter).data!="":
+                        unis=sort_by_similarity(unis, getattr(form, filter).data, filter)
+                for filter in ['courses', 'location']:
+                    if len(getattr(form, filter).data)!=0:
+                        for item in getattr(form, filter).data:
+                            unis=sort_by_similarity(unis, item, filter)
+
+            if form.submit.data:
+                for uni in Uni.query.filter_by(is_draft=False).all():
+                    if not uni in unis:
+                        unis.append(uni)
+
     d_unis_len=len(draft_unis_query)
     p_unis_len=len(published_unis_query)
     flash = "University Deleted Successfully!"
 
-    return render_template("manage_unis.html", published_unis = published_unis, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, flash=flash)
+    return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, flash=flash)
 
 
 @app.route('/uni/<string:uni_name>', methods=['GET', 'POST'])
-@login_required
 def uni(uni_name):
-    return render_template("uni.html")
-
+    uni = Uni.query.filter_by(name = uni_name).first_or_404()
+    return render_template("uni.html", uni=uni)
 
 @app.route('/delete_uni/<int:uni_id>', methods=['GET', 'POST'])
 @login_required
@@ -202,6 +245,8 @@ def edit_uni(uni_name):
         if f:
             filename = form.name.data + '.' + f.filename.rsplit('.', 1)[1].lower()
             f.save(os.path.join(app.root_path, 'university_logos', filename))
+        elif old_uni.logo:
+            filename = old_uni.logo
         else:
             filename = None
             is_draft = True
@@ -267,41 +312,18 @@ def manage_users():
     if current_user.username != "SUPERUSER":
         return render_template("403.html")
     
-    sort = request.args.get('sort')
-    sort_direction = request.args.get('sort_direction')
     keyword = request.args.get('keyword')
-
-    if sort is None or sort_direction is None:
-        return redirect("/manage_users?sort=username&sort_direction=false")
-    if sort not in ['added_at','email','username']:
-        abort(404)
-    if sort_direction == "true":
-        sort_direction = True
-    elif sort_direction == "false":
-        sort_direction = False
-    else:
-        abort(404)
-    
-    if keyword is None or keyword=='':
-        user_query = User.query.all()
-    else:
-        split = keyword.find('-')
-        if not split<0:
-            keyword = keyword[:split]
-        user_query = User.query.msearch(keyword).all()
-    
+    user_query = User.query.all()
     users = []
     for user in user_query:
         if user.username != "SUPERUSER":
             users.append(user)
+
+    if keyword is not None and keyword!='':
+        users = sort_by_similarity(users, keyword, column='username')
     
     if len(users) == 0:
         return render_template("manage_users.html", users=users)
-        
-    for category, reverse in [('added_at', True), ('email', False), ('username', False)]:
-        if category != sort:
-            users.sort(key=attrgetter(category), reverse=reverse)
-    users.sort(key=attrgetter(sort), reverse=sort_direction)
     
     del_flash = "User Deleted successfully!"
     return render_template("manage_users.html", del_flash=del_flash, users=users)

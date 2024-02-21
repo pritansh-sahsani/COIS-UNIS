@@ -34,7 +34,7 @@ class User(db.Model, UserMixin):
         return User.query.get(user_id)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}')"
+        return f"User('{self.username}')"
 
 
 locations_table = db.Table(
@@ -50,7 +50,7 @@ courses_table = db.Table(
 )
 
 class Uni(db.Model):
-    __searchable__ = ['name']
+    __searchable__ = ['name', 'ib_cutoff', 'requirements', 'scholarships']
     id= db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     logo = db.Column(db.String(104))
@@ -63,6 +63,9 @@ class Uni(db.Model):
 
     locations = relationship('Location', secondary=locations_table, back_populates='unis')
     courses = relationship('Course', secondary=courses_table, back_populates='unis')
+
+    def __repr__(self):
+        return f"{self.name}"
 
 class Location(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)

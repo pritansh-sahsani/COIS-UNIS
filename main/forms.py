@@ -70,3 +70,18 @@ class EditUserForm(FlaskForm):
 
     def __init__(self, formdata=None, **kwargs):
         super(EditUserForm, self).__init__(formdata=formdata, **kwargs)
+
+
+class FilterForm(FlaskForm):
+    ib_cutoff = StringField('Cut off/required grade for IBDP')
+    requirements = StringField('Requirements for admission')
+    scholarships = StringField('Scholarships')
+    courses = SelectMultipleField('Courses', choices=[])
+    location = SelectMultipleField('Location', choices=[])
+    submit = SubmitField('Apply Filter')
+    clear = SubmitField('Clear Filters')
+
+    def __init__(self, formdata=None, **kwargs):
+        super(FilterForm, self).__init__(formdata=formdata, **kwargs)
+        self.courses.choices = kwargs['courses']
+        self.location.choices = kwargs['locations']
