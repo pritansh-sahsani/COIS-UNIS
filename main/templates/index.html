@@ -171,24 +171,24 @@
 		});
     </script>
 
-    <div id="dropdownHover" class="hidden w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
+    <div id="dropdownHover" class="hidden w-90% md:w-80% 880:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
         <div class="mx-auto w-80%">
             <form action='' method="POST" class="w-100% mx-auto">
                 {{ form.hidden_tag() }}
-                {{ form.ib_cutoff(id="FilterInput-ib_cutoff", class="FilterInput text-base w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-5%", placeholder='Cut off/required grade for IBDP') }}
-                {{ form.requirements(id="FilterInput-requirements", class="FilterInput text-base w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-5% float-right", placeholder='Requirements for admission') }} 
+                {{ form.ib_cutoff(id="FilterInput-ib_cutoff", class="FilterInput text-base w-100% sm:w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-5%", placeholder='Cut off/required grade for IBDP') }}
+                {{ form.requirements(id="FilterInput-requirements", class="FilterInput text-base w-100% sm:w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-3% sm:mt-5% float-right", placeholder='Requirements for admission') }} 
                 {{ form.scholarships(id="FilterInput-scholarships", class="FilterInput text-base w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3%", placeholder='Scholarships') }}
                 
-                <div class="w-47.5% inline-block">
-                    <h3 class="w-100% text-center mb-1 mt-2%">Locations</h3>
+                <div class="w-100% xsm:w-47.5% inline-block mt-2%">
+                    <h3 class="w-100% text-center mb-1">Locations</h3>
                     {{ form.location(class="FilterInput", id="locations_ms") }} 
                 </div>
-                <div class="w-47.5% inline-block float-right">
-                    <h3 class="w-100% text-center mb-1 mt-2%">Courses</h3>
+                <div class="w-100% xsm:w-47.5% inline-block mt-2% float-right">
+                    <h3 class="w-100% text-center mb-1">Courses</h3>
                     {{ form.courses(class="FilterInput", id="courses_ms") }}
                 </div>    
-                {{ form.submit(class="btn btn-primary w-47.5% my-5% text-base") }}
-                {{ form.clear(id="clear_filter", class="btn btn-primary w-47.5% my-5% text-base float-right") }}
+                {{ form.submit(class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-5% text-base") }}
+                {{ form.clear(id="clear_filter", class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-2% xsm:mt-5% mb-5% text-base float-right") }}
             </form>
         </div>
     </div>
@@ -220,7 +220,7 @@
             {% if not no_unis %}
                 {% for uni in unis %}
                     
-                <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
+                <div class="w-100% md:w-80% 880:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
                     <div class="m-2 mx-3">
                         <p class="inline-block"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
                     </div>
