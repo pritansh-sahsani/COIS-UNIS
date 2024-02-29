@@ -180,6 +180,61 @@ def manage_unis():
 
     return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, flash=flash)
 
+@app.route("/manage_courses", methods=['GET', 'POST'])
+@login_required
+def manage_courses():
+    keyword = request.args.get('keyword')
+    courses_query= Course.query.with_entities(Course.id, Course.name).all()
+    
+    if keyword is not None and keyword != '':
+        courses_query=sort_by_similarity(courses_query, keyword, 'name')
+
+    courses = []
+    
+    for course in courses_query:
+        courses.append((course.id, course.name))
+
+    courses_len=len(courses)
+    flash = "Course Deleted Successfully!"
+
+    return render_template("manage_courses.html", courses = courses, courses_len=courses_len, flash=flash)
+
+@app.route('/delete_course/<int:course_id>', methods=['GET', 'POST'])
+@login_required
+def delete_course(course_id):
+    course = Course.query.filter_by(id = course_id).first_or_404()
+    print(course)
+    db.session.delete(course)
+    db.session.commit()
+    return redirect(url_for('manage_courses'))
+
+@app.route("/manage_locations", methods=['GET', 'POST'])
+@login_required
+def manage_locations():
+    keyword = request.args.get('keyword')
+    locations_query= Location.query.with_entities(Location.id, Location.city, Location.country).all()
+    
+    if keyword is not None and keyword != '':
+        locations_query=sort_by_similarity(locations_query, keyword, 'country')
+        locations_query=sort_by_similarity(locations_query, keyword, 'city')
+
+    locations = []
+    
+    for location in locations_query:
+        locations.append((location.id, location.city, location.country))
+
+    locations_len=len(locations)
+    flash = "Location Deleted Successfully!"
+
+    return render_template("manage_locations.html", locations = locations, locations_len=locations_len, flash=flash)
+
+@app.route('/delete_location/<int:location_id>', methods=['GET', 'POST'])
+@login_required
+def delete_location(location_id):
+    location = Location.query.filter_by(id = location_id).first_or_404()
+    db.session.delete(location)
+    db.session.commit()
+    return redirect(url_for('manage_locations'))
 
 @app.route('/uni/<string:uni_name>', methods=['GET', 'POST'])
 def uni(uni_name):
@@ -276,7 +331,6 @@ def edit_uni(uni_name):
 
     return render_template("edit_uni.html", form=form, old_uni=old_uni)
 
-
 @app.route('/add_course/<string:name>')
 @login_required
 def add_course(name):
@@ -286,7 +340,6 @@ def add_course(name):
         db.session.add(course)
         db.session.commit()
     return redirect(url_for("add_uni"))
-
 
 @app.route('/add_location/<string:name>')
 @login_required
