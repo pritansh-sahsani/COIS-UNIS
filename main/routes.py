@@ -1,4 +1,4 @@
-from main.forms import LoginForm, RegistrationForm, EditUserForm, AddUniversityForm, FilterForm
+from main.forms import LoginForm, RegistrationForm, EditUserForm, AddUniversityForm, FilterForm, AddCourseForm, AddLocationForm
 from main.setup import app, db
 from main.models import User, Uni, Location, Course
 from main.helper import sort_by_similarity, similarity_of_2_strings
@@ -276,35 +276,41 @@ def edit_uni(uni_name):
 
     return render_template("edit_uni.html", form=form, old_uni=old_uni)
 
-
-@app.route('/add_course/<string:name>')
+@app.route('/add_course', methods=['GET', 'POST'])
 @login_required
-def add_course(name):
-    existing = Course.query.filter_by(name = name).first()
-    if not existing:
-        course = Course(name = name)
-        db.session.add(course)
-        db.session.commit()
-    return redirect(url_for("add_uni"))
+def add_course():
+    form = AddCourseForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        existing = Course.query.filter_by(name=name).first()
+        if not existing:
+            course = Course(name=name)
+            db.session.add(course)
+            db.session.commit()
+        return redirect(url_for("add_uni"))
+    return render_template('add_course.html', form=form)
 
-
-@app.route('/add_location/<string:name>')
+@app.route('/add_location', methods=['GET', 'POST'])
 @login_required
-def add_location(name):
-    if ',' in name:
-        name = name.split(",")
-        city=name[0]
-        country=name[1]
-    else:
-        city=name
-        country="Unknown"
-    
-    location=Location(city=city, country=country)
-    existing = Location.query.filter_by(city=city, country=country).first()
-    if not existing:
-        db.session.add(location)
-        db.session.commit()
-    return redirect(url_for("add_uni"))
+def add_location():
+    form = AddLocationForm()
+    if form.validate_on_submit():
+        name = form.name.data
+        if ',' in name:
+            name = name.split(",")
+            city = name[0]
+            country = name[1]
+        else:
+            city = name
+            country = "Unknown"
+
+        location = Location(city=city, country=country)
+        existing = Location.query.filter_by(city=city, country=country).first()
+        if not existing:
+            db.session.add(location)
+            db.session.commit()
+        return redirect(url_for("add_uni"))
+    return render_template('add_location.html', form=form)
 
 @app.route("/manage_users", methods=["GET", "POST"])
 @login_required

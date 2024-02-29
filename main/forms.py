@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectMultipleField, TextAreaField
-from wtforms.validators import EqualTo, Email, Length, ValidationError
+from wtforms.validators import EqualTo, Email, Length, ValidationError, DataRequired
 from flask_wtf.file import FileAllowed, FileField
 
 from main.models import User
@@ -85,3 +85,13 @@ class FilterForm(FlaskForm):
         super(FilterForm, self).__init__(formdata=formdata, **kwargs)
         self.courses.choices = kwargs['courses']
         self.location.choices = kwargs['locations']
+
+
+class AddCourseForm(FlaskForm):
+    name = StringField('Course', validators=[DataRequired()])
+    submit = SubmitField('Add Course')
+
+
+class AddLocationForm(FlaskForm):
+    name = StringField('Location', validators=[DataRequired()])
+    submit = SubmitField('Add Location')
