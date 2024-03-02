@@ -26,13 +26,13 @@ def index():
     courses = []
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
-    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+    locations_query = Location.query.with_entities(Location.exact_location).all()
 
     for course in courses_query:
         courses.append((course.name, course.name))
 
     for location in locations_query:
-        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+        locations.append((location.exact_location, location.exact_location))
 
     form = FilterForm(formdata = request.form, courses=courses, locations=locations)
 
@@ -62,13 +62,13 @@ def add_uni():
     courses=[]
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
-    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+    locations_query = Location.query.with_entities(Location.exact_location).all()
 
     for course in courses_query:
         courses.append((course.name, course.name))
 
     for location in locations_query:
-        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+        locations.append((location.exact_location, location.exact_location))
 
     form = AddUniversityForm(formdata = request.form, courses=courses, locations=locations)
 
@@ -108,8 +108,7 @@ def add_uni():
             uni.courses.append(course)
             course.unis.append(uni)
         for location_name in form.location.data:
-            name = location_name.split(", ")
-            location = Location.query.filter_by(city=name[0], country=name[1]).first()
+            location = Location.query.filter_by(exact_location = location_name).first()
             uni.locations.append(location)
             location.unis.append(uni)
 
@@ -140,13 +139,13 @@ def manage_unis():
     courses = []
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
-    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+    locations_query = Location.query.with_entities(Location.exact_location).all()
     
     for course in courses_query:
         courses.append((course.name, course.name))
 
     for location in locations_query:
-        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+        locations.append((location.exact_location, location.exact_location))
 
     form = FilterForm(formdata = request.form, courses=courses, locations=locations)
 
@@ -212,16 +211,15 @@ def delete_course(course_id):
 @login_required
 def manage_locations():
     keyword = request.args.get('keyword')
-    locations_query= Location.query.with_entities(Location.id, Location.city, Location.country).all()
+    locations_query= Location.query.all()
     
     if keyword is not None and keyword != '':
-        locations_query=sort_by_similarity(locations_query, keyword, 'country')
-        locations_query=sort_by_similarity(locations_query, keyword, 'city')
+        locations_query=sort_by_similarity(locations_query, keyword, 'exact_location')
 
     locations = []
     
     for location in locations_query:
-        locations.append((location.id, location.city, location.country))
+        locations.append((location.id, location.city, location.country, location.exact_location))
 
     locations_len=len(locations)
     flash = "Location Deleted Successfully!"
@@ -269,13 +267,13 @@ def edit_uni(uni_name):
     courses = []
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
-    locations_query = Location.query.with_entities(Location.city, Location.country).all()
+    locations_query = Location.query.with_entities(Location.exact_location).all()
 
     for course in courses_query:
         courses.append((course.name, course.name))
 
     for location in locations_query:
-        locations.append((location.city+", "+location.country, location.city+", "+location.country))
+        locations.append((location.exact_location, location.exact_location))
 
     form = AddUniversityForm(obj=old_uni, formdata = request.form, courses=courses, locations=locations)
 
@@ -315,8 +313,7 @@ def edit_uni(uni_name):
             new_uni.courses.append(course)
             course.unis.append(new_uni)
         for location_name in form.location.data:
-            name = location_name.split(", ")
-            location = Location.query.filter_by(city=name[0], country=name[1]).first()
+            location = Location.query.filter_by(exact_location = location_name).first()
             new_uni.locations.append(location)
             location.unis.append(new_uni)
 
@@ -351,8 +348,8 @@ def add_location(name):
     else:
         city=name
         country="Unknown"
-    
-    location=Location(city=city, country=country)
+    exact_location = city + ', ' + country
+    location=Location(city=city, country=country, exact_location = exact_location)
     existing = Location.query.filter_by(city=city, country=country).first()
     if not existing:
         db.session.add(location)

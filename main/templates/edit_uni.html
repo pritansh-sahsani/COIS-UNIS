@@ -16,56 +16,56 @@
         function raise_error() {
             {% if form.name.errors %} 
                 {% for error in form.name.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.logo.errors %} 
                 {% for error in form.logo.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.courses.errors %} 
                 {% for error in form.courses.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.location.errors %} 
                 {% for error in form.location.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.ib_cutoff.errors %} 
                 {% for error in form.ib_cutoff.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
             
             {% if form.scholarships.errors %} 
                 {% for error in form.scholarships.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
 
             {% if form.requirements.errors %} 
                 {% for error in form.requirements.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
 
             {% if form.website.errors %} 
                 {% for error in form.website.errors %}
-                    $("#flash_text").text("{{error | safe}}");
+                    $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
             {% endif %}
@@ -112,7 +112,7 @@
             }
             else{
                 {% for location in old_uni.locations %}
-                    locations.selectOption('{{location.name | safe}}');
+                    locations.selectOption('{{location.exact_location | safe}}');
                 {% endfor %}
             }
 
@@ -137,7 +137,7 @@
         $(function() {
             $('#courses_ms_newitem').on('click', function(e) {
                 var new_course_name = $('#courses_ms_filterinput').val();
-                $.getJSON('add_course/'+new_course_name, function(data) {});
+                $.getJSON('/add_course/'+new_course_name, function(data) {});
                 history.go(0);
             });
         });
@@ -146,7 +146,7 @@
         $(function() {
             $('#locations_ms_newitem').on('click', function(e) {
                 var new_location_name = $('#locations_ms_filterinput').val();
-                $.getJSON("add_location/"+new_location_name,function(data) {});
+                $.getJSON("/add_location/"+new_location_name,function(data) {});
                 history.go(0);
             });
         });

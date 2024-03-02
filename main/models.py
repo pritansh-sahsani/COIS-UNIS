@@ -71,13 +71,19 @@ class Location(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     city = db.Column(db.String(100), nullable=False)
     country = db.Column(db.String(100), nullable=False)
+    exact_location = db.Column(db.String(202), nullable=False)
     unis = relationship('Uni', secondary=locations_table, back_populates='locations')
+
+    def __repr__(self):
+        return f"<{self.exact_location}>"
 
 
 class Course(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     unis = relationship('Uni', secondary=courses_table, back_populates='courses')
+    def __repr__(self):
+        return f"{self.name}"
     
 
 with app.app_context():
