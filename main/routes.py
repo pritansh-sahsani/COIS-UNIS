@@ -191,7 +191,7 @@ def manage_courses():
     courses = []
     
     for course in courses_query:
-        courses.append((course.id, course.name))
+        courses.append(course)
 
     courses_len=len(courses)
     flash = "Course Deleted Successfully!"
@@ -202,8 +202,17 @@ def manage_courses():
 @login_required
 def delete_course(course_id):
     course = Course.query.filter_by(id = course_id).first_or_404()
-    print(course)
     db.session.delete(course)
+    db.session.commit()
+    return redirect(url_for('manage_courses'))
+
+@app.route('/edit_course/<int:course_id>/<string:course_name>', methods=['GET', 'POST'])
+@login_required
+def edit_course(course_id, course_name):
+    new_course = Course.query.filter_by(name = course_name).first()
+    if new_course:
+        return
+    Course.query.filter_by(id = course_id).update(dict(name = course_name))
     db.session.commit()
     return redirect(url_for('manage_courses'))
 
@@ -219,7 +228,7 @@ def manage_locations():
     locations = []
     
     for location in locations_query:
-        locations.append((location.id, location.city, location.country, location.exact_location))
+        locations.append(location)
 
     locations_len=len(locations)
     flash = "Location Deleted Successfully!"
@@ -231,6 +240,30 @@ def manage_locations():
 def delete_location(location_id):
     location = Location.query.filter_by(id = location_id).first_or_404()
     db.session.delete(location)
+    db.session.commit()
+    return redirect(url_for('manage_locations'))
+
+@app.route('/edit_location/<int:location_id>/<string:location_name>', methods=['GET', 'POST'])
+@login_required
+def edit_location(location_id, location_name):
+    new_location = Location.query.filter_by(exact_location = location_name).first()
+    if new_location:
+        return
+    
+    if ', ' in location_name:
+        split = location_name.split(", ")
+        city=split[0]
+        country=split[1]
+    elif ',' in location_name:
+        split = location_name.split(",")
+        city=split[0]
+        country=split[1]
+    else:
+        city=location_name
+        country="Unknown"
+
+    exact_location = city+", "+country
+    Location.query.filter_by(id = location_id).update(dict(city = city, country = country, exact_location = exact_location))
     db.session.commit()
     return redirect(url_for('manage_locations'))
 
@@ -341,7 +374,11 @@ def add_course(name):
 @app.route('/add_location/<string:name>')
 @login_required
 def add_location(name):
-    if ',' in name:
+    if ', ' in name:
+        name = name.split(", ")
+        city=name[0]
+        country=name[1]
+    elif ',' in name:
         name = name.split(",")
         city=name[0]
         country=name[1]

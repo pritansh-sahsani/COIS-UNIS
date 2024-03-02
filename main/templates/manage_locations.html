@@ -17,10 +17,10 @@
         var published_shown = true
         {% for location in locations %}
             $(function() {
-                $('#delete_location{{ location[0] }}').on('click', function(e) {
+                $('#delete_location{{ location.id }}').on('click', function(e) {
                     e.preventDefault()
-                    $.getJSON('{{ url_for("delete_location", location_id=location[0]) }}',function(data) {});
-                    $("#location{{ location[0] }}").hide();
+                    $.getJSON('{{ url_for("delete_location", location_id=location.id) }}',function(data) {});
+                    $("#location{{ location.id }}").hide();
                     $("#flash_text").text("{{ flash }}");
                     $("#flash_text_div").show();
 
@@ -29,6 +29,29 @@
                         $('#no_location').text("No Location Found");
                         $('#no_location').toggle();
                     }
+                });
+            });
+            
+            $(function() {
+                $('#edit{{location.id}}').on('click', function(e) {
+                    $('#edit_input_div{{location.id}}').toggle();
+                    $('#location_name{{location.id}}').toggle();
+                });
+            });
+
+            $(function() {
+                $('#confirm{{location.id}}').on('click', function(e) {
+                    var new_location_name = $('#edit_input{{location.id}}').val();
+                    $.getJSON('/edit_location/{{location.id}}/'+new_location_name, function() {});
+                    history.go(0);
+                });
+            });
+
+            $(function() {
+                $('#cancel{{location.id}}').on('click', function(e) {
+                    $('#edit_input{{location.id}}').val($('#location_name{{location.id}}').text());
+                    $('#edit_input_div{{location.id}}').toggle();
+                    $('#location_name{{location.id}}').toggle();
                 });
             });
         {% endfor %}
@@ -62,7 +85,7 @@
         $(function() {
             var availableTags = [];
             {% for location in locations %}
-                p = "{{ location[1] | safe }}, {{ location[2] | safe }}"
+                p = "{{ location.exact_location | safe }}"
                 availableTags.push(p);
             {% endfor %}
             $( "#search-input" ).autocomplete({
@@ -87,17 +110,25 @@
         <h3 id="no_location" class="hidden w-100% text-center my-3 text-4xl"></h3>
             {% if locations_len != 0 %}
                 {% for location in locations %}
-                    <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="location{{ location[0] }}">
-                        <div class="m-2 mx-3 text-right">
-                            <p class="inline-block float-left mt-13px">{{ location[1] }}, {{ location[2] }}</p>
-                            <div class="inline-block">
-                                <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_location{{ location[0] }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="location{{ location.id }}">
+                    <div class="m-2 mx-3 grid grid-cols-3 items-center justify-start">
+                        <div class="col-span-2">
+                            <p id="location_name{{location.id}}" class="inline-block px-1.5">{{ location.exact_location }}</p>
+                            <div id="edit_input_div{{location.id}}" class="hidden">
+                                <input id="edit_input{{location.id}}" class="py-1.5 px-1 inline-block float-left border-0.5 border-black py-1% rounded-lg" placeholder="Location (city, country)" value="{{location.exact_location}}">
+                                <button id="confirm{{location.id}}" class ="btn btn-primary ml-2">Confirm</button>
+                                <button id="cancel{{location.id}}" class ="btn btn-primary ">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="inline-block justify-self-end">
+                            <button id="edit{{location.id}}" class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
+                            <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_location{{ location.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
                             </div>
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
-                <h3 id="no_location" class="w-100% text-center text-4xl">No Courses Found</h3>
+                <h3 id="no_location" class="w-100% text-center text-4xl">No Locations Found</h3>
             {% endif %}
     </div>
 {% endblock main %}

@@ -17,10 +17,10 @@
         var published_shown = true
         {% for course in courses %}
             $(function() {
-                $('#delete_course{{ course[0] }}').on('click', function(e) {
+                $('#delete_course{{ course.id }}').on('click', function(e) {
                     e.preventDefault()
-                    $.getJSON('{{ url_for("delete_course", course_id=course[0]) }}',function(data) {});
-                    $("#course{{ course[0] }}").hide();
+                    $.getJSON('{{ url_for("delete_course", course_id=course.id) }}',function(data) {});
+                    $("#course{{ course.id }}").hide();
                     $("#flash_text").text("{{ flash }}");
                     $("#flash_text_div").show();
 
@@ -29,6 +29,29 @@
                         $('#no_course').text("No Course Found");
                         $('#no_course').toggle();
                     }
+                });
+            });
+
+            $(function() {
+                $('#edit{{course.id}}').on('click', function(e) {
+                    $('#edit_input_div{{course.id}}').toggle();
+                    $('#course_name{{course.id}}').toggle();
+                });
+            });
+
+            $(function() {
+                $('#confirm{{course.id}}').on('click', function(e) {
+                    var new_course_name = $('#edit_input{{course.id}}').val();
+                    $.getJSON('/edit_course/{{course.id}}/'+new_course_name, function() {});
+                    history.go(0);
+                });
+            });
+
+            $(function() {
+                $('#cancel{{course.id}}').on('click', function(e) {
+                    $('#edit_input{{course.id}}').val($('#course_name{{course.id}}').text());
+                    $('#edit_input_div{{course.id}}').toggle();
+                    $('#course_name{{course.id}}').toggle();
                 });
             });
         {% endfor %}
@@ -62,7 +85,7 @@
         $(function() {
             var availableTags = [];
             {% for course in courses %}
-                p = "{{ course[1] | safe }}"
+                p = "{{ course.name | safe }}"
                 availableTags.push(p);
             {% endfor %}
             $( "#search-input" ).autocomplete({
@@ -87,11 +110,19 @@
         <h3 id="no_course" class="hidden w-100% text-center my-3 text-4xl"></h3>
             {% if courses_len != 0 %}
                 {% for course in courses %}
-                    <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="course{{ course[0] }}">
-                        <div class="m-2 mx-3 text-right">
-                            <p class="inline-block float-left mt-13px">{{ course[1] }}</p>
-                            <div class="inline-block">
-                                <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_course{{ course[0] }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                    <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="course{{ course.id }}">
+                        <div class="m-2 mx-3 grid grid-cols-3 items-center justify-start">
+                            <div class="col-span-2">
+                                <p id="course_name{{course.id}}" class="inline-block px-1.5">{{ course.name }}</p>
+                                <div id="edit_input_div{{course.id}}" class="hidden">
+                                    <input id="edit_input{{course.id}}" class="py-1.5 px-1 inline-block float-left border-0.5 border-black py-1% rounded-lg" placeholder="Course Name" value="{{course.name}}">
+                                    <button id="confirm{{course.id}}" class ="btn btn-primary ml-2">Confirm</button>
+                                    <button id="cancel{{course.id}}" class ="btn btn-primary ">Cancel</button>
+                                </div>
+                            </div>
+                            <div class="inline-block justify-self-end">
+                                <button id="edit{{course.id}}" class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
+                                <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_course{{ course.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
                             </div>
                         </div>
                     </div>

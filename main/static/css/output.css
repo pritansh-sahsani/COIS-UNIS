@@ -594,6 +594,10 @@ video {
   z-index: 30;
 }
 
+.col-span-2 {
+  grid-column: span 2 / span 2;
+}
+
 .float-right {
   float: right;
 }
@@ -756,14 +760,6 @@ video {
   margin-top: 9px;
 }
 
-.mt-1 {
-  margin-top: 0.25rem;
-}
-
-.mt-1\% {
-  margin-top: 1%;
-}
-
 .block {
   display: block;
 }
@@ -778,6 +774,10 @@ video {
 
 .flex {
   display: flex;
+}
+
+.grid {
+  display: grid;
 }
 
 .hidden {
@@ -824,10 +824,6 @@ video {
   width: 1rem;
 }
 
-.w-47\.5\% {
-  width: 47.5%;
-}
-
 .w-50\% {
   width: 50%;
 }
@@ -865,8 +861,28 @@ video {
   width: 100vw;
 }
 
+.flex-auto {
+  flex: 1 1 auto;
+}
+
+.grow {
+  flex-grow: 1;
+}
+
 .cursor-pointer {
   cursor: pointer;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .flex-col {
@@ -877,8 +893,20 @@ video {
   align-items: center;
 }
 
+.justify-start {
+  justify-content: flex-start;
+}
+
 .justify-between {
   justify-content: space-between;
+}
+
+.justify-self-start {
+  justify-self: start;
+}
+
+.justify-self-end {
+  justify-self: end;
 }
 
 .rounded {
@@ -970,6 +998,21 @@ video {
   padding-bottom: 0.75rem;
 }
 
+.py-1\.5 {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+.px-1 {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.px-1\.5 {
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+}
+
 .pl-2 {
   padding-left: 0.5rem;
 }
@@ -996,6 +1039,10 @@ video {
 
 .align-middle {
   vertical-align: middle;
+}
+
+.align-bottom {
+  vertical-align: bottom;
 }
 
 .text-2xl {
@@ -1058,16 +1105,6 @@ video {
     margin-bottom: 0px;
   }
 
-  .xsm\:my-5 {
-    margin-top: 1.25rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .xsm\:my-5\% {
-    margin-top: 5%;
-    margin-bottom: 5%;
-  }
-
   .xsm\:mt-5 {
     margin-top: 1.25rem;
   }
@@ -1080,13 +1117,13 @@ video {
     width: 30%;
   }
 
+  .xsm\:w-47\.5\% {
+    width: 47.5%;
+  }
+
   .xsm\:w-fit {
     width: -moz-fit-content;
     width: fit-content;
-  }
-
-  .xsm\:w-47\.5\% {
-    width: 47.5%;
   }
 
   .xsm\:text-2xl {
