@@ -84,7 +84,48 @@ class Course(db.Model):
     unis = relationship('Uni', secondary=courses_table, back_populates='courses')
     def __repr__(self):
         return f"{self.name}"
-    
+
+
+class Student(db.Model):
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    ib_score= db.Column(db.Integer)
+    selected_uni_id = db.Column(db.Integer, db.ForeignKey('uni.id'), unique=True)
+    phone_number = db.Column(db.String(20), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+
+    selected_uni = db.relationship('Uni', backref=db.backref('students', lazy=True))
+
+
+    @validates('email')
+    def validate_email(self, key, email):
+        if not email.endswith('@cois.edu.in'):
+            raise ValueError("Please register with your COIS id!")
+        return email
+
+
+class Application(db.Model):
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('uni.id'))
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    minor_id = db.Column(db.Integer, db.ForeignKey('minor.id'))
+    approved = db.Column(db.String(20))  # Multiclass: waitlist, accepted, rejected
+    is_draft = db.Column(db.Boolean, default=True)
+
+    university = db.relationship('Uni', backref=db.backref('applications', lazy=True))
+    course = db.relationship('Course', backref=db.backref('applications', lazy=True))
+    location = db.relationship('Location', backref=db.backref('applications', lazy=True))
+    minor = db.relationship('Minor', backref=db.backref('applications', lazy=True))
+
+class Minor(db.Model):
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+
+    def __repr__(self):
+        return f"{self.name}"
+
 
 with app.app_context():
     db.create_all()
