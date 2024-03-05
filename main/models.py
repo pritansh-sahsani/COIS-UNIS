@@ -1,10 +1,9 @@
-
 from main.setup import app, db, login_manager
 from flask_login import UserMixin
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 
 @login_manager.user_loader
 def load_user(user_id):
