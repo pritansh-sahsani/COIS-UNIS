@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block main %}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    
+    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
+        <p>username: {{ student.username }}</p>
+        <p>fullname: {{ student.fullname }}</p>
+        <p>email: {{ student.email }}</p>
+        <p>added_at: {{ student.added_at }}</p>
+        <p>phone_number: {{ student.phone_number }}</p>
+        <p>myp score: {{ student_details.myp_score }}</p>
+        <p>dp predicted: {{ student_details.dp_predicted }}</p>
+        <p>dp score: {{ student_details.dp_score }}</p>
+        <p>diploma: {{ student_details.has_diploma }}</p>
+        <p>portfolio: {{ student_details.portfolio }}</p>
+    </div>
+
+{% endblock main %}

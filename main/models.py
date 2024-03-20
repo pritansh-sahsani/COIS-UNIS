@@ -3,7 +3,7 @@ from flask_login import UserMixin
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.orm import relationship
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -13,10 +13,13 @@ class User(db.Model, UserMixin):
     __searchable__ = ['username', 'email']
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(30), unique=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    fullname = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     added_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    phone_number = db.Column(db.String(13), nullable=False, unique=True)
+    is_student = db.Column(db.Boolean, nullable=False, default=False)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)
@@ -35,6 +38,22 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f"User('{self.username}')"
 
+class Student_details(db.Model):
+    id = db.Column(db.Integer, nullable=False, primary_key=True)
+    myp_score = db.Column(db.Integer)
+    dp_predicted = db.Column(db.Integer)
+    dp_score = db.Column(db.Integer)
+    has_diploma = db.Column(db.Boolean)
+    portfolio = db.Column(db.String(100))
+    
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', backref=db.backref('student_details', lazy=True))
+
+    selected_uni_id = db.Column(db.Integer, db.ForeignKey('uni.id'))
+    selected_uni = db.relationship('Uni', backref=db.backref('student_details', lazy=True))
+
+    def __repr__(self):
+        return f"{self.id}"
 
 locations_table = db.Table(
     'location_association',
@@ -44,8 +63,8 @@ locations_table = db.Table(
 
 courses_table = db.Table(
     'course_association',
-    db.Column('uni_id', db.ForeignKey('uni.id'), primary_key=True),
-    db.Column('course_id', db.ForeignKey('course.id'), primary_key=True),
+    db.Column('uni_id', db.ForeignKey('uni.id')),
+    db.Column('course_id', db.ForeignKey('course.id')),
 )
 
 class Uni(db.Model):
@@ -84,25 +103,6 @@ class Course(db.Model):
     def __repr__(self):
         return f"{self.name}"
 
-
-class Student(db.Model):
-    id = db.Column(db.Integer, nullable=False, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    ib_score= db.Column(db.Integer)
-    selected_uni_id = db.Column(db.Integer, db.ForeignKey('uni.id'), unique=True)
-    phone_number = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
-
-    selected_uni = db.relationship('Uni', backref=db.backref('students', lazy=True))
-
-    @validates('email')
-    def validate_email(self, key, email):
-        if not email.endswith('@cois.edu.in'):
-            raise ValueError("Please register with your COIS id!")
-        return email
-
-
 class Application(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('uni.id'))
@@ -111,7 +111,7 @@ class Application(db.Model):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     minor_id = db.Column(db.Integer, db.ForeignKey('minor.id'))
     approved = db.Column(db.String(20))  # Multiclass: waitlist, accepted, rejected
-    is_draft = db.Column(db.Boolean, default=True)
+    is_early = db.Column(db.Boolean, nullable=False)
 
     student = db.relationship('Student', backref=db.backref('applications', lazy=True))
     university = db.relationship('Uni', backref=db.backref('applications', lazy=True))

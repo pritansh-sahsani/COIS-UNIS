@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register Student
+{% endblock %}
+
+{% block main %}
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+    
+    function raise_error() {
+        {% for item in [form.username, form.fullname, form.email, form.password, form.confirm_password, form.phone_number, form.myp_score, form.dp_predicted, form.dp_score, form.has_diploma, form.portfolio] %}
+            {% if item.errors %} 
+                {% for error in item.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+    }
+    setInterval('raise_error()', 1);
+</script>
+
+    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
+        <p class="text-center text-lg xsm:text-4xl w-80% mt-5% mx-auto">Register Student</p>
+        <hr class="border-black w-80% mx-auto my-3% sm:my-2%" />
+        <form action='' method="POST" class="w-80% mx-auto">
+            <div class="w-100% grid col-span-1 justify-items-center">
+                {{ form.hidden_tag() }}
+                {{ form.username(class="        text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder="Name")}}
+                {{ form.fullname(class="        text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder="Full Name")}}
+                {{ form.email(class="           text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder="Email") }}
+                {{ form.phone_number(class="    text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder='Phone Number') }}
+                {{ form.password(class="        text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder="Password")}}
+                {{ form.confirm_password(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder="Confirm Password") }}
+                
+                {{ form.myp_score(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder='MYP-5 Score (out of 56)') }}
+                {{ form.dp_predicted(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder='DP predicted score (out of 45)') }}
+                {{ form.dp_score(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder='DP score (out of 45)') }}
+                {{ form.portfolio(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", placeholder='Link to portfolio (Optional)') }}
+                
+                <div class="mt-2%">
+                    <label class="switch m-0">
+                        {{ form.has_diploma(class="form-check-input", type="checkbox") }}
+                        <span class="slider round"></span>
+                    </label>
+                    <p class="inline-block relative bottom-1.5 960:bottom-1 text-lg 960:text-2xl">Opting for diploma</p>
+                </div>
+                {{ form.submit(class="btn btn-primary mt-2% w-100% sm:w-30% mb-5% text-base xsm:text-lg sm:text-2xl") }}
+            </div>
+        </form>
+    </div>
+            
+{% endblock main %}
