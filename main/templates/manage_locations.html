@@ -95,6 +95,14 @@
                 }
             });
         });
+        
+        $(function() {
+            $("#search-input").keypress(function (event) {
+                if (event.keyCode === 13) {
+                    $("#search_button").click();
+                }
+            });
+        });
     </script>
     
     <div class="mt-2">

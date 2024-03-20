@@ -1,10 +1,10 @@
 from main.forms import LoginForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, FilterForm
 from main.setup import app, db
 from main.models import User, Uni, Location, Course, Student_details
-from main.helper import sort_by_similarity
+from main.helper import sort_by_similarity, allow_access
 from main import bcrypt
 
-from flask import render_template, url_for, flash, redirect, request, abort
+from flask import render_template, url_for, flash, redirect, request
 from flask_login import current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
 import os
@@ -13,24 +13,7 @@ load_dotenv()
 
 HASHED_SUPER_USER_KEY = os.getenv('HASHED_SUPER_USER_KEY')
 
-def allow_access(level="All"):
-    if level != "All":
-        if not current_user.is_authenticated:
-            return render_template("/access_denied/not_signedin.html")
-        else:
-            if level == "SUPERUSER":
-                if current_user.username != "SUPERUSER":
-                    return render_template("/access_denied/superuser.html")
-            elif level == "admins":
-                if current_user.is_student:
-                    return render_template("/access_denied/admins.html")
-            elif level == "only_students":
-                if not current_user.is_student:
-                    return render_template("/access_denied/students.html")
-    return None
-
 @app.route("/", methods=["GET", "POST"])
-@app.route("/index", methods=["GET", "POST"])
 def index():
     keyword = request.args.get('keyword')
     unis = Uni.query.filter_by(is_draft=False).all()

@@ -106,14 +106,14 @@ class Course(db.Model):
 class Application(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('uni.id'))
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
+    student_id = db.Column(db.Integer, db.ForeignKey('student_details.id'))
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     minor_id = db.Column(db.Integer, db.ForeignKey('minor.id'))
     approved = db.Column(db.String(20))  # Multiclass: waitlist, accepted, rejected
     is_early = db.Column(db.Boolean, nullable=False)
 
-    student = db.relationship('Student', backref=db.backref('applications', lazy=True))
+    student = db.relationship('Student_details', backref=db.backref('applications', lazy=True))
     university = db.relationship('Uni', backref=db.backref('applications', lazy=True))
     course = db.relationship('Course', backref=db.backref('applications', lazy=True))
     location = db.relationship('Location', backref=db.backref('applications', lazy=True))
