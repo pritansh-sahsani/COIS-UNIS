@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Manage Users
+    Manage Students
 {% endblock %}
 
 {% block main %}
@@ -11,26 +11,26 @@
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 <script type=text/javascript>
-var user_len = 0;
-{% for user in users %}
-    user_len +=1;
+var student_len = 0;
+{% for student in students %}
+    student_len +=1;
 {% endfor %}
 
-    {% for user in users %}
+    {% for student in students %}
         $(function() {
-            $('#delete_user{{ user.id }}').on('click', function(e) {
+            $('#delete_student{{ student.id }}').on('click', function(e) {
                 e.preventDefault()
-                $.getJSON('{{ url_for("delete_user", user_id = user.id) }}',function(data) {});
-                $("#user{{ user.id }}").hide();
+                $.getJSON('{{ url_for("delete_student", student_id = student.id) }}',function(data) {});
+                $("#student{{ student.id }}").hide();
                 
                 $("#flash_text").text("{{ del_flash }}");
                 $("#flash_text_div").show();
                 
-                user_len = user_len-1;
-                if(user_len==0)
+                student_len = student_len-1;
+                if(student_len==0)
                 {
-                    $('#no_user').text("No Users Found");
-                    $("#no_user").toggle();
+                    $('#no_student').text("No Students Found");
+                    $("#no_student").toggle();
                 }
             });
         });
@@ -54,10 +54,10 @@ var user_len = 0;
         if(keyword == 'undefined'){keyword='';}
         $("#search-input").val(keyword).change();
         
-        if(user_len==0)
+        if(student_len==0)
             {
-                $('#no_user').text("No Users Found");
-                $("#no_user").toggle();
+                $('#no_student').text("No Students Found");
+                $("#no_student").toggle();
             }
     });
 
@@ -66,14 +66,14 @@ var user_len = 0;
             var sort = $("#sort").val();
             var sort_direction = $("#sort_direction").val();
             var keyword = $("#search-input").val();
-            window.location = "/manage_users?keyword="+keyword;
+            window.location = "/manage_students?keyword="+keyword;
         });
     });
     
     $(function() {
         var availableTags = [];
-        {% for user in users %}
-            p = "{{ user.fullname | safe }}"
+        {% for student in students %}
+            p = "{{ student.fullname | safe }}"
             availableTags.push(p);
         {% endfor %}
         $( "#search-input" ).autocomplete({
@@ -94,25 +94,25 @@ var user_len = 0;
 
 <center>
     <div>
-        <h3 id="no_user" class="hidden my-3 text-4xl"></h3>
-        {% for user in users %}
-            <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md" id="user{{ user.id }}">
+        <h3 id="no_student" class="hidden my-3 text-4xl"></h3>
+        {% for student in students %}
+            <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md" id="student{{ student.id }}">
                 <div class="m-2">
                     <p class="float-left"></p>
-                    <p class="float-right">{{ user.added_at.strftime("%d %B %Y") }}</p><br>
-                    <p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ user.fullname }} - {{ user.email }}</p>
+                    <p class="float-right">{{ student.added_at.strftime("%d %B %Y") }}</p><br>
+                    <a href="{{ url_for('student', student_name=student.username) }}"><p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ student.fullname }} - {{ student.email }}</p></a>
                     
-                    <a href="{{ url_for('edit_user', user_id=user.id) }}"><button class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button></a>
-                    <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_user{{ user.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                    <a href="{{ url_for('edit_student', student_id=student.id) }}"><button class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button></a>
+                    <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_student{{ student.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
                 </div>
             </div>
         {% endfor %}
     </div>
 </center>
 
-    <!-- add new user button -->
+    <!-- add new student button -->
 <div class="z-30 fixed bottom-5 right-5% bg-blue-600 w-15 h-15 rounded-2xl">
-    <a href="/admin_register">
+    <a href="/student_register">
         <img src="../static/assets/new_uni_button.svg">
     </a>
 </div>

@@ -1,18 +1,33 @@
-from main.forms import LoginForm, RegistrationForm, EditUserForm, AddUniversityForm, FilterForm
+from main.forms import LoginForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, FilterForm
 from main.setup import app, db
-from main.models import User, Uni, Location, Course
-from main.helper import sort_by_similarity, similarity_of_2_strings
+from main.models import User, Uni, Location, Course, Student_details
+from main.helper import sort_by_similarity
 from main import bcrypt
 
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
-from operator import attrgetter
 import os
 
 load_dotenv()
 
-SUPER_USER_KEY = os.getenv('SUPER_USER_KEY')
+HASHED_SUPER_USER_KEY = os.getenv('HASHED_SUPER_USER_KEY')
+
+def allow_access(level="All"):
+    if level != "All":
+        if not current_user.is_authenticated:
+            return render_template("/access_denied/not_signedin.html")
+        else:
+            if level == "SUPERUSER":
+                if current_user.username != "SUPERUSER":
+                    return render_template("/access_denied/superuser.html")
+            elif level == "admins":
+                if current_user.is_student:
+                    return render_template("/access_denied/admins.html")
+            elif level == "only_students":
+                if not current_user.is_student:
+                    return render_template("/access_denied/students.html")
+    return None
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/index", methods=["GET", "POST"])
@@ -59,6 +74,7 @@ def index():
 @app.route("/add_uni", methods=['GET', 'POST'])
 @login_required
 def add_uni():
+    if allow_access("admins") is not None: return allow_access("admins")
     courses=[]
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
@@ -128,6 +144,7 @@ def add_uni():
 @app.route("/manage_unis", methods=['GET', 'POST'])
 @login_required
 def manage_unis():
+    if allow_access("admins") is not None: return allow_access("admins")
     keyword = request.args.get('keyword')
     draft_unis_query = Uni.query.filter_by(is_draft=True).all()
     published_unis_query = Uni.query.filter_by(is_draft=False).all()
@@ -182,6 +199,7 @@ def manage_unis():
 @app.route("/manage_courses", methods=['GET', 'POST'])
 @login_required
 def manage_courses():
+    if allow_access("admins") is not None: return allow_access("admins")
     keyword = request.args.get('keyword')
     courses_query= Course.query.with_entities(Course.id, Course.name).all()
     
@@ -201,6 +219,7 @@ def manage_courses():
 @app.route('/delete_course/<int:course_id>', methods=['GET', 'POST'])
 @login_required
 def delete_course(course_id):
+    if allow_access("admins") is not None: return allow_access("admins")
     course = Course.query.filter_by(id = course_id).first_or_404()
     db.session.delete(course)
     db.session.commit()
@@ -209,8 +228,10 @@ def delete_course(course_id):
 @app.route('/edit_course/<int:course_id>/<string:course_name>', methods=['GET', 'POST'])
 @login_required
 def edit_course(course_id, course_name):
+    if allow_access("admins") is not None: return allow_access("admins")
     new_course = Course.query.filter_by(name = course_name).first()
     if new_course:
+        flash("A course with this name already exists.")
         return
     Course.query.filter_by(id = course_id).update(dict(name = course_name))
     db.session.commit()
@@ -219,6 +240,7 @@ def edit_course(course_id, course_name):
 @app.route("/manage_locations", methods=['GET', 'POST'])
 @login_required
 def manage_locations():
+    if allow_access("admins") is not None: return allow_access("admins")
     keyword = request.args.get('keyword')
     locations_query= Location.query.all()
     
@@ -238,6 +260,7 @@ def manage_locations():
 @app.route('/delete_location/<int:location_id>', methods=['GET', 'POST'])
 @login_required
 def delete_location(location_id):
+    if allow_access("admins") is not None: return allow_access("admins")
     location = Location.query.filter_by(id = location_id).first_or_404()
     db.session.delete(location)
     db.session.commit()
@@ -246,10 +269,7 @@ def delete_location(location_id):
 @app.route('/edit_location/<int:location_id>/<string:location_name>', methods=['GET', 'POST'])
 @login_required
 def edit_location(location_id, location_name):
-    new_location = Location.query.filter_by(exact_location = location_name).first()
-    if new_location:
-        return
-    
+    if allow_access("admins") is not None: return allow_access("admins")
     if ', ' in location_name:
         split = location_name.split(", ")
         city=split[0]
@@ -263,6 +283,10 @@ def edit_location(location_id, location_name):
         country="Unknown"
 
     exact_location = city+", "+country
+    new_location = Location.query.filter_by(exact_location = exact_location).first()
+    if new_location:
+        flash("A location with this name already exists.")
+        return
     Location.query.filter_by(id = location_id).update(dict(city = city, country = country, exact_location = exact_location))
     db.session.commit()
     return redirect(url_for('manage_locations'))
@@ -275,6 +299,7 @@ def uni(uni_name):
 @app.route('/delete_uni/<int:uni_id>', methods=['GET', 'POST'])
 @login_required
 def delete_uni(uni_id):
+    if allow_access("admins") is not None: return allow_access("admins")
     uni = Uni.query.filter_by(id = uni_id).first_or_404()
 
     courses = uni.courses
@@ -295,6 +320,7 @@ def delete_uni(uni_id):
 @app.route('/edit_uni/<string:uni_name>', methods=['GET', 'POST'])
 @login_required
 def edit_uni(uni_name):
+    if allow_access("admins") is not None: return allow_access("admins")
     old_uni = Uni.query.filter_by(name = uni_name).first_or_404()
 
     courses = []
@@ -311,6 +337,11 @@ def edit_uni(uni_name):
     form = AddUniversityForm(obj=old_uni, formdata = request.form, courses=courses, locations=locations)
 
     if form.validate_on_submit():
+        new_uni = Uni.query.filter_by(name=form.name.data).first()
+        if new_uni:
+            flash("A university with this name already exists.")
+            return render_template("edit_uni.html", form=form, old_uni=old_uni)
+        
         if not form.website.data or not form.ib_cutoff.data or not form.requirements.data or len(form.courses.data) == 0 or len(form.location.data) == 0:
             is_draft = True
         else:
@@ -364,6 +395,7 @@ def edit_uni(uni_name):
 @app.route('/add_course/<string:name>')
 @login_required
 def add_course(name):
+    if allow_access("admins") is not None: return allow_access("admins")
     existing = Course.query.filter_by(name = name).first()
     if not existing:
         course = Course(name = name)
@@ -374,6 +406,7 @@ def add_course(name):
 @app.route('/add_location/<string:name>')
 @login_required
 def add_location(name):
+    if allow_access("admins") is not None: return allow_access("admins")
     if ', ' in name:
         name = name.split(", ")
         city=name[0]
@@ -396,9 +429,7 @@ def add_location(name):
 @app.route("/manage_users", methods=["GET", "POST"])
 @login_required
 def manage_users():
-    if current_user.username != "SUPERUSER":
-        return render_template("403.html")
-    
+    if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     keyword = request.args.get('keyword')
     user_query = User.query.all()
     users = []
@@ -418,30 +449,44 @@ def manage_users():
 @app.route('/delete_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def delete_user(user_id):
+    if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     user = User.query.filter_by(id = user_id).first_or_404()
     db.session.delete(user)
     db.session.commit()
-    return redirect(url_for('view_users'))
+    return redirect(url_for('manage_users'))
 
 @app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
 def edit_user(user_id):
+    if current_user.is_authenticated:
+        if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     old_user = User.query.filter_by(id = user_id).first_or_404()
-    form = EditUserForm(formdata = request.form)
+    form = EditAdminForm(formdata = request.form)
 
     if form.validate_on_submit():
-        if form.super_user_key.data != SUPER_USER_KEY:
-            flash('Incorrect Super User Key.', 'danger')
+        new_user = User.query.filter_by(username = form.username.data).first()
+        if new_user:
+            flash("A user with this name already exists.")
+            return render_template('edit_user.html', form=form, old_user=old_user)
+        new_user = User.query.filter_by(email = form.email.data).first()
+        if new_user:
+            flash("This email is already registered.")
+            return render_template('edit_user.html', form=form, old_user=old_user)
+        new_user = User.query.filter_by(phone_number = form.phone_number.data).first()
+        if new_user:
+            flash("This phone number is already registered.")
+            return render_template('edit_user.html', form=form, old_user=old_user)
+        
+        User.query.filter_by(id=old_user.id).update(dict(email=form.email.data, username=form.username.data))
 
-        else:
-            User.query.filter_by(id=old_user.id).update(dict(email=form.email.data, username=form.username.data))
+        if form.password.data !="":
+            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+            User.query.filter_by(id=old_user.id).update(dict(password=hashed_password))
+    
+        db.session.commit()
 
-            if form.password.data !="":
-                hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-                User.query.filter_by(id=old_user.id).update(dict(password=hashed_password))
-            db.session.commit()
-
-            flash(f'User data updated successfully!', 'success')
-            return redirect(url_for('manage_users'))
+        flash(f'User data updated successfully!', 'success')
+        return redirect(url_for('manage_users'))
 
     return render_template('edit_user.html', form=form, old_user=old_user)
 
@@ -474,27 +519,137 @@ def logout():
     flash("Logged Out Successfully!")
     return redirect(url_for('index'))
 
-
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    form = RegistrationForm(formdata = request.form)
+@app.route("/admin_register", methods=['GET', 'POST'])
+@login_required
+def admin_register():
+    if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
+    form = AdminRegistrationForm(formdata = request.form)
 
     if form.validate_on_submit():
-        if form.super_user_key.data != SUPER_USER_KEY:
-            flash('Incorrect Super User Key.', 'danger')
-        else:
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(username=form.username.data,
+                    fullname=form.fullname.data,
+                    email=form.email.data,
+                    phone_number = form.phone_number.data,
+                    password=hashed_password)
+
+        db.session.add(user)
+        db.session.commit()
+
+        flash(f'Your account has been created! You are now able to log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('admin_register.html', form=form)
+
+@app.route("/student_register", methods=['GET', 'POST'])
+def student_register():
+    form = StudentRegistrationForm(formdata = request.form)
+
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        user = User(username=form.username.data,
+                    fullname=form.fullname.data,
+                    email=form.email.data,
+                    phone_number = form.phone_number.data,
+                    password=hashed_password,
+                    is_student=True)
+        db.session.add(user)
+        db.session.commit()
+
+        user = User.query.filter_by(username = form.username.data).with_entities(User.id).first()
+        student_details = Student_details(myp_score = form.myp_score.data,
+                                          dp_predicted = form.dp_predicted.data, 
+                                          dp_score = form.dp_score.data, 
+                                          has_diploma = form.has_diploma.data, 
+                                          portfolio = form.portfolio.data,
+                                          user_id = user.id)
+        db.session.add(student_details)
+        db.session.commit()
+
+        flash(f'Your account has been created! You are now able to log in.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('student_register.html', form=form)
+
+@app.route("/manage_students")
+def manage_students():
+    if allow_access("admins") is not None: return allow_access("admins")
+    students = User.query.filter_by(is_student = True).all()
+    student_details = []
+    for student in students:
+        student_details.append(Student_details.query.filter_by(user_id = student.id).first())
+    return render_template('manage_students.html', students = students, student_details = student_details)
+
+@app.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+def delete_student(student_id):
+    if current_user.id != student_id:
+        if allow_access("admins") is not None: return allow_access("admins")
+
+    student = User.query.filter_by(id = student_id).first_or_404()
+    db.session.delete(student.student_details)
+    db.session.delete(student)
+    db.session.commit()
+    return redirect(url_for('manage_students'))
+
+@app.route('/edit_student/<int:student_id>', methods=['GET', 'POST'])
+@login_required
+def edit_student(student_id):
+    if current_user.id != student_id:
+        if allow_access("admins") is not None: return allow_access("admins")
+
+    old_student = User.query.filter_by(id = student_id).first_or_404()
+    old_student_details = Student_details.query.filter_by(user_id = old_student.id).first_or_404()
+    form = EditStudentForm(formdata = request.form)
+
+    if form.validate_on_submit():
+        new_student = User.query.filter_by(username = form.username.data).first()
+        if new_student:
+            flash("A student with this name already exists.")
+            return render_template('edit_student.html', form=form, old_student=old_student)
+        new_student = User.query.filter_by(email = form.email.data).first()
+        if new_student:
+            flash("This email is already registered.")
+            return render_template('edit_student.html', form=form, old_student=old_student)
+        new_student = User.query.filter_by(phone_number = form.phone_number.data).first()
+        if new_student:
+            flash("This phone number is already registered.")
+            return render_template('edit_student.html', form=form, old_student=old_student)
+        
+        User.query.filter_by(id=old_student.id).update(dict(email=form.email.data, 
+                                                            username=form.username.data,
+                                                            phone_number=form.phone_number.data,
+                                                            fullname = form.fullname.data))
+        
+        Student_details.query.filter_by(user_id = old_student.id).update(dict(
+            myp_score = form.myp_score.data,
+            dp_predicted = form.dp_predicted.data,
+            dp_score = form.dp_score.data,
+            has_diploma = form.has_diploma.data,
+            portfolio = form.portfolio.data,
+        ))
+
+        if form.password.data !="":
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-            user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+            User.query.filter_by(id=old_student.id).update(dict(password=hashed_password))
+    
+        db.session.commit()
 
-            db.session.add(user)
-            db.session.commit()
+        flash(f'Student data updated successfully!', 'success')
+        return redirect(url_for('manage_students'))
 
-            flash(f'Your account has been created! You are now able to log in.', 'success')
-            return redirect(url_for('login'))
+    return render_template('edit_student.html', form=form, old_student=old_student, old_student_details=old_student_details)
 
-    return render_template('register.html', form=form)
+
+@app.route('/student/<string:student_name>', methods=['GET', 'POST'])
+@login_required
+def student(student_name):
+    if current_user.username != student_name:
+        if allow_access("admins") is not None: return allow_access("admins")
+    student = User.query.filter_by(username = student_name).first_or_404()
+    student_details = Student_details.query.filter_by(user_id = student.id).first_or_404()
+    return render_template("student.html", student=student, student_details=student_details)
+
 
 @app.errorhandler(404)
 def page_not_found(e):

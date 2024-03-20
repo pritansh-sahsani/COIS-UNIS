@@ -1,0 +1,22 @@
+Pending tasks
+
+responsive design
+
+testing
+
+applying and registering data of students:
+edit student page
+edit admin page
+
+edit admin, edit uni, edit student need crosscheck for unique
+
+crosschecking (for mvp):
+routes
+templates
+
+**Use this code in filters and searches to submit on enter button click**
+        $("#pass").keypress(function (event) {
+            if (event.keyCode === 13) {
+                $("#GFG_Button").click();
+            }
+        });
