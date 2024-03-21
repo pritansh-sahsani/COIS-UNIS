@@ -214,8 +214,9 @@ def edit_course(course_id, course_name):
     if allow_access("admins") is not None: return allow_access("admins")
     new_course = Course.query.filter_by(name = course_name).first()
     if new_course:
-        flash("A course with this name already exists.")
-        return
+        if new_course.id != course_id:
+            flash("A course with this name already exists.")
+            return
     Course.query.filter_by(id = course_id).update(dict(name = course_name))
     db.session.commit()
     return redirect(url_for('manage_courses'))
@@ -268,8 +269,9 @@ def edit_location(location_id, location_name):
     exact_location = city+", "+country
     new_location = Location.query.filter_by(exact_location = exact_location).first()
     if new_location:
-        flash("A location with this name already exists.")
-        return
+        if new_location.id != location_id:
+            flash("A location with this name already exists.")
+            return
     Location.query.filter_by(id = location_id).update(dict(city = city, country = country, exact_location = exact_location))
     db.session.commit()
     return redirect(url_for('manage_locations'))
@@ -322,8 +324,9 @@ def edit_uni(uni_name):
     if form.validate_on_submit():
         new_uni = Uni.query.filter_by(name=form.name.data).first()
         if new_uni:
-            flash("A university with this name already exists.")
-            return render_template("edit_uni.html", form=form, old_uni=old_uni)
+            if new_uni.id != old_uni.id:
+                flash("A university with this name already exists.")
+                return render_template("edit_uni.html", form=form, old_uni=old_uni)
         
         if not form.website.data or not form.ib_cutoff.data or not form.requirements.data or len(form.courses.data) == 0 or len(form.location.data) == 0:
             is_draft = True
@@ -449,16 +452,19 @@ def edit_user(user_id):
     if form.validate_on_submit():
         new_user = User.query.filter_by(username = form.username.data).first()
         if new_user:
-            flash("A user with this name already exists.")
-            return render_template('edit_user.html', form=form, old_user=old_user)
+            if new_user.id != user_id:
+                flash("A user with this name already exists.")
+                return render_template('edit_user.html', form=form, old_user=old_user)
         new_user = User.query.filter_by(email = form.email.data).first()
         if new_user:
-            flash("This email is already registered.")
-            return render_template('edit_user.html', form=form, old_user=old_user)
+            if new_user.id != user_id:
+                flash("This email is already registered.")
+                return render_template('edit_user.html', form=form, old_user=old_user)
         new_user = User.query.filter_by(phone_number = form.phone_number.data).first()
         if new_user:
-            flash("This phone number is already registered.")
-            return render_template('edit_user.html', form=form, old_user=old_user)
+            if new_user.id != user_id:
+                flash("This phone number is already registered.")
+                return render_template('edit_user.html', form=form, old_user=old_user)
         
         User.query.filter_by(id=old_user.id).update(dict(email=form.email.data, username=form.username.data))
 
@@ -588,16 +594,19 @@ def edit_student(student_id):
     if form.validate_on_submit():
         new_student = User.query.filter_by(username = form.username.data).first()
         if new_student:
-            flash("A student with this name already exists.")
-            return render_template('edit_student.html', form=form, old_student=old_student)
+            if new_student.id != student_id:
+                flash("A student with this name already exists.")
+                return render_template('edit_student.html', form=form, old_student=old_student)
         new_student = User.query.filter_by(email = form.email.data).first()
         if new_student:
-            flash("This email is already registered.")
-            return render_template('edit_student.html', form=form, old_student=old_student)
+            if new_student.id != student_id:
+                flash("This email is already registered.")
+                return render_template('edit_student.html', form=form, old_student=old_student)
         new_student = User.query.filter_by(phone_number = form.phone_number.data).first()
         if new_student:
-            flash("This phone number is already registered.")
-            return render_template('edit_student.html', form=form, old_student=old_student)
+            if new_student.id != student_id:
+                flash("This phone number is already registered.")
+                return render_template('edit_student.html', form=form, old_student=old_student)
         
         User.query.filter_by(id=old_student.id).update(dict(email=form.email.data, 
                                                             username=form.username.data,
@@ -633,6 +642,10 @@ def student(student_name):
     student_details = Student_details.query.filter_by(user_id = student.id).first_or_404()
     return render_template("student.html", student=student, student_details=student_details)
 
+@app.route('/add_application', methods=['GET', 'POST'])
+@login_required
+def add_application():
+    return
 
 @app.errorhandler(404)
 def page_not_found(e):
