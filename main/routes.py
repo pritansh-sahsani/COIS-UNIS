@@ -492,7 +492,9 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
 
-            if user.username != "SUPERUSER":
+            if user.is_student:
+                return redirect(next_page) if next_page else redirect(url_for('index'))
+            elif user.username != "SUPERUSER":
                 return redirect(next_page) if next_page else redirect(url_for('manage_unis'))
             else:
                 return redirect(next_page) if next_page else redirect(url_for('manage_users'))
@@ -532,6 +534,9 @@ def admin_register():
 
 @app.route("/student_register", methods=['GET', 'POST'])
 def student_register():
+    if current_user.is_authenticated:
+        if allow_access("admins") is not None: return allow_access("admins")
+
     form = StudentRegistrationForm(formdata = request.form)
 
     if form.validate_on_submit():
