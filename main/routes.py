@@ -420,7 +420,7 @@ def manage_users():
     user_query = User.query.all()
     users = []
     for user in user_query:
-        if user.username != "SUPERUSER":
+        if user.username != "SUPERUSER" and user.is_student == False:
             users.append(user)
 
     if keyword is not None and keyword!='':
@@ -441,43 +441,43 @@ def delete_user(user_id):
     db.session.commit()
     return redirect(url_for('manage_users'))
 
-@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@app.route('/edit_admin/<int:admin_id>', methods=['GET', 'POST'])
 @login_required
-def edit_user(user_id):
+def edit_admin(admin_id):
     if current_user.is_authenticated:
         if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
-    old_user = User.query.filter_by(id = user_id).first_or_404()
+    old_admin = User.query.filter_by(id = admin_id).first_or_404()
     form = EditAdminForm(formdata = request.form)
 
     if form.validate_on_submit():
-        new_user = User.query.filter_by(username = form.username.data).first()
-        if new_user:
-            if new_user.id != user_id:
-                flash("A user with this name already exists.")
-                return render_template('edit_user.html', form=form, old_user=old_user)
-        new_user = User.query.filter_by(email = form.email.data).first()
-        if new_user:
-            if new_user.id != user_id:
+        new_admin = User.query.filter_by(username = form.username.data).first()
+        if new_admin:
+            if new_admin.id != admin_id:
+                flash("An admin with this name already exists.")
+                return render_template('edit_admin.html', form=form, old_admin=old_admin)
+        new_admin = User.query.filter_by(email = form.email.data).first()
+        if new_admin:
+            if new_admin.id != admin_id:
                 flash("This email is already registered.")
-                return render_template('edit_user.html', form=form, old_user=old_user)
-        new_user = User.query.filter_by(phone_number = form.phone_number.data).first()
-        if new_user:
-            if new_user.id != user_id:
+                return render_template('edit_admin.html', form=form, old_admin=old_admin)
+        new_admin = User.query.filter_by(phone_number = form.phone_number.data).first()
+        if new_admin:
+            if new_admin.id != admin_id:
                 flash("This phone number is already registered.")
-                return render_template('edit_user.html', form=form, old_user=old_user)
+                return render_template('edit_admin.html', form=form, old_admin=old_admin)
         
-        User.query.filter_by(id=old_user.id).update(dict(email=form.email.data, username=form.username.data))
+        User.query.filter_by(id=old_admin.id).update(dict(email=form.email.data, username=form.username.data))
 
         if form.password.data !="":
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-            User.query.filter_by(id=old_user.id).update(dict(password=hashed_password))
+            User.query.filter_by(id=old_admin.id).update(dict(password=hashed_password))
     
         db.session.commit()
 
-        flash(f'User data updated successfully!', 'success')
+        flash(f'Admin data updated successfully!', 'success')
         return redirect(url_for('manage_users'))
 
-    return render_template('edit_user.html', form=form, old_user=old_user)
+    return render_template('edit_admin.html', form=form, old_admin=old_admin)
 
 
 @app.route("/login", methods=["GET", "POST"])

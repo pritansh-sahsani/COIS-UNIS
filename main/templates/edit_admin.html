@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register Student
+{% endblock %}
+
+{% block main %}
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type=text/javascript>
+    
+    function raise_error() {
+        {% for item in [form.username, form.fullname, form.email, form.password, form.confirm_password, form.phone_number] %}
+            {% if item.errors %} 
+                {% for error in item.errors %}
+                    $("#flash_text").text("{{error}}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+    }
+    setInterval('raise_error()', 1);
+</script>
+
+    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
+        <p class="text-center text-lg xsm:text-4xl w-80% mt-5% mx-auto">Edit Admin {{old_admin.fullname}}</p>
+        <hr class="border-black w-80% mx-auto my-3% sm:my-2%" />
+        <form action='' method="POST" class="w-80% mx-auto">
+            <div class="w-100% grid col-span-1 justify-items-center">
+                {{ form.hidden_tag() }}
+                {{ form.username(class="        text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_admin.username, placeholder="Name")}}
+                {{ form.fullname(class="        text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_admin.fullname, placeholder="Full Name")}}
+                {{ form.email(class="           text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_admin.email, placeholder="Email") }}
+                {{ form.phone_number(class="    text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_admin.phone_number, placeholder='Phone Number') }}
+                {{ form.password(class="        text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_admin.password, placeholder="Password")}}
+                {{ form.confirm_password(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_admin.confirm_password, placeholder="Confirm Password") }}
+
+                {{ form.submit(class="btn btn-primary mt-2% w-100% sm:w-30% mb-5% text-base xsm:text-lg sm:text-2xl") }}
+            </div>
+        </form>
+    </div>
+            
+{% endblock main %}
