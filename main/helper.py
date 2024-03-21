@@ -1,4 +1,22 @@
- 
+from flask import render_template
+from flask_login import current_user
+
+def allow_access(level="All"):
+    if level != "All":
+        if not current_user.is_authenticated:
+            return render_template("/access_denied/not_signedin.html")
+        else:
+            if level == "SUPERUSER":
+                if current_user.username != "SUPERUSER":
+                    return render_template("/access_denied/superuser.html")
+            elif level == "admins":
+                if current_user.is_student:
+                    return render_template("/access_denied/admins.html")
+            elif level == "only_students":
+                if not current_user.is_student:
+                    return render_template("/access_denied/students.html")
+    return None
+
 def sort_by_similarity(arr, string, column):
     similarities=[]
     for item in arr:

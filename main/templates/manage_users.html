@@ -83,6 +83,14 @@ var user_len = 0;
             }
         });
     });
+    
+    $(function() {
+        $("#search-input").keypress(function (event) {
+            if (event.keyCode === 13) {
+                $("#search_button").click();
+            }
+        });
+    });
 </script>
 
 <div id="search-div" class="w-100% md:w-80% 880:w-47.5% mx-auto mt-5 border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
