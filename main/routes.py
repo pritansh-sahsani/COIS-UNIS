@@ -572,7 +572,10 @@ def manage_students():
     student_details = []
     for student in students:
         student_details.append(Student_details.query.filter_by(user_id = student.id).first())
-    return render_template('manage_students.html', students = students, student_details = student_details)
+    
+    del_flash = "Student Deleted successfully!"
+
+    return render_template('manage_students.html', students = students, student_details = student_details, del_flash=del_flash)
 
 @app.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
@@ -580,10 +583,15 @@ def delete_student(student_id):
     if current_user.id != student_id:
         if allow_access("admins") is not None: return allow_access("admins")
 
-    student = User.query.filter_by(id = student_id).first_or_404()
-    db.session.delete(student.student_details)
+    student = User.query.get_or_404(student_id)
+    
+    student_details = Student_details.query.filter_by(user_id=student_id).all()
+    for detail in student_details:
+        db.session.delete(detail)
+
     db.session.delete(student)
     db.session.commit()
+
     return redirect(url_for('manage_students'))
 
 @app.route('/edit_student/<int:student_id>', methods=['GET', 'POST'])

@@ -56,7 +56,7 @@ class AdminRegistrationForm(FlaskForm):
         if user:
             raise ValidationError('That username is already taken. Please choose a different username.')
         pattern = r'[!@#$%^&*()_+={}\[\]:;"\'|,.<>?\\\/~`\s]'
-        if re.search(pattern, username):
+        if re.search(pattern, username.data):
             return ValidationError('User name should not contain spaces or special characters.')
     
     def validate_phone_number(self, phone_number):
@@ -86,7 +86,7 @@ class EditAdminForm(FlaskForm):
 
     def validate_username(self, username):
         pattern = r'[!@#$%^&*()_+={}\[\]:;"\'|,.<>?\\\/~`\s]'
-        if re.search(pattern, username):
+        if re.search(pattern, username.data):
             return ValidationError('User name should not contain spaces or special characters.')
         
     def validate_email(self, email):

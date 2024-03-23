@@ -17,24 +17,24 @@ var student_len = 0;
 {% endfor %}
 
     {% for student in students %}
-        $(function() {
-            $('#delete_student{{ student.id }}').on('click', function(e) {
-                e.preventDefault()
-                $.getJSON('{{ url_for("delete_student", student_id = student.id) }}',function(data) {});
-                $("#student{{ student.id }}").hide();
-                
-                $("#flash_text").text("{{ del_flash }}");
-                $("#flash_text_div").show();
-                
-                student_len = student_len-1;
-                if(student_len==0)
-                {
-                    $('#no_student').text("No Students Found");
-                    $("#no_student").toggle();
-                }
+            $(function() {
+                $('#delete_student{{ student.id }}').on('click', function(e) {
+                    e.preventDefault()
+                    $.getJSON('{{ url_for("delete_student", student_id = student.id) }}',function(data) {});
+                    $("#student{{ student.id }}").hide();
+                    
+                    $("#flash_text").text("{{ del_flash }}");
+                    $("#flash_text_div").show();
+                    
+                    student_len = student_len-1;
+                    if(student_len==0)
+                    {
+                        $('#no_student').text("No Students Found");
+                        $("#no_student").toggle();
+                    }
+                });
             });
-        });
-    {% endfor %}
+        {% endfor %}
 
     function getUrlVars(){
         var vars = [], hash;
