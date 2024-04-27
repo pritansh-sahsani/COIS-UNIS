@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectMultipleField, TextAreaField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectMultipleField, TextAreaField, SelectField
 from wtforms.validators import EqualTo, Email, Length, ValidationError
 from flask_wtf.file import FileAllowed, FileField
 import re
@@ -7,6 +7,30 @@ import re
 from main.models import User, Uni
 
 min_max_error_message = """{field} Length Must Be Between {min} and {max} characters!"""
+
+def v_dp_score(dp_score):
+    if dp_score.data != "":
+        if dp_score.data.isdigit():
+            if not (int(dp_score.data) > 0 and int(dp_score.data) <= 45):
+                raise ValidationError('Please enver a valid DP score (between 0 and 45).')
+        else:
+            raise ValidationError('Please enter a valid DP score.')
+        
+def v_dp_pred(dp_predicted):
+    if dp_predicted.data != "":    
+        if dp_predicted.data.isdigit():
+            if not (int(dp_predicted.data) > 0 and int(dp_predicted.data) <= 45):
+                raise ValidationError('Please enver a valid DP predicted (between 0 and 45).')
+        else:
+            raise ValidationError('Please enter a valid DP predicted.')
+
+def v_myp_score(myp_score):
+    if myp_score.data != "":
+        if myp_score.data.isdigit():
+            if not (int(myp_score.data) > 0 and int(myp_score.data) <= 56 ):
+                raise ValidationError('Please enver a valid MYP-5 score (between 0 and 56).')
+        else:
+            raise ValidationError('Please enter a valid MYP-5 score.')
 
 class AddUniversityForm(FlaskForm):
     name = StringField('University Name', validators=[Length(min=1, max=100, message=min_max_error_message.format(field='University Name', min='%(min)d', max='%(max)d'))])
@@ -20,11 +44,6 @@ class AddUniversityForm(FlaskForm):
     
     save_draft = SubmitField('Save As Draft')
     submit = SubmitField('Add University')
-
-    def validate_name(self, name):
-        uni = Uni.query.filter_by(name=name.data).first()
-        if uni:
-            raise ValidationError('A university with that name has already been added.')
 
     def __init__(self, formdata=None, **kwargs):
         super(AddUniversityForm, self).__init__(formdata=formdata, **kwargs)
@@ -105,6 +124,7 @@ class StudentRegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
     phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
 
+    graduation_year = StringField("Graduatation Year", validators=[Length(min=4, max=4, message="Please enter a valid graduation year.")])
     myp_score = StringField('MYP-5 Score (out of 56)')
     dp_predicted = StringField('DP predicted score (out of 45)')
     dp_score = StringField('DP score (out of 45)')
@@ -114,28 +134,13 @@ class StudentRegistrationForm(FlaskForm):
     submit = SubmitField('Sign Up')
 
     def validate_dp_predicted(self, dp_predicted):
-        if dp_predicted.data != "":    
-            if dp_predicted.data.isdigit():
-                if not (int(dp_predicted.data) > 0 and int(dp_predicted.data) <= 45):
-                    raise ValidationError('Please enver a valid DP predicted (between 0 and 45).')
-            else:
-                raise ValidationError('Please enter a valid DP predicted.')
+        v_dp_pred(dp_predicted)
             
     def validate_dp_score(self, dp_score):
-        if dp_score.data != "":
-            if dp_score.data.isdigit():
-                if not (int(dp_score.data) > 0 and int(dp_score.data) <= 45):
-                    raise ValidationError('Please enver a valid DP score (between 0 and 45).')
-            else:
-                raise ValidationError('Please enter a valid DP score.')
+        v_dp_score(dp_score)
 
     def validate_myp_score(self, myp_score):
-        if myp_score.data != "":
-            if myp_score.data.isdigit():
-                if not (int(myp_score.data) > 0 and int(myp_score.data) <= 56 ):
-                    raise ValidationError('Please enver a valid MYP-5 score (between 0 and 56).')
-            else:
-                raise ValidationError('Please enter a valid MYP-5 score.')
+        v_myp_score(myp_score)
 
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
@@ -153,7 +158,15 @@ class StudentRegistrationForm(FlaskForm):
             raise ValidationError('That email is already registered. Please register using a different email address.')
         if not email.data.endswith("@cois.edu.in"):
             raise ValidationError('Please register with your COIS email id.')
-
+        
+    def validate_graduation_year(self, graduation_year):
+        if graduation_year.data !="":
+            if graduation_year.data.isdigit():
+                if int(graduation_year.data) < 2010 or int(graduation_year.data) > 2037:
+                    raise ValidationError('Please enter a valid graduation year.')
+            else:
+                raise ValidationError('Please enter a valid graduation year.')
+    
     def __init__(self, formdata=None, **kwargs):
         super(StudentRegistrationForm, self).__init__(formdata=formdata, **kwargs)
 
@@ -162,10 +175,11 @@ class EditStudentForm(FlaskForm):
     username = StringField('Username', validators=[Length(min=1, max=50, message=min_max_error_message.format(field='Username', min='%(min)d', max='%(max)d'))])
     fullname = StringField('Full Name', validators=[Length(min=1, max=50, message=min_max_error_message.format(field='Full name', min='%(min)d', max='%(max)d'))])
     email = StringField('Email', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Email', min='%(min)d', max='%(max)d')), Email()])
-    password = PasswordField('Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
-    confirm_password = PasswordField('Confirm Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
+    password = PasswordField('Password', validators=[Length(max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
+    confirm_password = PasswordField('Confirm Password', validators=[Length(max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
     phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
 
+    graduation_year = StringField("Graduatation Year", validators=[Length(min=4, max=4, message="Please enter a valid graduation year.")])
     myp_score = StringField('MYP-5 Score (out of 56)')
     dp_predicted = StringField('DP predicted score (out of 45)')
     dp_score = StringField('DP score (out of 45)')
@@ -175,35 +189,48 @@ class EditStudentForm(FlaskForm):
     submit = SubmitField('Confirm Changes')
 
     def validate_dp_predicted(self, dp_predicted):
-        if dp_predicted.data != "":    
-            if dp_predicted.data.isdigit():
-                if not (int(dp_predicted.data) > 0 and int(dp_predicted.data) <= 45):
-                    raise ValidationError('Please enver a valid DP predicted (between 0 and 45).')
-            else:
-                raise ValidationError('Please enter a valid DP predicted.')
+        v_dp_pred(dp_predicted)
             
     def validate_dp_score(self, dp_score):
-        if dp_score.data != "":
-            if dp_score.data.isdigit():
-                if not (int(dp_score.data) > 0 and int(dp_score.data) <= 45):
-                    raise ValidationError('Please enver a valid DP score (between 0 and 45).')
-            else:
-                raise ValidationError('Please enter a valid DP score.')
+        v_dp_score(dp_score)
 
     def validate_myp_score(self, myp_score):
-        if myp_score.data != "":
-            if myp_score.data.isdigit():
-                if not (int(myp_score.data) > 0 and int(myp_score.data) <= 56 ):
-                    raise ValidationError('Please enver a valid MYP-5 score (between 0 and 56).')
-            else:
-                raise ValidationError('Please enter a valid MYP-5 score.')
+        v_myp_score(myp_score)
 
     def validate_email(self, email):
         if not email.data.endswith("@cois.edu.in"):
             raise ValidationError('Please register with your COIS email id.')
 
+    def validate_graduation_year(self, graduation_year):
+        if graduation_year.data !="":
+            if graduation_year.data.isdigit():
+                if int(graduation_year.data) < 2010 or int(graduation_year.data) > 2037:
+                    raise ValidationError('Please enter a valid graduation year.')
+            else:
+                raise ValidationError('Please enter a valid graduation year.')
+    
     def __init__(self, formdata=None, **kwargs):
         super(EditStudentForm, self).__init__(formdata=formdata, **kwargs)
+
+
+class ApplicationForm(FlaskForm):
+    uni = SelectField('University', choices=[])
+    course = SelectField('Course', choices=[])
+    location = SelectField('Location', choices=[])
+    minors = SelectMultipleField('Minors, if any', choices=[])
+    status = SelectField('Application status (if recieved)', choices=['waitlist', 'accepted', 'rejected'])
+    is_early = BooleanField('Early Application')
+    scholarship = StringField('Scholarship if recieved any')
+    selected_uni = BooleanField('Is this the university you have taken admission in?')
+    other_details = TextAreaField('Other details that you feel would be useful for other students to know.')
+    submit = SubmitField('Submit')
+
+    def __init__(self, formdata=None, **kwargs):
+        super(ApplicationForm, self).__init__(formdata=formdata, **kwargs)
+        self.course.choices = kwargs['courses']
+        self.location.choices = kwargs['locations']
+        self.minors.choices = kwargs['minors']
+        self.uni.choices = kwargs['unis']
 
 
 class FilterForm(FlaskForm):
@@ -219,3 +246,42 @@ class FilterForm(FlaskForm):
         super(FilterForm, self).__init__(formdata=formdata, **kwargs)
         self.courses.choices = kwargs['courses']
         self.location.choices = kwargs['locations']
+
+        
+class FilterStudentsForm(FlaskForm):
+    graduation_year = StringField("Graduatation Year", validators=[Length(max=4, message="Please enter a valid graduation year.")])
+    myp_score_min = StringField('Minimum MYP-5 Score (out of 56)')
+    myp_score_max = StringField('Maximum MYP-5 Score (out of 56)')
+    dp_predicted_min = StringField('Minimum DP predicted')
+    dp_predicted_max = StringField('Maximum DP predicted')
+    dp_score_min = StringField('Minimum DP score')
+    dp_score_max = StringField('Maximum DP score')
+    has_diploma = BooleanField('Diploma Certificate')
+
+    uni = SelectField('University', choices=[])
+    course = SelectField('Course', choices=[])
+    location = SelectField('Location', choices=[])
+    status = SelectField('Application status', choices=['none', 'waitlist', 'accepted', 'rejected'])
+    is_early = BooleanField('Early Application')
+    selected_uni = BooleanField('Took admission')
+
+    submit = SubmitField('Apply Filter')
+    clear = SubmitField('Clear Filters')
+
+    def validate_graduation_year(self, graduation_year):
+        if graduation_year.data !="" and graduation_year.data is not None:
+            if not graduation_year.data.isdigit():
+                raise ValidationError('Please enter a valid graduation year.')
+    
+    def validate_myp_score_min(self, myp_score_min):v_myp_score(myp_score_min)
+    def validate_myp_score_max(self, myp_score_max):v_myp_score(myp_score_max)
+    def validate_dp_score_min(self, dp_score_min):v_dp_score(dp_score_min)
+    def validate_dp_score_max(self, dp_score_max):v_dp_score(dp_score_max)
+    def validate_dp_predicted_min(self, dp_predicted_min):v_dp_pred(dp_predicted_min)
+    def validate_dp_predicted_max(self, dp_predicted_max):v_dp_pred(dp_predicted_max)
+    
+    def __init__(self, formdata=None, **kwargs):
+        super(FilterStudentsForm, self).__init__(formdata=formdata, **kwargs)
+        self.course.choices = kwargs['courses']
+        self.location.choices = kwargs['locations']
+        self.uni.choices = kwargs['unis']

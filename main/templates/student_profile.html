@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Home
+    {{ student.username }}
 {% endblock %}
 
 {% block main %}
@@ -21,6 +21,20 @@
         <p>dp score: {{ student_details.dp_score }}</p>
         <p>diploma: {{ student_details.has_diploma }}</p>
         <p>portfolio: {{ student_details.portfolio }}</p>
+        <p>selected_uni: {{ student_details.selected_uni_id }}</p>
+
+        {% for app in applications %}
+            <p>##################################################</p>
+            <p>uni: {{ app.uni }}</p>
+            <p>student: {{ app.student }}</p>
+            <p>course: {{ app.course }}</p>
+            <p>location: {{ app.location }}</p>
+            <p>minors: {{ app.minors }}</p>
+            <p>status: {{ app.status }}</p>
+            <p>scholarship: {{ app.scholarship }}</p>
+            <p>other_details: {{ app.other_details }}</p>
+            <p>is_early: {{ app.is_early }}</p>
+        {% endfor %}
     </div>
 
 {% endblock main %}

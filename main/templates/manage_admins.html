@@ -18,9 +18,9 @@ var user_len = 0;
 
     {% for user in users %}
         $(function() {
-            $('#delete_user{{ user.id }}').on('click', function(e) {
+            $('#delete_admin{{ user.id }}').on('click', function(e) {
                 e.preventDefault()
-                $.getJSON('{{ url_for("delete_user", user_id = user.id) }}',function(data) {});
+                $.getJSON('{{ url_for("delete_admin", user_id = user.id) }}',function(data) {});
                 $("#user{{ user.id }}").hide();
                 
                 $("#flash_text").text("{{ del_flash }}");
@@ -66,7 +66,7 @@ var user_len = 0;
             var sort = $("#sort").val();
             var sort_direction = $("#sort_direction").val();
             var keyword = $("#search-input").val();
-            window.location = "/manage_users?keyword="+keyword;
+            window.location = "/manage_admins?keyword="+keyword;
         });
     });
     
@@ -111,14 +111,14 @@ var user_len = 0;
                     <p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ user.fullname }} - {{ user.email }}</p>
                     
                     <a href="{{ url_for('edit_admin', admin_id=user.id) }}"><button class="btn btn-dark w-100% xsm:w-fit my-1 xsm:my-0"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button></a>
-                    <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_user{{ user.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                    <button class="btn btn-danger w-100% xsm:w-fit my-1 xsm:my-0" id="delete_admin{{ user.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
                 </div>
             </div>
         {% endfor %}
     </div>
 </center>
 
-    <!-- add new user button -->
+<!-- add new user button -->
 <div class="z-30 fixed bottom-5 right-5% bg-blue-600 w-15 h-15 rounded-2xl">
     <a href="/admin_register">
         <img src="../static/assets/new_uni_button.svg">

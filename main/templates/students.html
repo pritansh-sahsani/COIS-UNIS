@@ -1,0 +1,212 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Students
+{% endblock %}
+
+{% block main %}
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script src="../static/extensions/filter-multi-select-bundle-base.min.js"></script>
+
+    <script type=text/javascript>
+        var student_len = 0;
+        {% for student in students %}
+            student_len +=1;
+        {% endfor %}
+
+        function raise_error() {
+            
+            {% for item in [form.has_diploma, form.graduation_year, form.myp_score_min, form.myp_score_max, form.dp_predicted_min, form.dp_predicted_max, form.dp_score_min, form.dp_score_max, form.uni, form.course, form.location, form.status, form.is_early, form.selected_uni] %}
+                {% if item.errors %} 
+                    {% for error in item.errors %}
+                        $("#flash_text").text("{{error | safe}}");
+                        $("#flash_text_div").show();
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        }
+        setInterval('raise_error()', 1);
+
+        function getUrlVars(){
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for(var i = 0; i < hashes.length; i++)
+            {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+
+        $(document).ready(function(){
+            vars= getUrlVars();
+            var keyword = decodeURI(vars['keyword']);
+            if(keyword == 'undefined'){keyword='';}
+            $("#search-input").val(keyword).change();
+            
+            if(student_len==0)
+                {
+                    $('#no_student').text("No Students Found");
+                    $("#no_student").toggle();
+                }
+
+            var filter_id = '#applied_filters_';
+            var input_id = '#FilterInput-';
+            var filters = ['has_diploma', 'graduation_year', 'myp_score_min', 'myp_score_max', 'dp_predicted_min', 'dp_predicted_max', 'dp_score_min', 'dp_score_max', 'uni', 'course', 'location', 'status', 'is_early', 'selected_uni'];
+            var filters_name = ['Diploma', 'Graduation year', 'Min MYP score', 'Max MYP score', 'Min DP predicted', 'Max DP predicted', 'Min DP score', 'Max DP score', 'University', 'Course', 'Location', 'Status', 'Early app', 'Took Admission'];
+            var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
+
+            for(var i = 0; i<filters_name.length; i++)
+            {
+                var para = $("<p></p>").attr('id', "applied_filters_"+filters[i]);
+                $("#tags").append(para)
+                if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null)
+                {
+                    $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
+                    $(filter_id+filters[i]).attr('class', text_style);
+                }
+                else
+                {
+                    $(filter_id+filters[i]).attr('class', 'hidden '+text_style);
+                }
+            }
+        });
+
+        $(function() {
+            $('#search_button').on('click', function(e) {
+                var sort = $("#sort").val();
+                var sort_direction = $("#sort_direction").val();
+                var keyword = $("#search-input").val();
+                window.location = "/students?keyword="+keyword;
+            });
+        });
+        
+        $(function() {
+            var availableTags = [];
+            {% for student in students %}
+                p = "{{ student.fullname | safe }}"
+                availableTags.push(p);
+            {% endfor %}
+            $( "#search-input" ).autocomplete({
+                source: availableTags,
+                open: function() {
+                    $("ul.ui-menu").width( $("#search-div").innerWidth() );
+                }
+            });
+        });
+        
+        $(function() {
+            $("#search-input").keypress(function (event) {
+                if (event.keyCode === 13) {
+                    $("#search_button").click();
+                }
+            });
+        });
+
+        $(document).ready(function() {
+        });
+        $(function() {
+		    $('#ShowFilter').on('click', function(e) {
+			    var ImageSrc = $('#ShowFilterImg');
+			    var TextSrc = $('#ShowFilterText');
+				if ( ImageSrc.attr('src') == '../static/assets/dropdown-icon.svg')
+					{
+						ImageSrc.attr('src', '../static/assets/dropdown-icon-clicked.svg');
+                        TextSrc.text('Hide Filters');
+					}
+					else
+					{
+						ImageSrc.attr('src', '../static/assets/dropdown-icon.svg');
+                        TextSrc.text('Show Filters');
+					}
+				});
+			});
+    </script>
+
+    <div id="dropdownHover" class="hidden w-90% md:w-80% 880:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
+        <div class="mx-auto w-80%">
+            <form action='' method="POST" class="w-100% mx-auto">
+                {{ form.hidden_tag() }}
+
+                {{ form.myp_score_min(id="FilterInput-myp_score_min", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Minimum MYP-5 score') }}
+                {{ form.myp_score_max(id="FilterInput-myp_score_max", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg float-right", placeholder='Maximum MYP-5 score') }}
+                
+                {{ form.dp_score_min(id="FilterInput-dp_score_min", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Minimum DP score') }}
+                {{ form.dp_score_max(id="FilterInput-dp_score_max", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg float-right", placeholder='Maximum DP score') }}
+                
+                {{ form.dp_predicted_min(id="FilterInput-dp_predicted_min", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Minimum DP predicted') }}
+                {{ form.dp_predicted_max(id="FilterInput-dp_predicted_max", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg float-right", placeholder='Maximum DP predicted') }}
+                
+                {{ form.graduation_year(id="FilterInput-graduation_year", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Graduation year') }}
+                   
+                {{ form.uni(placeholder="University", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% mt-2% sm:mb-1%") }}
+                {{ form.location(placeholder="Location", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%") }}
+                {{ form.course(placeholder="Course", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%") }}
+                {{ form.status(placeholder='Application status', class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%") }}
+                
+                <div class="inline-block mt-2% w-30%">
+                    <label class="switch m-0">
+                        {{ form.is_early(class="form-check-input", type="checkbox") }}
+                        <span class="slider round"></span>
+                    </label>
+                    <p class="inline-block relative bottom-1.5 960:bottom-1">Early application</p>
+                </div>
+
+                <div class="inline-block mt-2% w-30%">
+                    <label class="switch m-0">
+                        {{ form.has_diploma(class="form-check-input", type="checkbox") }}
+                        <span class="slider round"></span>
+                    </label>
+                    <p class="inline-block relative bottom-1.5 960:bottom-1">Opting for diploma</p>
+                </div>
+                
+                <div class="inline-block w-30%">
+                    <label class="switch m-0">
+                        {{ form.selected_uni(class="form-check-input", type="checkbox") }}
+                        <span class="slider round"></span>
+                    </label>
+                    <p class="inline-block relative bottom-1.5 960:bottom-1">Took admission</p>
+                </div>
+
+                {{ form.submit(class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-5%") }}
+                {{ form.clear(id="clear_filter", class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-2% xsm:mt-5% mb-5% float-right") }}
+            </form>
+        </div>
+    </div>
+
+    <div class="w-100% text-center items-center mt-5" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="click"  id="ShowFilter">
+        <p class="inline-block" id="ShowFilterText">Show Filters</p>
+        <img class="inline-block mb-1 w-4 h-4" id="ShowFilterImg" src="../static/assets/dropdown-icon.svg">
+    </div>
+    <div class="mt-2">
+        <div class="w-100% md:w-80% 880:w-50% mx-auto mb-2">
+            <div class="w-fit mx-auto" id="tags">
+            </div>
+        </div>
+        <div id="search-div" class="w-100% md:w-80% 880:w-47.5% mx-auto mt-5 border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
+            <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
+            <button id="search_button" class="float-right">
+                <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
+            </button>
+        </div>
+    </div>
+
+    <center>
+        <div>
+            <h3 id="no_student" class="hidden my-3 text-4xl"></h3>
+            {% for student in students %}
+                <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md" id="student{{ student.id }}">
+                    <div class="m-2">
+                        <p class="float-left"></p>
+                        <a href="{{ url_for('profile', username=student.username) }}"><p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ student.fullname }} - {{ student.email }}</p></a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </center>
+{% endblock %}

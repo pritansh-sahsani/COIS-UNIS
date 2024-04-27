@@ -41,6 +41,7 @@ class User(db.Model, UserMixin):
 class Student_details(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     myp_score = db.Column(db.Integer)
+    graduation_year = db.Column(db.Integer)
     dp_predicted = db.Column(db.Integer)
     dp_score = db.Column(db.Integer)
     has_diploma = db.Column(db.Boolean)
@@ -50,10 +51,10 @@ class Student_details(db.Model):
     user = db.relationship('User', backref=db.backref('student_details', lazy=True))
 
     selected_uni_id = db.Column(db.Integer, db.ForeignKey('uni.id'))
-    selected_uni = db.relationship('Uni', backref=db.backref('student_details', lazy=True))
+    selected_app_id = db.Column(db.Integer)
 
     def __repr__(self):
-        return f"{self.id}"
+        return f"details-{self.user}"
 
 locations_table = db.Table(
     'location_association',
@@ -95,36 +96,40 @@ class Location(db.Model):
     def __repr__(self):
         return f"<{self.exact_location}>"
 
+minors_table = db.Table(
+    'minor_association',
+    db.Column('application_id', db.ForeignKey('application.id'), primary_key=True),
+    db.Column('course_id', db.ForeignKey('course.id'), primary_key=True),
+)
 
 class Course(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     unis = relationship('Uni', secondary=courses_table, back_populates='courses')
+    minor_applications = relationship('Application', secondary=minors_table, back_populates='minors')
     def __repr__(self):
         return f"{self.name}"
+
 
 class Application(db.Model):
     id = db.Column(db.Integer, nullable=False, primary_key=True)
-    university_id = db.Column(db.Integer, db.ForeignKey('uni.id'))
+    uni_id = db.Column(db.Integer, db.ForeignKey('uni.id'))
     student_id = db.Column(db.Integer, db.ForeignKey('student_details.id'))
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    minor_id = db.Column(db.Integer, db.ForeignKey('minor.id'))
-    approved = db.Column(db.String(20))  # Multiclass: waitlist, accepted, rejected
+    minors = relationship('Course', secondary=minors_table, back_populates='minor_applications')
+    status = db.Column(db.String(20))  # Multiclass: waitlist, accepted, rejected
+    scholarship = db.Column(db.String(300))
+    other_details = db.Column(db.String(2500))
     is_early = db.Column(db.Boolean, nullable=False)
 
     student = db.relationship('Student_details', backref=db.backref('applications', lazy=True))
-    university = db.relationship('Uni', backref=db.backref('applications', lazy=True))
+    uni = db.relationship('Uni', backref=db.backref('applications', lazy=True))
     course = db.relationship('Course', backref=db.backref('applications', lazy=True))
     location = db.relationship('Location', backref=db.backref('applications', lazy=True))
-    minor = db.relationship('Minor', backref=db.backref('applications', lazy=True))
-
-class Minor(db.Model):
-    id = db.Column(db.Integer, nullable=False, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
 
     def __repr__(self):
-        return f"{self.name}"
+        return f"{self.id}"
 
 
 with app.app_context():

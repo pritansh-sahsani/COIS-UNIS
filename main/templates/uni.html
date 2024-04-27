@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Home
+    {{ uni.name }}
 {% endblock %}
 
 {% block main %}
@@ -20,7 +20,20 @@
         <p>requirements: {{ uni.requirements }}</p>
         <p>is_draft: {{ uni.is_draft }}</p>
         <p>locations: {{ uni.locations }}</p>
-        <p>courses: {{ uni.courses  }}</p>
-    </div>
+        <p>courses: {{ uni.courses }}</p>
 
+            
+        {% for add in admissions %}
+            <p>##############################################################</p>
+            <p>name: {{add['user'].fullname}} </p>
+            <p>graduation year: {{add['details'].graduation_year}} </p>
+            <p>course: {{add['application'].course}} </p>
+        {% endfor %}
+        {% for student in others %}
+            <p>##############################################################</p>
+            <p>name: {{student['user'].fullname}} </p>
+            <p>graduation year: {{student['details'].graduation_year}} </p>
+            <p>course: {{student['application'].course}} </p>
+        {% endfor %}
+    </div>
 {% endblock main %}

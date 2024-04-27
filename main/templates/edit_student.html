@@ -35,6 +35,7 @@
                 {{ form.password(class="        text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.password, placeholder="Password")}}
                 {{ form.confirm_password(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.confirm_password, placeholder="Confirm Password") }}
                 
+                {{ form.graduation_year(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.graduation_year, placeholder="Graduation Year") }}
                 {{ form.myp_score(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.myp_score, placeholder='MYP-5 Score (out of 56)') }}
                 {{ form.dp_predicted(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.dp_predicted, placeholder='DP predicted score (out of 45)') }}
                 {{ form.dp_score(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.dp_score, placeholder='DP score (out of 45)') }}

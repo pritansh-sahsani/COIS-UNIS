@@ -1,10 +1,10 @@
-from main.forms import LoginForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, FilterForm
+from main.forms import LoginForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm
 from main.setup import app, db
-from main.models import User, Uni, Location, Course, Student_details
+from main.models import User, Uni, Location, Course, Student_details, Application
 from main.helper import sort_by_similarity, allow_access
 from main import bcrypt
 
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
 import os
@@ -279,7 +279,28 @@ def edit_location(location_id, location_name):
 @app.route('/uni/<string:uni_name>', methods=['GET', 'POST'])
 def uni(uni_name):
     uni = Uni.query.filter_by(name = uni_name).first_or_404()
-    return render_template("uni.html", uni=uni)
+    admission_students = Student_details.query.filter_by(selected_uni_id = uni.id).all()
+    admissions = []
+    admission_ids = []
+    for student in admission_students:
+        admissions.append({
+            'details': student, 
+            'application': Application.query.filter_by(id = student.selected_app_id).first(),
+            'user': User.query.filter_by(id = student.user_id).first()
+        })
+        admission_ids.append(student.id)
+
+    others=[]
+    for application in Application.query.filter_by(uni_id = uni.id).all():
+        if application.student_id not in admission_ids:
+            student = Student_details.query.filter_by(id = application.student_id).first()
+            others.append({
+                'details': student,
+                'application': application,
+                'user': User.query.filter_by(id = student.user_id).first()
+            })
+
+    return render_template("uni.html", uni=uni, admissions=admissions, others=others)
 
 @app.route('/delete_uni/<int:uni_id>', methods=['GET', 'POST'])
 @login_required
@@ -325,6 +346,8 @@ def edit_uni(uni_name):
         new_uni = Uni.query.filter_by(name=form.name.data).first()
         if new_uni:
             if new_uni.id != old_uni.id:
+                print(new_uni.id)
+                print(old_uni.id)
                 flash("A university with this name already exists.")
                 return render_template("edit_uni.html", form=form, old_uni=old_uni)
         
@@ -412,9 +435,9 @@ def add_location(name):
         db.session.commit()
     return redirect(url_for("add_uni"))
 
-@app.route("/manage_users", methods=["GET", "POST"])
+@app.route("/manage_admins", methods=["GET", "POST"])
 @login_required
-def manage_users():
+def manage_admins():
     if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     keyword = request.args.get('keyword')
     user_query = User.query.all()
@@ -427,24 +450,25 @@ def manage_users():
         users = sort_by_similarity(users, keyword, column='username')
     
     if len(users) == 0:
-        return render_template("manage_users.html", users=users)
+        return render_template("manage_admins.html", users=users)
     
     del_flash = "User Deleted successfully!"
-    return render_template("manage_users.html", del_flash=del_flash, users=users)
+    return render_template("manage_admins.html", del_flash=del_flash, users=users)
     
-@app.route('/delete_user/<int:user_id>', methods=['GET', 'POST'])
+@app.route('/delete_admin/<int:user_id>', methods=['GET', 'POST'])
 @login_required
-def delete_user(user_id):
-    if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
+def delete_admin(user_id):
+    if current_user.id != user_id:
+        if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     user = User.query.filter_by(id = user_id).first_or_404()
     db.session.delete(user)
     db.session.commit()
-    return redirect(url_for('manage_users'))
+    return redirect(url_for('manage_admins'))
 
 @app.route('/edit_admin/<int:admin_id>', methods=['GET', 'POST'])
 @login_required
 def edit_admin(admin_id):
-    if current_user.is_authenticated:
+    if current_user.id != admin_id:
         if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     old_admin = User.query.filter_by(id = admin_id).first_or_404()
     form = EditAdminForm(formdata = request.form)
@@ -475,7 +499,7 @@ def edit_admin(admin_id):
         db.session.commit()
 
         flash(f'Admin data updated successfully!', 'success')
-        return redirect(url_for('manage_users'))
+        return redirect(url_for('manage_admins'))
 
     return render_template('edit_admin.html', form=form, old_admin=old_admin)
 
@@ -497,7 +521,7 @@ def login():
             elif user.username != "SUPERUSER":
                 return redirect(next_page) if next_page else redirect(url_for('manage_unis'))
             else:
-                return redirect(next_page) if next_page else redirect(url_for('manage_users'))
+                return redirect(next_page) if next_page else redirect(url_for('manage_admins'))
         else:
             flash('Login Unsuccessful, Please Check Your Username And Password.', 'danger')
 
@@ -556,6 +580,7 @@ def student_register():
                                           dp_score = form.dp_score.data, 
                                           has_diploma = form.has_diploma.data, 
                                           portfolio = form.portfolio.data,
+                                          graduation_year = form.graduation_year.data,
                                           user_id = user.id)
         db.session.add(student_details)
         db.session.commit()
@@ -632,6 +657,7 @@ def edit_student(student_id):
             dp_score = form.dp_score.data,
             has_diploma = form.has_diploma.data,
             portfolio = form.portfolio.data,
+            graduation_year = form.graduation_year.data,
         ))
 
         if form.password.data !="":
@@ -645,20 +671,157 @@ def edit_student(student_id):
 
     return render_template('edit_student.html', form=form, old_student=old_student, old_student_details=old_student_details)
 
-
-@app.route('/student/<string:student_name>', methods=['GET', 'POST'])
-@login_required
-def student(student_name):
-    if current_user.username != student_name:
-        if allow_access("admins") is not None: return allow_access("admins")
-    student = User.query.filter_by(username = student_name).first_or_404()
-    student_details = Student_details.query.filter_by(user_id = student.id).first_or_404()
-    return render_template("student.html", student=student, student_details=student_details)
-
 @app.route('/add_application', methods=['GET', 'POST'])
 @login_required
 def add_application():
-    return
+    if allow_access("only_students") is not None: return allow_access("only_students")
+    student_details = Student_details.query.filter_by(user_id=current_user.id).with_entities(Student_details.id).first_or_404()    
+    courses=[]
+    minors=[]
+    unis=[]
+    locations=[]
+    courses_query= Course.query.with_entities(Course.id, Course.name).all()
+    unis_query = Uni.query.with_entities(Uni.id, Uni.name).all()
+    locations_query = Location.query.with_entities(Location.id, Location.exact_location).all()
+
+    for course in courses_query:
+        courses.append((course.id, course.name))
+    for course in courses_query:
+        minors.append((course.name, course.name))
+    for uni in unis_query:
+        unis.append((uni.id, uni.name))
+    for location in locations_query:
+        locations.append((location.id, location.exact_location))
+
+    form = ApplicationForm(formdata = request.form, courses=courses, minors=minors, unis=unis, locations=locations)
+    if form.validate_on_submit():
+        application=Application(uni_id = int(form.uni.data),
+            student_id = int(student_details.id),
+            course_id = int(form.course.data),
+            location_id = int(form.location.data),
+            status = form.status.data,
+            scholarship = form.scholarship.data,
+            other_details = form.other_details.data,
+            is_early = form.is_early.data)
+
+        for minor in form.minors.data:
+            course = Course.query.filter_by(name = minor).first()
+            application.minors.append(course)
+        
+        db.session.add(application)
+        db.session.commit()
+        
+        if form.selected_uni.data:
+            application = Application.query.filter_by(uni_id = int(form.uni.data),
+            student_id = int(student_details.id),
+            course_id = int(form.course.data),
+            location_id = int(form.location.data),
+            status = form.status.data,
+            scholarship = form.scholarship.data,
+            other_details = form.other_details.data,
+            is_early = form.is_early.data).first()
+
+            Student_details.query.filter_by(user_id = current_user.id).update(dict(selected_uni_id=application.id))
+            db.session.commit()
+            
+        return redirect(url_for('profile', username=current_user.username))
+            
+    return render_template('add_application.html', form=form)
+
+
+@app.route('/profile/<string:username>', methods=['GET', 'POST'])
+@login_required
+def profile(username):
+    if username is None:
+        return abort(404)
+    
+    user = User.query.filter_by(username=username).first_or_404()
+    if not user.is_student:
+        if username != current_user.username:
+            if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
+        return render_template("admin_profile.html", user=user)
+    else:
+        student_details = Student_details.query.filter_by(user_id=user.id).first_or_404()
+        applications = Application.query.filter_by(student_id=student_details.id).all()
+        return render_template("student_profile.html", student=user, student_details = student_details, applications=applications)
+
+
+@app.route('/students', methods=['GET', 'POST'])
+# @login_required
+def students():
+    courses=[('None', 'None')]
+    minors=[('None', 'None')]
+    unis=[('None', 'None')]
+    locations=[('None', 'None')]
+    courses_query= Course.query.with_entities(Course.id, Course.name).all()
+    unis_query = Uni.query.with_entities(Uni.id, Uni.name).all()
+    locations_query = Location.query.with_entities(Location.id, Location.exact_location).all()
+
+    for course in courses_query:
+        courses.append((course.id, course.name))
+    for course in courses_query:
+        minors.append((course.name, course.name))
+    for uni in unis_query:
+        unis.append((uni.id, uni.name))
+    for location in locations_query:
+        locations.append((location.id, location.exact_location))
+
+    form = FilterStudentsForm(formdata = request.form, courses=courses, minors=minors, unis=unis, locations=locations)
+    students = User.query.filter_by(is_student=True).all()
+    student_details=[]
+    applications=[]
+    for student in students:
+        details = Student_details.query.filter_by(user_id=student.id).first_or_404()
+        student_details.append(details)
+        applications.append(Application.query.filter_by(student_id=details.id).all())
+
+    keyword = request.args.get('keyword')
+    if keyword is not None and keyword != '':
+        students=sort_by_similarity(students, keyword, column='fullname')
+
+    if form.validate_on_submit():
+        if form.clear.data:
+            return redirect(url_for("students"))
+        
+        
+        app_query = Application.query
+        if form.uni.data and form.uni.data != 'None':app_query=app_query.filter_by(uni_id = form.uni.data)
+        if form.location.data and form.location.data != 'None':app_query=app_query.filter_by(location_id = form.location.data)
+        if form.course.data and form.course.data != 'None':app_query=app_query.filter_by(course_id = form.course.data)
+        if form.status.data and form.status.data != 'none':app_query=app_query.filter_by(status = form.status.data)
+        if form.is_early.data:app_query=app_query.filter_by(is_early = form.is_early.data)
+        if form.selected_uni.data:
+            app_query = app_query.filter(Application.id == Student_details.query.filter_by(id = Application.student_id).first().selected_app_id)
+        app_query = app_query.with_entities(Application.student_id).all()
+
+        if len(Application.query.all()) != len(app_query):
+            ids= [ id[0] for id in app_query ]
+            query = Student_details.query.filter(Student_details.id.in_(ids))
+        else:
+            query = Student_details.query
+        
+        if form.has_diploma.data: query = query.filter_by(has_diploma = form.has_diploma.data)
+        if form.graduation_year.data: query = query.filter_by(graduation_year = form.graduation_year.data)
+        if form.myp_score_min.data: query = query.filter(Student_details.myp_score>=form.myp_score_min.data)
+        if form.myp_score_max.data: query = query.filter(Student_details.myp_score<=form.myp_score_max.data)
+        if form.dp_predicted_min.data: query = query.filter(Student_details.dp_predicted>=form.dp_predicted_min.data)
+        if form.dp_predicted_max.data: query = query.filter(Student_details.dp_predicted<=form.dp_predicted_max.data)
+        if form.dp_score_min.data: query = query.filter(Student_details.dp_score>=form.dp_score_min.data)
+        if form.dp_score_max.data: query = query.filter(Student_details.dp_score<=form.dp_score_max.data)
+
+        student_details=query.all()
+        students=[]
+        applications=[]
+        for details in student_details:
+            user = User.query.filter_by(id=details.user_id).first_or_404()
+            students.append(user)
+            applications.append(Application.query.filter_by(student_id=details.id).all())
+        return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications)
+    else:
+        if form.clear.data:
+            return redirect(url_for("students"))    
+    
+    return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications)
 
 @app.errorhandler(404)
 def page_not_found(e):
