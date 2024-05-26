@@ -35,63 +35,124 @@
 
 		<div class="z-20 bg-white relative">
 			<!-- pc navbar -->
-			<nav class="hidden md:inline justify-between items-center relative">
-				<div class="inline items-center">
-					<a href="/" class="ml-2">
-						<img src="../static/assets/logo.png" class="ml-4 w-12 inline" alt="" id="website-logo"/>
+			<div class="hidden md:inline-block">
+				<nav class="grid grid-rows-1 grid-flow-col gap-x-12 items-end ml-4">
+					<a href="/" class="justify-self-start">
+						<img src="../static/assets/logo.png" class="w-12 inline" alt="" id="website-logo"/>
 					</a>
-					{% if current_user.is_authenticated %}
-						<div class="inline">
-							<a class="navbar-link" href="/">
-								<button class="underline-btn ml-8 960:ml-14">Visitor's Home</button>
-							</a>
-							<a class="navbar-link" href="/manage_unis">
-								<button class="underline-btn ml-8 960:ml-14">Manage Universities</button>
-							</a>
-							<a class="navbar-link" href="/manage_courses">
-								<button class="underline-btn ml-8 960:ml-14">Manage Courses</button>
-							</a>
-							<a class="navbar-link" href="/manage_locations">
-								<button class="underline-btn ml-8 960:ml-14">Manage Locations</button>
-							</a>
-							{% if current_user.username == "SUPERUSER" %}
-								<a class="navbar-link" href="/manage_admins">
-									<button class="underline-btn ml-8 960:ml-14">Manage Users</button>
-								</a>
-							{% endif %}
-							<a class="navbar-link" href="/logout">
-								<button class="underline-btn ml-8 960:ml-14">Log Out</button>
-							</a>
-						</div>
-					{% else %}
-						<div class="pr-8 inline">
+					{% if not current_user.is_authenticated %}
+						<div class="">
 							<a class="navbar-link" href="/">
 								<button class="underline-btn">Home</button>
 							</a>
 						</div>
+						<div class="">
+							<a class="navbar-link" href="/login">
+								<button class="underline-btn">Login</button>
+							</a>
+						</div>
+						<div class="">
+							<a class="navbar-link" href="/student_register">
+								<button class="underline-btn">Register</button>
+							</a>
+						</div>
+					{% else %}
+							{% if current_user.is_student %}
+							<div class="">
+								<a class="navbar-link" href="/unis">
+									<button class="underline-btn">Universities</button>
+								</a>
+							</div>
+							<div class="">
+								<a class="navbar-link" href="/students">
+									<button class="underline-btn">Students</button>
+								</a>
+							</div>
+							{% else %}
+								<div class="self-center">
+									<button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class="text-center inline-flex items-center" type="button">
+										Manage <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+										<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+										</svg>
+									</button>
+										
+										<!-- Dropdown menu -->
+										<div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+											<ul class="grid auto-rows-max py-2 gap-y-2 text-center" aria-labelledby="dropdownDefaultButton">
+											<li class="w-100%">
+												<a href="/manage_unis" class="block px-4 py-1 hover:bg-gray-100">Universities</a>
+											</li>
+											<li class="w-100%">
+												<a href="/manage_courses" class="block px-4 py-1 hover:bg-gray-100">Courses</a>
+											</li>
+											<li class="w-100%">
+												<a href="/manage_locations" class="block px-4 py-1 hover:bg-gray-100">Locations</a>
+											</li>
+											<li class="w-100%">
+												<a href="/manage_students" class="block px-4 py-1 hover:bg-gray-100">Students</a>
+											</li>
+											
+											{% if current_user.username == "SUPERUSER" %}
+												<li class="w-100%">
+													<a href="/manage_admins" class="block px-4 py-1 hover:bg-gray-100">Admins</a>
+												</li>
+											{% endif %}
+											</ul>
+										</div>
+								</div>
+								<div class="self-center">
+									<button id="dropdownDefaultButton" data-dropdown-toggle="dropdown2" class="text-center inline-flex items-center" type="button">
+										Students View <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+										<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+										</svg>
+									</button>
+										
+										<!-- Dropdown menu -->
+										<div id="dropdown2" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+											<ul class="grid auto-rows-max py-2 gap-y-2 text-center" aria-labelledby="dropdownDefaultButton">
+												<li class="w-100%">
+													<a href="/unis" class="block px-4 py-1 hover:bg-gray-100">Universities</a>
+												</li>
+												<li class="w-100%">
+													<a href="/students" class="block px-4 py-1 hover:bg-gray-100">Students</a>
+												</li>
+											</ul>
+										</div>
+								</div>
+							{% endif %}
+							<div class="">
+								<a class="navbar-link" href="/profile/{{ current_user.username}}">
+									<button class="underline-btn">My Profile</button>
+								</a>
+							</div>
+							<div class="">
+								<a class="navbar-link" href="/logout">
+									<button class="underline-btn">Log Out</button>
+								</a>
+							</div>
 					{% endif %}
-				</div>
+				</nav>
+			</div>
 
-				<div class="inline float-right mr-3 mt-2">
-					<img src="../static/assets/cois_logo.png" class="ml-4 w-36 inline" alt="" id="website-logo"/>
-				</div>
+			<a href="https://cois.edu.in" class="hidden md:inline float-right mr-3 mt-2">
+				<img src="../static/assets/cois_logo.png" class="w-36" alt="" id=""/>
+			</a>
 
-				<hr class="w-100% m-0 p-0 border-gradient" id="navbar-hr"/>
-			</nav>
-			
+			<hr class="hidden md:block w-100% m-0 p-0 border-gradient" id="navbar-hr"/>
+
 			<!-- phone navbar -->
-			<div id="phone_top_navbar" class="block md:hidden">
-				<div class="flex justify-between items-center">
-					<a href="/" class="ml-6">
-						<img src="../static/assets/logo.png" class="w-12 inline" alt="" />
+			<div id="phone_top_navbar" class="block md:hidden w-100%">
+				<div class="grid grid-cols-3 items-center w-100%">
+					<a href="/" class="ml-3% justify-self-start">
+						<img src="../static/assets/logo.png" class="w-10 sm:w-12 inline" alt="" />
 					</a>
 					
-					<img src="../static/assets/cois_logo.png" class="ml-4 w-12 inline" alt="" id="website-logo"/>
+					<img src="../static/assets/cois_logo.png" class="w-24 justify-self-center" alt="" id="website-logo"/>
 
-					<div class="mr-6 cursor-pointer inline">
+					<div class="mr-3% cursor-pointer justify-self-end">
 						<svg
 							id="phone_navbar_button"
-							class="w-6 h-6 inline"
+							class="w-6 h-6"
 							fill="black"
 							stroke=black
 							viewBox="0 0 24 24"
@@ -108,35 +169,71 @@
 				</div>
 
 				<hr class="w-100% m-0 p-0 border-gradient" />
-				<div class="block">
-					<div id="phone_bottom_navbar" class="block">
-						{% if current_user.is_authenticated %}
-							<div class="fixed items-center w-screen h-screen mobile-navbar-background">
-								<div class="w-50% xsm:w-30% h-screen bg-white float-right rounded-lg" id="navbar-default">
-									<ul class="font-medium flex flex-col p-3">
-										<li>
-											<a href="/" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Visitor's Home</a>
-										</li>
-										<li>
-											<a href="/manage_unis" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Mange Universities</a>
-										</li>
-										<li>
-											<a href="/logout" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Log Out</a>
-										</li>
-									</ul>
-								</div>
+				<div id="phone_bottom_navbar" class="block">
+					<div class="fixed items-center w-screen h-screen mobile-navbar-background">
+						<div class="w-50% xsm:w-30% h-screen bg-white float-right rounded-lg" id="navbar-default">
+							<div class="font-medium grid grid-cols-1 gap-y-5 p-3">
+								{% if not current_user.is_authenticated %}
+									<a href="/" class="w-fit mt-0 mx-auto block rounded">Home</a>
+									<a href="/login" class="w-fit mt-0 mx-auto block rounded">Login</a>
+									<a href="/student_register" class="w-fit mt-0 mx-auto block rounded">Register</a>
+								{% else %}
+									{% if current_user.is_student %}
+										<a href="/unis" class="w-fit mt-0 mx-auto block rounded">Universities</a>
+										<a href="/students" class="w-fit mt-0 mx-auto block rounded">Students</a>
+									{% else %}
+										<button id="dropdownDefaultButton" data-dropdown-toggle="Mdropdown" class="justify-self-center text-center inline-flex items-center" type="button">
+											Manage <svg class="w-2.5 h-2.5 ml-2 justify-self-center" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+											<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+											</svg>
+										</button>
+											
+											<!-- Dropdown menu -->
+											<div id="Mdropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+												<ul class="grid auto-rows-max py-2 gap-y-2 text-center" aria-labelledby="dropdownDefaultButton">
+												<li class="w-100%">
+													<a href="/manage_unis" class="block px-4 py-1 hover:bg-gray-100">Universities</a>
+												</li>
+												<li class="w-100%">
+													<a href="/manage_courses" class="block px-4 py-1 hover:bg-gray-100">Courses</a>
+												</li>
+												<li class="w-100%">
+													<a href="/manage_locations" class="block px-4 py-1 hover:bg-gray-100">Locations</a>
+												</li>
+												<li class="w-100%">
+													<a href="/manage_students" class="block px-4 py-1 hover:bg-gray-100">Students</a>
+												</li>
+												
+												{% if current_user.username == "SUPERUSER" %}
+													<li class="w-100%">
+														<a href="/manage_admins" class="block px-4 py-1 hover:bg-gray-100">Admins</a>
+													</li>
+												{% endif %}
+												</ul>
+											</div>
+										<button id="dropdownDefaultButton" data-dropdown-toggle="Mdropdown2" class="text-center inline-flex items-center" type="button">
+											Students View <svg class="w-2.5 h-2.5 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+											<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+											</svg>
+										</button>
+											
+											<!-- Dropdown menu -->
+											<div id="Mdropdown2" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+												<ul class="grid auto-rows-max py-2 gap-y-2 text-center" aria-labelledby="dropdownDefaultButton">
+													<li class="w-100%">
+														<a href="/unis" class="block px-4 py-1 hover:bg-gray-100">Universities</a>
+													</li>
+													<li class="w-100%">
+														<a href="/students" class="block px-4 py-1 hover:bg-gray-100">Students</a>
+													</li>
+												</ul>
+											</div>
+									{% endif %}
+									<a href="/profile/{{ current_user.username }}" class="w-fit mt-0 mx-auto block rounded">My Profile</a>
+									<a href="/logout" class="w-fit mt-0 mx-auto block rounded">Logout</a>
+								{% endif %}
 							</div>
-						{% else %}
-							<div class="fixed items-center w-screen h-screen mobile-navbar-background">
-								<div class="w-50% xsm:w-30% h-screen bg-white float-right rounded-lg" id="navbar-default">
-									<ul class="font-medium flex flex-col p-3">
-										<li>
-											<a href="/" class="w-fit mt-0 mx-auto block py-3 text-black rounded">Home</a>
-										</li>
-									</ul>
-								</div>
-							</div>
-						{% endif %}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -157,7 +254,7 @@
     </div>      
 
     <!-- Individual page content -->
-    <main class="ml-5% py-2 w-90%">
+    <main class="py-2">
       {% block main %}{% endblock main %}
     </main>
   </body>
