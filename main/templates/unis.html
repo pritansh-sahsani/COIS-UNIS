@@ -21,8 +21,8 @@
                 {% endfor %}
             {% endif %}
             
-            {% if form.location.errors %} 
-                {% for error in form.location.errors %}
+            {% if form.locations.errors %} 
+                {% for error in form.locations.errors %}
                     $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
@@ -93,7 +93,7 @@
 
             var filter_id = '#applied_filters_';
             var input_id = '#FilterInput-';
-			var filters = ['ib_cutoff','requirements','scholarships','location','courses'];
+            var filters = ['ib_cutoff','requirements','scholarships','locations_ms','courses_ms'];
 			var filters_name = ['Ib Cutoff','Requirements','Scholarships','Locations','Courses'];
             var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
 			for(var i = 0; i<5; i++)
@@ -160,43 +160,55 @@
 		    $('.FilterInput').on('change', function(e) {
 			    var filter_id = '#applied_filters_';
                 var input_id = '#FilterInput-';
-			    var filters = ['ib_cutoff','requirements','scholarships','location','courses'];
-			    var filters_name = ['Ib Cutoff','Requirements','Scholarships','Locations','Courses'];
+			    var filters = ['ib_cutoff','requirements','scholarships'];
+			    var filters_name = ['Ib Cutoff','Requirements','Scholarships'];
                 var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
-				for(var i = 0; i<5; i++)
+				for(var i = 0; i<3; i++)
                 {
-                    if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null)
-                    {
+                    if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null){
                         $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
                         $(filter_id+filters[i]).attr('class', text_style);
                     }
-                    else
-                    {
+                    else{
                         $(filter_id+filters[i]).attr('class', 'hidden '+text_style);
                     }
                 }
 			});
 		});
+        $(document).ready(function() {
+            $('#courses_ms').attr('class', 'filter-multi-select dropdown w-100% col-span-2 md:col-span-1')
+            $('#courses_ms').find('.placeholder').text("courses");
+            $('#locations_ms').attr('class', 'filter-multi-select dropdown w-100% col-span-2 md:col-span-1')
+            $('#locations_ms').find('.placeholder').text("locations");
+    });
     </script>
 
-    <div id="dropdownHover" class="hidden w-90% md:w-80% 880:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
-        <div class="mx-auto w-80%">
-            <form action='' method="POST" class="w-100% mx-auto">
+<div class="w-90% mx-auto">
+    <div id="dropdownHover" class="hidden w-90% md:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
+        <div class="mx-auto w-90%">
+            <form action='' method="POST" class="w-100% mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 my-4">
                 {{ form.hidden_tag() }}
-                {{ form.ib_cutoff(id="FilterInput-ib_cutoff", class="FilterInput text-base w-100% sm:w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-5%", placeholder='Cut off/required grade for IBDP') }}
-                {{ form.requirements(id="FilterInput-requirements", class="FilterInput text-base w-100% sm:w-47.5% border-0.5 border-black text-center py-1% rounded-lg mt-3% sm:mt-5% float-right", placeholder='Requirements for admission') }} 
-                {{ form.scholarships(id="FilterInput-scholarships", class="FilterInput text-base w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3%", placeholder='Scholarships') }}
+                {{ form.ib_cutoff(id="FilterInput-ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Cut off/required grade for IBDP') }}
+                {{ form.requirements(id="FilterInput-requirements", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Requirements for admission') }} 
+                {{ form.scholarships(id="FilterInput-scholarships", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Scholarships') }}
                 
-                <div class="w-100% xsm:w-47.5% inline-block mt-2%">
-                    <h3 class="w-100% text-center mb-1">Locations</h3>
-                    {{ form.location(class="FilterInput", id="locations_ms") }} 
+                <div class="w-100% inline-block">
+                    {{ form.locations(class="FilterInput", id="locations_ms") }} 
                 </div>
-                <div class="w-100% xsm:w-47.5% inline-block mt-2% float-right">
-                    <h3 class="w-100% text-center mb-1">Courses</h3>
+                <div class="w-100% inline-block">
                     {{ form.courses(class="FilterInput", id="courses_ms") }}
                 </div>    
-                {{ form.submit(class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-5% text-base") }}
-                {{ form.clear(id="clear_filter", class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-2% xsm:mt-5% mb-5% text-base float-right") }}
+    
+                <div class="flex place-self-center">
+                    <label class="switch m-0 flex-none">
+                        {{ form.coisstudents(class="form-check-input", type="checkbox") }}
+                        <span class="slider round"></span>
+                    </label>
+                    <p class="flex-initial relative text-base ml-2">COIS students applied</p>
+                </div>
+    
+                {{ form.submit(class="btn btn-primary rounded-lg w-100% text-base") }}
+                {{ form.clear(id="clear_filter", class="btn btn-primary rounded-lg w-100% text-base float-right") }}
             </form>
         </div>
     </div>
@@ -206,16 +218,16 @@
         <img class="inline-block mb-1 w-4 h-4" id="ShowFilterImg" src="../static/assets/dropdown-icon.svg">
     </div>
     <div class="mt-2">
-        <div class="w-100% md:w-80% 880:w-50% mx-auto mb-2">
+        <div class="w-100% md:w-50% mx-auto mb-2">
             <div class="w-fit mx-auto">
                 <p id="applied_filters_ib_cutoff"></p>
                 <p id="applied_filters_requirements"></p>
                 <p id="applied_filters_scholarships"></p>
-                <p id="applied_filters_location"></p>
-                <p id="applied_filters_courses"></p>
+                <p id="applied_filters_locations_ms"></p>
+                <p id="applied_filters_courses_ms"></p>
             </div>
         </div>
-        <div id="search-div" class="w-100% md:w-80% 880:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
+        <div id="search-div" class="w-100% md:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
             <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
             <button id="search_button" class="float-right">
                 <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
@@ -225,18 +237,21 @@
 
     <div id="unis">
         <h3 id="no_unis" class="hidden w-100% text-center my-3 text-4xl"></h3>
-            {% if not no_unis %}
-                {% for uni in unis %}
-                    
-                <div class="w-100% md:w-80% 880:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
-                    <div class="m-2 mx-3">
-                        <p class="inline-block"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
+        {% if p_unis_len != 0 %}    
+            {% for uni,i in zip(unis, range(len(unis))) %}
+                <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
+                    <div class="m-3 grid grid-cols-1 md:grid-cols-2 items-center justify-start gap-x-2">
+                        <img class="w-100% border-solid border-0.5 border-black rounded-md" src="../static/university_logos/{{ uni.logo }}" />
+                        <div class="grid grid-cols-2 gap-2">
+                            <p class="inline-block col-span-2 text-2xl text-center mt-3 md:mt-0"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
+                            <p class="inline-block col-span-2 text-center"><a href="{{ url_for('uni', uni_name=uni.name) }}">Students from COIS<br>applications: {{ no_app[i] + no_add[i] }}<br>addmissions: {{no_add[i]}}</a></p>
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
-            {% else %}
-                <h3 class="w-100% text-center text-4xl">No Universities Found</h3>
-            {% endif %}
+            {% endfor %}
+        {% else %}
+            <h3 class="w-100% text-center text-4xl">No Universities Found</h3>
+        {% endif %}
     </div>
 
 {% endblock main %}

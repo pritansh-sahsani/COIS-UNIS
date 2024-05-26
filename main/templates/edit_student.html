@@ -22,26 +22,26 @@
     setInterval('raise_error()', 1);
 </script>
 
-    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
-        <p class="text-center text-lg xsm:text-4xl w-80% mt-5% mx-auto">Edit Student {{old_student.fullname}}</p>
-        <hr class="border-black w-80% mx-auto my-3% sm:my-2%" />
-        <form action='' method="POST" class="w-80% mx-auto">
-            <div class="w-100% grid col-span-1 justify-items-center">
+    <div class="md:mx-5% w-100% md:w-90% md:border-solid md:border-black md:rounded-md md:my-5% items-center md:border-0.5">
+        <p class="text-center text-lg xsm:text-4xl w-90% md:w-80% mt-5% mx-auto">Edit {{old_student.fullname}}'s Details</p>
+        <hr class="border-black w-90% md:w-80% mx-auto my-3% sm:mt-2% sm:mb-1%" />
+        <form action='' method="POST" class="w-90% md:w-80% mx-auto">
+            <div class="w-100% grid md:grid-cols-2 md:gap-x-2 space-y-2 justify-items-center">
                 {{ form.hidden_tag() }}
-                {{ form.username(class="        text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.username, placeholder="Name")}}
-                {{ form.fullname(class="        text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.fullname, placeholder="Full Name")}}
-                {{ form.email(class="           text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.email, placeholder="Email") }}
-                {{ form.phone_number(class="    text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.phone_number, placeholder='Phone Number') }}
-                {{ form.password(class="        text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.password, placeholder="Password")}}
-                {{ form.confirm_password(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student.confirm_password, placeholder="Confirm Password") }}
+                {{ form.username(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student.username, placeholder="Name")}}
+                {{ form.fullname(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student.fullname, placeholder="Full Name")}}
+                {{ form.email(class="           text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student.email, placeholder="Email") }}
+                {{ form.phone_number(class="    text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student.phone_number, placeholder='Phone Number') }}
+                {{ form.password(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student.password, placeholder="Password")}}
+                {{ form.confirm_password(class="text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student.confirm_password, placeholder="Confirm Password") }}
                 
-                {{ form.graduation_year(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.graduation_year, placeholder="Graduation Year") }}
-                {{ form.myp_score(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.myp_score, placeholder='MYP-5 Score (out of 56)') }}
-                {{ form.dp_predicted(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.dp_predicted, placeholder='DP predicted score (out of 45)') }}
-                {{ form.dp_score(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.dp_score, placeholder='DP score (out of 45)') }}
-                {{ form.portfolio(class="text-base xsm:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%", value=old_student_details.portfolio, placeholder='Link to portfolio (Optional)') }}
+                {{ form.graduation_year(class="text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student_details.graduation_year, placeholder="Graduation Year") }}
+                {{ form.myp_score(class="text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student_details.myp_score, placeholder='MYP-5 Score (out of 56)') }}
+                {{ form.dp_predicted(class="text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student_details.dp_predicted, placeholder='DP predicted score (out of 45)') }}
+                {{ form.dp_score(class="text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student_details.dp_score, placeholder='DP score (out of 45)') }}
+                {{ form.portfolio(class="text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_student_details.portfolio, placeholder='Link to portfolio (Optional)') }}
                 
-                <div class="mt-2%">
+                <div class="mt-2% col-span-2 md:col-span-1">
                     <label class="switch m-0">
                         {% if old_student_details.has_diploma %}
                         {{ form.has_diploma(class="form-check-input", type="checkbox", checked=true) }}
@@ -50,10 +50,10 @@
                         {% endif %}
                         <span class="slider round"></span>
                     </label>
-                    <p class="inline-block relative bottom-1.5 960:bottom-1 text-lg 960:text-2xl">Opting for diploma</p>
+                    <p class="inline-block relative bottom-1.5 text-base md:text-lg">Opting for diploma</p>
                 </div>
-                {{ form.submit(class="btn btn-primary mt-2% w-100% sm:w-30% mb-5% text-base xsm:text-lg sm:text-2xl") }}
             </div>
+            {{ form.submit(class="w-100% md:w-50% md:mx-25% mt-2% mb-5% btn btn-primary text-lg md:text-2xl") }}
         </form>
     </div>
             

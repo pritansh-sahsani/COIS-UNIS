@@ -10,30 +10,51 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     
-    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
-        <p>name: {{ uni.name }}</p>
-        <p>logo: {{ uni.logo }}</p>
-        <p>added_at: {{ uni.added_at }}</p>
-        <p>ib_cutoff: {{ uni.ib_cutoff }}</p>
-        <p>website: {{ uni.website }}</p>
-        <p>scholarships: {{ uni.scholarships }}</p>
-        <p>requirements: {{ uni.requirements }}</p>
-        <p>is_draft: {{ uni.is_draft }}</p>
-        <p>locations: {{ uni.locations }}</p>
-        <p>courses: {{ uni.courses }}</p>
-
+    <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5 grid grid-cols-2 p-3 gap-3">
+        <img class="w-full" src="../static/university_logos/{{ uni.logo }}" />
+        <div class="grid grid-cols-1 gap-y-1">
+            <p class="text-2xl w-100% text-center pb-2">{{ uni.name }}</p>
             
-        {% for add in admissions %}
-            <p>##############################################################</p>
-            <p>name: {{add['user'].fullname}} </p>
-            <p>graduation year: {{add['details'].graduation_year}} </p>
-            <p>course: {{add['application'].course}} </p>
-        {% endfor %}
-        {% for student in others %}
-            <p>##############################################################</p>
-            <p>name: {{student['user'].fullname}} </p>
-            <p>graduation year: {{student['details'].graduation_year}} </p>
-            <p>course: {{student['application'].course}} </p>
-        {% endfor %}
+            <p>locations: </p>
+            <div>
+                {% for location in uni.locations %}
+                <p class="inline border-solid border-black border-0.5 rounded-md p-1 w-fit m-1"> {{ location.exact_location }}</p>
+                {% endfor %}
+            </div>
+            <p>courses: </p>
+            <div>
+                {% for course in uni.courses %}
+                <p class="inline border-solid border-black border-0.5 rounded-md p-1  w-fit m-1"> {{ course.name }}</p>
+                {% endfor %}
+            </div>
+
+            <p>ib cutoff: {{ uni.ib_cutoff }}</p>
+            <p>scholarships offered: {{ uni.scholarships }}</p>
+            <p>requirements: {{ uni.requirements }}</p>
+            <p>website: {{ uni.website }}</p>
+
+            {% if len(addmissions) > 0 %}
+                <p class="text-xl  mt-3">COIS Students Pursuing Further Studies:</p>
+                {% for add in admissions %}
+                    <p>name: {{add['user'].fullname}} </p>
+                    <p>graduation year: {{add['details'].graduation_year}} </p>
+                    <p>course: {{add['application'].course}} </p>
+                    <hr class="w-90% my-1 mx-auto p-0 border-gradient" />
+                {% endfor %}
+            {% endif %}
+            
+            {% if len(others) > 0 %}
+                <p class="text-xl mt-3">COIS Students Who Applied Here:</p>
+                <hr class="w-90% my-1 mx-auto p-0 border-gradient" />
+                {% for student in others %}
+                    <p>name: {{student['user'].fullname}} </p>
+                    <p>graduation year: {{student['details'].graduation_year}} </p>
+                    <p>course: {{student['application'].course}} </p>
+                    <p>location: {{student['application'].location.exact_location}} </p>
+                    <p>status: {{student['application'].status }} </p>
+                    <hr class="w-90% my-1 mx-auto p-0 border-gradient" />
+                {% endfor %}
+            {% endif %}
+        </div>
     </div>
 {% endblock main %}

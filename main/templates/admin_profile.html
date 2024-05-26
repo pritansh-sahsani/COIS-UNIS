@@ -10,12 +10,19 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     
-    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
-        <p>username: {{ user.username }}</p>
-        <p>fullname: {{ user.fullname }}</p>
-        <p>email: {{ user.email }}</p>
-        <p>added_at: {{ user.added_at }}</p>
-        <p>phone_number: {{ user.phone_number }}</p>
+    <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5">
+        <div class="m-3">
+            <p class="text-2xl">{{ user.fullname }}</p>
+            <p class="mt-2">Username: {{ user.username }}</p>
+            <p>Email: {{ user.email }}</p>
+            <p>Joined at: {{ user.added_at.strftime("%d %B %Y") }}</p>
+            <p>Phone number: {{ user.phone_number }}</p>
+            {% if user.username == current_user.username %}
+            <a class="" href="{{ url_for('edit_admin', admin_id=user.id) }}">
+                <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto">Edit Profile</button>
+            </a>
+            {% endif %}
+        </div>
     </div>
 
 {% endblock main %}

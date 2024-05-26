@@ -152,8 +152,8 @@
         });
     </script>
 
-    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
-        <p class="text-center text-base xsm:text-4xl w-80% mt-3% mx-auto">Edit University</p>
+    <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5">
+        <p class="text-center text-lg md:text-4xl w-80% mt-3% mx-auto">Edit University</p>
         <hr class="border-black w-80% mx-auto my-3% sm:my-2%" />
         
         <div class="w-100%">
@@ -161,29 +161,29 @@
                 
                 {{ form.hidden_tag() }}
                 
-                {{ form.name(id="inputName", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Name", value=old_uni.name )}} 
+                {{ form.name(id="inputName", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="University Name", value=old_uni.name )}} 
                 
-                <div class="custom-file mt-3%">
-                    <label class="custom-file-label border-0.5 border-black text-center" id="file-upload_label" for="file-upload">
+                <div class="custom-file mt-4">
+                    <label class="custom-file-label border-0.5 border-black text-sm md:text-lg" id="file-upload_label" for="file-upload">
                         {% if old_uni.logo %}{{ old_uni.logo }}{% else %}Upload University Logo{% endif %}
                     </label>
                     {{ form.logo(class="custom-file-input", id="file-upload", type="file") }}
                 </div>
 
-                <h3 class="w-100% text-center text-xl mb-1 mt-2%">Locations</h3>
+                <h3 class="w-100% text-center text-base md:text-lg mb-1 mt-2">Locations</h3>
                 {{ form.location(id="locations_ms") }} 
                 
-                <h3 class="w-100% text-center text-xl mb-1 mt-2%">Courses</h3>
+                <h3 class="w-100% text-center text-base md:text-lg mb-1 mt-2">Courses</h3>     
                 {{ form.courses(id="courses_ms") }}
 
-                {{ form.website(id="inputWebsite", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Website", value=old_uni.website )}} 
-                {{ form.requirements(id="inputRequirements", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Requirements", value=old_uni.requirements )}} 
-                {{ form.scholarships(id="inputScholarships", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="University Scholarships", value=old_uni.scholarships )}} 
-                {{ form.ib_cutoff(id="inputIb_cutoff", class="text-base xsm:text-xl w-100% border-0.5 border-black text-center py-1% rounded-lg mt-3% ", placeholder="Cut off/required grade for IBDP", value=old_uni.ib_cutoff )}} 
+                {{ form.website(id="inputWebsite", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="University Website", value=old_uni.website )}} 
+                {{ form.requirements(id="inputRequirements", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4 py-1%", placeholder="University Requirements", value=old_uni.requirements )}} 
+                {{ form.scholarships(id="inputScholarships", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4 py-1%", placeholder="University Scholarships", value=old_uni.scholarships )}} 
+                {{ form.ib_cutoff(id="inputIb_cutoff", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="Cut off/required grade for IBDP", value=old_uni.ib_cutoff )}} 
 
                 <center>
-                    {{ form.save_draft(class="submit inline-block btn btn-primary mt-3% w-100% sm:w-30% sm:mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
-                    {{ form.submit(class="submit inline_block btn btn-primary mt-3% w-100% sm:w-30% mb-5% text-base sm:text-lg xsm:text-xl sm:text-2xl") }}
+                    {{ form.save_draft(class="submit inline-block btn btn-primary mt-3% w-100% sm:w-30% sm:mb-5% text-lg md:text-2xl") }}
+                    {{ form.submit(class="submit inline_block btn btn-primary mt-3% w-100% sm:w-30% mb-5% text-lg md:text-2xl") }}
                 </center>
             </form>
         </div>

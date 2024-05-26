@@ -69,8 +69,6 @@ body{
 .underline-btn, .underline-btn-active {
     background-color: var(--main);
     color: var(--gradient);
-    margin-top: 0.75rem;
-    margin-left: 3rem;
     transition: all ease-in-out 250ms;
     border-radius: 0.5rem;
 }

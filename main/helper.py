@@ -1,5 +1,6 @@
 from flask import render_template
 from flask_login import current_user
+from main.models import Student_details, User, Application
 
 def allow_access(level="All"):
     if level != "All":
@@ -16,6 +17,35 @@ def allow_access(level="All"):
                 if not current_user.is_student:
                     return render_template("/access_denied/students.html")
     return None
+
+def GetAppAndAddNo(unis):
+    no_add = []
+    no_app = []
+    for uni in unis:
+        admission_students = Student_details.query.filter_by(selected_uni_id = uni.id).all()
+        admissions = []
+        admission_ids = []
+        for student in admission_students:
+            admissions.append({
+                'details': student, 
+                'application': Application.query.filter_by(id = student.selected_app_id).first(),
+                'user': User.query.filter_by(id = student.user_id).first()
+            })
+            admission_ids.append(student.id)
+
+        others=[]
+        for application in Application.query.filter_by(uni_id = uni.id).all():
+            if application.student_id not in admission_ids:
+                student = Student_details.query.filter_by(id = application.student_id).first()
+                others.append({
+                    'details': student,
+                    'application': application,
+                    'user': User.query.filter_by(id = student.user_id).first()
+                })
+        no_add.append(len(admission_ids))
+        no_app.append(len(others))
+    
+    return no_add, no_app
 
 def sort_by_similarity(arr, string, column):
     similarities=[]

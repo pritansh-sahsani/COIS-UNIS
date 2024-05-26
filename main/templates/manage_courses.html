@@ -105,8 +105,9 @@
         });
     </script>
     
+<div class="mx-auto w-90%">
     <div class="mt-2">
-        <div id="search-div" class="w-100% md:w-80% 880:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
+        <div id="search-div" class="w-100% md:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
         <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
             <button id="search_button" class="float-right">
                 <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
@@ -139,4 +140,5 @@
                 <h3 id="no_course" class="w-100% text-center text-4xl">No Courses Found</h3>
             {% endif %}
     </div>
+</div>
 {% endblock main %}

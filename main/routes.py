@@ -1,7 +1,7 @@
 from main.forms import LoginForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm
 from main.setup import app, db
 from main.models import User, Uni, Location, Course, Student_details, Application
-from main.helper import sort_by_similarity, allow_access
+from main.helper import sort_by_similarity, allow_access, GetAppAndAddNo
 from main import bcrypt
 
 from flask import render_template, url_for, flash, redirect, request, abort
@@ -13,8 +13,9 @@ load_dotenv()
 
 HASHED_SUPER_USER_KEY = os.getenv('HASHED_SUPER_USER_KEY')
 
-@app.route("/", methods=["GET", "POST"])
-def index():
+@app.route("/unis", methods=["GET", "POST"])
+@login_required
+def unis():
     keyword = request.args.get('keyword')
     unis = Uni.query.filter_by(is_draft=False).all()
 
@@ -39,20 +40,28 @@ def index():
             for filter in ['ib_cutoff', 'requirements', 'scholarships']:
                 if getattr(form, filter).data!="":
                     unis=sort_by_similarity(unis, getattr(form, filter).data, filter)
-            for filter in ['courses', 'location']:
+            for filter in ['courses', 'locations']:
                 if len(getattr(form, filter).data)!=0:
                     for item in getattr(form, filter).data:
                         unis=sort_by_similarity(unis, item, filter)
-
-        if form.submit.data:
+            
+            if form.coisstudents.data:
+                no_add, no_app = GetAppAndAddNo(unis)
+                temp = unis
+                unis = []
+                for i in range(len(temp)):
+                    if no_add[i] + no_app[i] != 0:
+                        unis.append(temp[i])
+                
             for uni in Uni.query.filter_by(is_draft=False).all():
-                if not uni in unis:
+                if uni not in unis:
                     unis.append(uni)
-        
-    if len(unis) == 0:
-        return render_template("index.html", no_unis=True, form=form, courses=courses, locations=locations)
 
-    return render_template("index.html", unis=unis, form=form, courses=courses, locations=locations)
+            no_add, no_app = GetAppAndAddNo(unis)
+            return render_template("unis.html", unis=unis, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
+    
+    no_add, no_app = GetAppAndAddNo(unis)
+    return render_template("unis.html", unis=unis, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
 
 @app.route("/add_uni", methods=['GET', 'POST'])
 @login_required
@@ -95,7 +104,7 @@ def add_uni():
         f = request.files['logo']
         if f:
             filename = form.name.data + '.' + f.filename.rsplit('.', 1)[1].lower()
-            f.save(os.path.join(app.root_path, 'university_logos', filename))
+            f.save(os.path.join(app.root_path, 'static', 'university_logos', filename))
         else:
             filename = None
             is_draft = True
@@ -156,28 +165,51 @@ def manage_unis():
         draft_unis.append(uni)
     for uni in published_unis_query:
         published_unis.append(uni)
-    
-    for unis in [draft_unis, published_unis]:
-        if form.validate_on_submit():
-            if form.submit.data:
-                for filter in ['ib_cutoff', 'requirements', 'scholarships']:
-                    if getattr(form, filter).data!="":
-                        unis=sort_by_similarity(unis, getattr(form, filter).data, filter)
-                for filter in ['courses', 'location']:
-                    if len(getattr(form, filter).data)!=0:
-                        for item in getattr(form, filter).data:
-                            unis=sort_by_similarity(unis, item, filter)
-
-            if form.submit.data:
-                for uni in Uni.query.filter_by(is_draft=False).all():
-                    if not uni in unis:
-                        unis.append(uni)
-
+        
     d_unis_len=len(draft_unis_query)
     p_unis_len=len(published_unis_query)
     flash = "University Deleted Successfully!"
+    
+    if form.validate_on_submit():
+        if form.submit.data:
+            for filter in ['ib_cutoff', 'requirements', 'scholarships']:
+                if getattr(form, filter).data!="":
+                    published_unis=sort_by_similarity(published_unis, getattr(form, filter).data, filter)
+            for filter in ['courses', 'locations']:
+                if len(getattr(form, filter).data)!=0:
+                    for item in getattr(form, filter).data:
+                        published_unis=sort_by_similarity(published_unis, item, filter)
 
-    return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, flash=flash)
+            for filter in ['ib_cutoff', 'requirements', 'scholarships']:
+                if getattr(form, filter).data!="":
+                    draft_unis=sort_by_similarity(draft_unis, getattr(form, filter).data, filter)
+            for filter in ['courses', 'locations']:
+                if len(getattr(form, filter).data)!=0:
+                    for item in getattr(form, filter).data:
+                        draft_unis=sort_by_similarity(draft_unis, item, filter)
+            
+            
+            if form.coisstudents.data:
+                no_add, no_app = GetAppAndAddNo(published_unis)
+                temp = published_unis
+                published_unis = []
+                for i in range(len(temp)):
+                    if no_add[i] + no_app[i] != 0:
+                        published_unis.append(temp[i])
+                
+            for uni in Uni.query.filter_by(is_draft=False).all():
+                if uni not in published_unis:
+                    published_unis.append(uni)
+
+            for uni in Uni.query.filter_by(is_draft=True).all():
+                if uni not in draft_unis:
+                    draft_unis.append(uni)
+
+            no_add, no_app = GetAppAndAddNo(published_unis)
+            return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
+    
+    no_add, no_app = GetAppAndAddNo(published_unis)
+    return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
 
 @app.route("/manage_courses", methods=['GET', 'POST'])
 @login_required
@@ -277,6 +309,7 @@ def edit_location(location_id, location_name):
     return redirect(url_for('manage_locations'))
 
 @app.route('/uni/<string:uni_name>', methods=['GET', 'POST'])
+@login_required
 def uni(uni_name):
     uni = Uni.query.filter_by(name = uni_name).first_or_404()
     admission_students = Student_details.query.filter_by(selected_uni_id = uni.id).all()
@@ -300,7 +333,7 @@ def uni(uni_name):
                 'user': User.query.filter_by(id = student.user_id).first()
             })
 
-    return render_template("uni.html", uni=uni, admissions=admissions, others=others)
+    return render_template("uni.html", uni=uni, admissions=admissions, others=others, len=len)
 
 @app.route('/delete_uni/<int:uni_id>', methods=['GET', 'POST'])
 @login_required
@@ -346,8 +379,6 @@ def edit_uni(uni_name):
         new_uni = Uni.query.filter_by(name=form.name.data).first()
         if new_uni:
             if new_uni.id != old_uni.id:
-                print(new_uni.id)
-                print(old_uni.id)
                 flash("A university with this name already exists.")
                 return render_template("edit_uni.html", form=form, old_uni=old_uni)
         
@@ -490,7 +521,7 @@ def edit_admin(admin_id):
                 flash("This phone number is already registered.")
                 return render_template('edit_admin.html', form=form, old_admin=old_admin)
         
-        User.query.filter_by(id=old_admin.id).update(dict(email=form.email.data, username=form.username.data))
+        User.query.filter_by(id=old_admin.id).update(dict(email=form.email.data, username=form.username.data, fullname=form.fullname.data))
 
         if form.password.data !="":
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -499,25 +530,30 @@ def edit_admin(admin_id):
         db.session.commit()
 
         flash(f'Admin data updated successfully!', 'success')
-        return redirect(url_for('manage_admins'))
+        if current_user.id ==old_admin.id:
+            return redirect(url_for('profile', username = current_user.username))
+        else:
+            return redirect(url_for('manage_admins'))
 
     return render_template('edit_admin.html', form=form, old_admin=old_admin)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
+    if current_user.is_authenticated and current_user.is_student:
+        return redirect(url_for('unis'))
+    elif current_user.is_authenticated and not current_user.is_student:
+        return redirect(url_for('manage_unis'))
     form = LoginForm(formdata = request.form)
 
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data)
+            login_user(user, remember=True)
             next_page = request.args.get('next')
 
             if user.is_student:
-                return redirect(next_page) if next_page else redirect(url_for('index'))
+                return redirect(next_page) if next_page else redirect(url_for('unis'))
             elif user.username != "SUPERUSER":
                 return redirect(next_page) if next_page else redirect(url_for('manage_unis'))
             else:
@@ -532,7 +568,7 @@ def login():
 def logout():
     logout_user()
     flash("Logged Out Successfully!")
-    return redirect(url_for('index'))
+    return redirect(url_for('unis'))
 
 @app.route("/admin_register", methods=['GET', 'POST'])
 @login_required
@@ -560,6 +596,7 @@ def admin_register():
 def student_register():
     if current_user.is_authenticated:
         if allow_access("admins") is not None: return allow_access("admins")
+        logout_user()
 
     form = StudentRegistrationForm(formdata = request.form)
 
@@ -591,8 +628,9 @@ def student_register():
     return render_template('student_register.html', form=form)
 
 @app.route("/manage_students")
+# @login_required
 def manage_students():
-    if allow_access("admins") is not None: return allow_access("admins")
+    # if allow_access("admins") is not None: return allow_access("admins")
     students = User.query.filter_by(is_student = True).all()
     student_details = []
     for student in students:
@@ -600,7 +638,7 @@ def manage_students():
     
     del_flash = "Student Deleted successfully!"
 
-    return render_template('manage_students.html', students = students, student_details = student_details, del_flash=del_flash)
+    return render_template('manage_students.html', students = students, student_details = student_details, zip=zip, del_flash=del_flash)
 
 @app.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
@@ -666,8 +704,12 @@ def edit_student(student_id):
     
         db.session.commit()
 
-        flash(f'Student data updated successfully!', 'success')
-        return redirect(url_for('manage_students'))
+        if current_user.id ==old_student.id:
+            flash(f'Profile updated successfully!', 'success')
+            return redirect(url_for('profile', username = current_user.username))
+        else:
+            flash(f'Student data updated successfully!', 'success')
+            return redirect(url_for('manage_admins'))
 
     return render_template('edit_student.html', form=form, old_student=old_student, old_student_details=old_student_details)
 
@@ -743,11 +785,11 @@ def profile(username):
     else:
         student_details = Student_details.query.filter_by(user_id=user.id).first_or_404()
         applications = Application.query.filter_by(student_id=student_details.id).all()
-        return render_template("student_profile.html", student=user, student_details = student_details, applications=applications)
+        return render_template("student_profile.html", student=user, student_details = student_details, applications=applications, len=len)
 
 
 @app.route('/students', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def students():
     courses=[('None', 'None')]
     minors=[('None', 'None')]

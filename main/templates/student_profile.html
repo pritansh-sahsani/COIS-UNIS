@@ -10,31 +10,125 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     
-    <div class="border-solid border-black rounded-md my-5% items-center border-0.5">
-        <p>username: {{ student.username }}</p>
-        <p>fullname: {{ student.fullname }}</p>
-        <p>email: {{ student.email }}</p>
-        <p>added_at: {{ student.added_at }}</p>
-        <p>phone_number: {{ student.phone_number }}</p>
-        <p>myp score: {{ student_details.myp_score }}</p>
-        <p>dp predicted: {{ student_details.dp_predicted }}</p>
-        <p>dp score: {{ student_details.dp_score }}</p>
-        <p>diploma: {{ student_details.has_diploma }}</p>
-        <p>portfolio: {{ student_details.portfolio }}</p>
-        <p>selected_uni: {{ student_details.selected_uni_id }}</p>
+    <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5">
+        <div class="m-3">
+            <p class="text-2xl">{{ student.fullname }}</p>
+            <p class="mt-2">Username: {{ student.username }}</p>
+            <p>Email: {{ student.email }}</p>
+            <p>Joined at: {{ student.added_at.strftime("%d %B %Y") }}</p>
+            <p>Phone number: {{ student.phone_number }}</p>
+            {% if student_details.graduation_year%}
+                <p>Graduation year: {{ student_details.graduation_year }}</p>
+            {%endif%}
+            {% if student_details.myp_score %}
+                <p>myp score: {{ student_details.myp_score }}</p>
+            {% endif %}
+            {% if student_details.dp_predicted %}
+                <p>dp predicted: {{ student_details.dp_predicted }}</p>
+            {% endif %}
+            {% if student_details.dp_score %}
+                <p>dp score: {{ student_details.dp_score }}</p>
+            {% endif %}
+            {% if student_details.has_diploma %}
+                <p>Opted for Diploma: Yes </p>
+            {%else%}
+                <p>Opted for Diploma: No</p>
+            {% endif %}
+            {% if student_details.portfolio %}
+                <p>Portfolio: {{ student_details.portfolio }}</p>
+            {% endif %}
 
-        {% for app in applications %}
-            <p>##################################################</p>
-            <p>uni: {{ app.uni }}</p>
-            <p>student: {{ app.student }}</p>
-            <p>course: {{ app.course }}</p>
-            <p>location: {{ app.location }}</p>
-            <p>minors: {{ app.minors }}</p>
-            <p>status: {{ app.status }}</p>
-            <p>scholarship: {{ app.scholarship }}</p>
-            <p>other_details: {{ app.other_details }}</p>
-            <p>is_early: {{ app.is_early }}</p>
-        {% endfor %}
+
+            {% if student_details.selected_uni_id %}
+                <p class="text-lg mt-2">Further Studies</p>
+                <hr class="my-1 p-0 border-gradient" />
+                {% for app in applications %}
+                    {% if student_details.selected_app_id == app.id %}
+                        <p>University: {{ app.uni }}</p>
+                        <p>Course: {{ app.course }}</p>
+                        <p>Location: {{ app.location.exact_location }}</p>
+                        
+                        <p>Minors: 
+                        {% for minor in app.minors %}
+                        {{ minor.name }}, 
+                        {% endfor %}</p>
+
+                        {% if app.scholarship %}
+                        <p>Scholarship: {{ app.scholarship }}</p>
+                        {% endif %}
+                        {% if app.other_details %}
+                        <p>Other details: {{ app.other_details }}</p>
+                        {% endif %}
+                        {% if app.is_early %}
+                        <p><b>Early application</b></p>
+                        {% endif %}
+                    {% endif %}
+                    <hr class="my-1 mx-auto p-0 border-gradient" />
+                {% endfor %}
+                
+                {% if len(applications)-1 > 0 %}
+                    <p class="text-lg mt-2">Other Applications</p>
+                    <hr class="my-1 mx-auto p-0 border-gradient" />
+                    {% for app in applications %}
+                        {% if student_details.selected_app_id != app.id %}
+                            <p>University: {{ app.uni }}</p>
+                            <p>Course: {{ app.course }}</p>
+                            <p>Location: {{ app.location.exact_location }}</p>
+                            
+                            <p>Minors: 
+                            {% for minor in app.minors %}
+                            {{ minor.name }}, 
+                            {% endfor %}</p>
+                            <p>{{app.status}}</p>
+                            {% if app.scholarship %}
+                            <p>Scholarship: {{ app.scholarship }}</p>
+                            {% endif %}
+                            {% if app.other_details %}
+                            <p>Other details: {{ app.other_details }}</p>
+                            {% endif %}
+                            {% if app.is_early %}
+                            <p><b>Early application</b></p>
+                            {% endif %}
+                        {% endif %}
+                        <hr class="my-1 mx-auto p-0 border-gradient" />
+                    {% endfor %}
+                {% endif %}
+            {% else %}
+                {% if len(applications) > 0 %}
+                    <p class="text-lg mt-2">Applications</p>
+                    {% for app in applications %}
+                        <hr class="my-1 mx-auto p-0 border-gradient" />
+                        {% if student_details.selected_app_id != app.id %}
+                            <p>University: {{ app.uni }}</p>
+                            <p>Course: {{ app.course }}</p>
+                            <p>Location: {{ app.location.exact_location }}</p>
+                            
+                            <p>Minors: 
+                                {% for minor in app.minors %}
+                                {{ minor.name }}, 
+                            {% endfor %}</p>
+                            <p>Status: {{app.status}}</p>
+                            {% if app.scholarship %}
+                                <p>Scholarship: {{ app.scholarship }}</p>
+                            {% endif %}
+                            {% if app.other_details %}
+                                <p>Other details: {{ app.other_details }}</p>
+                            {% endif %}
+                            {% if app.is_early %}
+                                <p><b>Early application</b></p>
+                            {% endif %}
+                        {% endif %}    
+                        <hr class="my-1 mx-auto p-0 border-gradient" />
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+
+            {% if student.username == current_user.username %}
+                <a class="" href="{{ url_for('edit_student', student_id=student.id) }}">
+                    <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto">Edit Profile</button>
+                </a>
+            {% endif %}
+        </div>
     </div>
 
 {% endblock main %}

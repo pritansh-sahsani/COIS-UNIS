@@ -54,7 +54,6 @@ class AddUniversityForm(FlaskForm):
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Username', min='%(min)d', max='%(max)d'))])
     password = PasswordField('Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
-    remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
     
     def __init__(self, formdata=None, **kwargs):
@@ -98,10 +97,10 @@ class EditAdminForm(FlaskForm):
     username = StringField('Username', validators=[Length(min=1, max=50, message=min_max_error_message.format(field='Username', min='%(min)d', max='%(max)d'))])
     fullname = StringField('Full Name', validators=[Length(min=1, max=50, message=min_max_error_message.format(field='Full name', min='%(min)d', max='%(max)d'))])
     email = StringField('Email', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Email', min='%(min)d', max='%(max)d')), Email()])
-    password = PasswordField('Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
-    confirm_password = PasswordField('Confirm Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
-    phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
-    submit = SubmitField('Sign Up')
+    password = PasswordField('Password')
+    confirm_password = PasswordField('Confirm Password', validators=[EqualTo('password')])
+    phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Phone Number', min='%(min)d', max='%(max)d'))])
+    submit = SubmitField('Confirm Changes')
 
     def validate_username(self, username):
         pattern = r'[!@#$%^&*()_+={}\[\]:;"\'|,.<>?\\\/~`\s]'
@@ -122,7 +121,7 @@ class StudentRegistrationForm(FlaskForm):
     email = StringField('Email', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Email', min='%(min)d', max='%(max)d')), Email()])
     password = PasswordField('Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
     confirm_password = PasswordField('Confirm Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
-    phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
+    phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Phone Number', min='%(min)d', max='%(max)d'))])
 
     graduation_year = StringField("Graduatation Year", validators=[Length(min=4, max=4, message="Please enter a valid graduation year.")])
     myp_score = StringField('MYP-5 Score (out of 56)')
@@ -175,9 +174,9 @@ class EditStudentForm(FlaskForm):
     username = StringField('Username', validators=[Length(min=1, max=50, message=min_max_error_message.format(field='Username', min='%(min)d', max='%(max)d'))])
     fullname = StringField('Full Name', validators=[Length(min=1, max=50, message=min_max_error_message.format(field='Full name', min='%(min)d', max='%(max)d'))])
     email = StringField('Email', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Email', min='%(min)d', max='%(max)d')), Email()])
-    password = PasswordField('Password', validators=[Length(max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
-    confirm_password = PasswordField('Confirm Password', validators=[Length(max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
-    phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
+    password = PasswordField('Password')
+    confirm_password = PasswordField('Confirm Password', validators=[EqualTo('password')])
+    phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Phone Number', min='%(min)d', max='%(max)d'))])
 
     graduation_year = StringField("Graduatation Year", validators=[Length(min=4, max=4, message="Please enter a valid graduation year.")])
     myp_score = StringField('MYP-5 Score (out of 56)')
@@ -238,14 +237,15 @@ class FilterForm(FlaskForm):
     requirements = StringField('Requirements for admission')
     scholarships = StringField('Scholarships')
     courses = SelectMultipleField('Courses', choices=[])
-    location = SelectMultipleField('Location', choices=[])
+    locations = SelectMultipleField('Location', choices=[])
     submit = SubmitField('Apply Filter')
     clear = SubmitField('Clear Filters')
+    coisstudents = BooleanField('COIS students')
 
     def __init__(self, formdata=None, **kwargs):
         super(FilterForm, self).__init__(formdata=formdata, **kwargs)
         self.courses.choices = kwargs['courses']
-        self.location.choices = kwargs['locations']
+        self.locations.choices = kwargs['locations']
 
         
 class FilterStudentsForm(FlaskForm):
