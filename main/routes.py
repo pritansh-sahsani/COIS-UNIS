@@ -771,6 +771,54 @@ def add_application():
     return render_template('add_application.html', form=form)
 
 
+@app.route('/edit_application/<int:application_id>', methods=['GET', 'POST'])
+@login_required
+def edit_application(application_id):
+    old_app = Application.query.filter_by(id = application_id).first_or_404()
+
+    if allow_access("only_students") is not None: return allow_access("only_students")
+    
+    application = Application.query.get_or_404(application_id)
+    student_details = Student_details.query.filter_by(user_id=current_user.id).with_entities(Student_details.id).first_or_404()
+    
+    # Ensure the application belongs to the current user
+    if application.student_id != student_details.id:
+        abort(403)
+
+    courses = [(course.id, course.name) for course in Course.query.with_entities(Course.id, Course.name).all()]
+    minors = [(course.name, course.name) for course in Course.query.with_entities(Course.id, Course.name).all()]
+    unis = [(uni.id, uni.name) for uni in Uni.query.with_entities(Uni.id, Uni.name).all()]
+    locations = [(location.id, location.exact_location) for location in Location.query.with_entities(Location.id, Location.exact_location).all()]
+
+    form = ApplicationForm(formdata=request.form, courses=courses, minors=minors, unis=unis, locations=locations, 
+                           obj=application)
+    
+    if form.validate_on_submit():
+        application.uni_id = int(form.uni.data)
+        application.course_id = int(form.course.data)
+        application.location_id = int(form.location.data)
+        application.status = form.status.data
+        application.scholarship = form.scholarship.data
+        application.other_details = form.other_details.data
+        application.is_early = form.is_early.data
+
+        application.minors = []
+        for minor in form.minors.data:
+            course = Course.query.filter_by(name=minor).first()
+            if course:
+                application.minors.append(course)
+
+        db.session.commit()
+
+        if form.selected_uni.data:
+            Student_details.query.filter_by(user_id=current_user.id).update(dict(selected_uni_id=application.id))
+            db.session.commit()
+            
+        return redirect(url_for('profile', username=current_user.username))
+
+    return render_template('edit_application.html', form=form, old_app=old_app, application=application)
+
+
 @app.route('/profile/<string:username>', methods=['GET', 'POST'])
 @login_required
 def profile(username):
