@@ -698,6 +698,11 @@ video {
   margin-bottom: 0px;
 }
 
+.mx-1 {
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
 .mb-1 {
   margin-bottom: 0.25rem;
 }
@@ -937,6 +942,10 @@ video {
 
 .w-full {
   width: 100%;
+}
+
+.w-95\% {
+  width: 95%;
 }
 
 .flex-initial {

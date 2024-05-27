@@ -906,12 +906,12 @@ def students():
             user = User.query.filter_by(id=details.user_id).first_or_404()
             students.append(user)
             applications.append(Application.query.filter_by(student_id=details.id).all())
-        return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications)
+        return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications, zip=zip)
     else:
         if form.clear.data:
             return redirect(url_for("students"))    
     
-    return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications)
+    return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications, zip=zip)
 
 @app.errorhandler(404)
 def page_not_found(e):

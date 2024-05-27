@@ -57,15 +57,15 @@
 
             var filter_id = '#applied_filters_';
             var input_id = '#FilterInput-';
-            var filters = ['has_diploma', 'graduation_year', 'myp_score_min', 'myp_score_max', 'dp_predicted_min', 'dp_predicted_max', 'dp_score_min', 'dp_score_max', 'uni', 'course', 'location', 'status', 'is_early', 'selected_uni'];
-            var filters_name = ['Diploma', 'Graduation year', 'Min MYP score', 'Max MYP score', 'Min DP predicted', 'Max DP predicted', 'Min DP score', 'Max DP score', 'University', 'Course', 'Location', 'Status', 'Early app', 'Took Admission'];
-            var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
+            var filters = ['graduation_year', 'myp_score_min', 'myp_score_max', 'dp_predicted_min', 'dp_predicted_max', 'dp_score_min', 'dp_score_max', 'uni', 'course', 'location', 'status', 'is_early', 'selected_uni', 'has_diploma'];
+            var filters_name = ['Graduation year', 'Min MYP score', 'Max MYP score', 'Min DP predicted', 'Max DP predicted', 'Min DP score', 'Max DP score', 'University', 'Course', 'Location', 'Status', 'Early app', 'Took Admission', 'diploma'];
+            var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg m-1' 
 
             for(var i = 0; i<filters_name.length; i++)
             {
                 var para = $("<p></p>").attr('id', "applied_filters_"+filters[i]);
                 $("#tags").append(para)
-                if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null)
+                if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null && ($(input_id+filters[i]).val()) != 'None' && ($(input_id+filters[i]).val()) != 'none')
                 {
                     $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
                     $(filter_id+filters[i]).attr('class', text_style);
@@ -127,29 +127,30 @@
 				});
 			});
     </script>
+    <div class="w-90% mx-auto">
 
-    <div id="dropdownHover" class="hidden w-90% md:w-80% 880:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
-        <div class="mx-auto w-80%">
-            <form action='' method="POST" class="w-100% mx-auto">
+    <div id="dropdownHover" class="hidden w-90% md:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
+        <div class="mx-auto w-90% md:w-80%">
+            <form action='' method="POST" class="w-100% mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 m-3">
                 {{ form.hidden_tag() }}
 
-                {{ form.myp_score_min(id="FilterInput-myp_score_min", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Minimum MYP-5 score') }}
-                {{ form.myp_score_max(id="FilterInput-myp_score_max", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg float-right", placeholder='Maximum MYP-5 score') }}
+                {{ form.myp_score_min(id="FilterInput-myp_score_min", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Minimum MYP-5 score') }}
+                {{ form.myp_score_max(id="FilterInput-myp_score_max", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Maximum MYP-5 score') }}
                 
-                {{ form.dp_score_min(id="FilterInput-dp_score_min", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Minimum DP score') }}
-                {{ form.dp_score_max(id="FilterInput-dp_score_max", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg float-right", placeholder='Maximum DP score') }}
+                {{ form.dp_score_min(id="FilterInput-dp_score_min", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Minimum DP score') }}
+                {{ form.dp_score_max(id="FilterInput-dp_score_max", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Maximum DP score') }}
                 
-                {{ form.dp_predicted_min(id="FilterInput-dp_predicted_min", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Minimum DP predicted') }}
-                {{ form.dp_predicted_max(id="FilterInput-dp_predicted_max", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg float-right", placeholder='Maximum DP predicted') }}
+                {{ form.dp_predicted_min(id="FilterInput-dp_predicted_min", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Minimum DP predicted') }}
+                {{ form.dp_predicted_max(id="FilterInput-dp_predicted_max", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Maximum DP predicted') }}
                 
-                {{ form.graduation_year(id="FilterInput-graduation_year", class="FilterInput w-100% sm:w-47.5% border-0.5 border-black text-center py-1% mt-2% rounded-lg", placeholder='Graduation year') }}
+                {{ form.graduation_year(id="FilterInput-graduation_year", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Graduation year') }}
                    
-                {{ form.uni(placeholder="University", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% mt-2% sm:mb-1%") }}
-                {{ form.location(placeholder="Location", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%") }}
-                {{ form.course(placeholder="Course", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%") }}
-                {{ form.status(placeholder='Application status', class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg mb-5% sm:mb-1%") }}
+                {{ form.uni(id="FilterInput-uni", placeholder="University", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg") }}
+                {{ form.location(id="FilterInput-location", placeholder="Location", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg") }}
+                {{ form.course(id="FilterInput-course", placeholder="Course", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg") }}
+                {{ form.status(id="FilterInput-status", placeholder='Application status', class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg") }}
                 
-                <div class="inline-block mt-2% w-30%">
+                <div class="mx-auto">
                     <label class="switch m-0">
                         {{ form.is_early(class="form-check-input", type="checkbox") }}
                         <span class="slider round"></span>
@@ -157,7 +158,7 @@
                     <p class="inline-block relative bottom-1.5 960:bottom-1">Early application</p>
                 </div>
 
-                <div class="inline-block mt-2% w-30%">
+                <div class="mx-auto">
                     <label class="switch m-0">
                         {{ form.has_diploma(class="form-check-input", type="checkbox") }}
                         <span class="slider round"></span>
@@ -165,7 +166,7 @@
                     <p class="inline-block relative bottom-1.5 960:bottom-1">Opting for diploma</p>
                 </div>
                 
-                <div class="inline-block w-30%">
+                <div class="mx-auto">
                     <label class="switch m-0">
                         {{ form.selected_uni(class="form-check-input", type="checkbox") }}
                         <span class="slider round"></span>
@@ -173,8 +174,8 @@
                     <p class="inline-block relative bottom-1.5 960:bottom-1">Took admission</p>
                 </div>
 
-                {{ form.submit(class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-5%") }}
-                {{ form.clear(id="clear_filter", class="btn btn-primary rounded-lg w-100% xsm:w-47.5% mt-2% xsm:mt-5% mb-5% float-right") }}
+                {{ form.submit(class="btn btn-primary rounded-lg w-100%") }}
+                {{ form.clear(id="clear_filter", class="btn btn-primary rounded-lg w-100%") }}
             </form>
         </div>
     </div>
@@ -184,11 +185,11 @@
         <img class="inline-block mb-1 w-4 h-4" id="ShowFilterImg" src="../static/assets/dropdown-icon.svg">
     </div>
     <div class="mt-2">
-        <div class="w-100% md:w-80% 880:w-50% mx-auto mb-2">
+        <div class="w-100% md:w-50% mx-auto mb-2">
             <div class="w-fit mx-auto" id="tags">
             </div>
         </div>
-        <div id="search-div" class="w-100% md:w-80% 880:w-47.5% mx-auto mt-5 border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
+        <div id="search-div" class="w-100% md:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
             <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
             <button id="search_button" class="float-right">
                 <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
@@ -196,17 +197,20 @@
         </div>
     </div>
 
-    <center>
         <div>
-            <h3 id="no_student" class="hidden my-3 text-4xl"></h3>
-            {% for student in students %}
-                <div class="w-100% md:w-47.5% mt-2 border-0.5 border-black rounded-md" id="student{{ student.id }}">
-                    <div class="m-2">
-                        <p class="float-left"></p>
-                        <a href="{{ url_for('profile', username=student.username) }}"><p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md">{{ student.fullname }} - {{ student.email }}</p></a>
-                    </div>
+            <h3 id="no_student" class="hidden my-3 text-4xl text-center mx-auto"></h3>
+            {% for student, details in zip(students, student_details) %}
+            <div class="w-100% md:w-50% mx-auto mt-2 md:border-0.5 border-black rounded-md" id="student{{ student.id }}">
+                <div class="m-2 grid grid-cols-2 gap-x-2 ">
+                    <p class="text-xl"><a href="/profile/{{student.username}}">{{student.fullname}}</a></p>
+                    <p class="justify-self-end text-right">joined: {{ student.added_at.strftime("%d %B %Y") }}</p>
+                    <p class="col-span-2 pt-2">{{ student.username }}</p>
+                    <p class="col-span-2">Email Address: {{ student.email }}</p>
+                    <p class="col-span-2">Graduating in: {{ details.graduation_year }}</p>
                 </div>
+            </div>
+            <hr class="block md:hidden border-0.5 border-black my-4"/>
             {% endfor %}
         </div>
-    </center>
+    </div>
 {% endblock %}
