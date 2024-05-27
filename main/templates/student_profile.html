@@ -39,7 +39,7 @@
             {% endif %}
 
 
-            {% if student_details.selected_uni_id %}
+            {% if student_details.selected_app_id %}
                 <p class="text-lg mt-2">Further Studies</p>
                 <hr class="my-1 p-0 border-gradient" />
                 {% for app in applications %}
@@ -62,8 +62,17 @@
                         {% if app.is_early %}
                         <p><b>Early application</b></p>
                         {% endif %}
+                        {% if student.username == current_user.username %}
+                            <a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
+                            </a>
+                            
+                            <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                <button class="mt-2 btn btn-danger w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                            </a>
+                        {% endif %}
+                        <hr class="my-1 mx-auto p-0 border-gradient" />
                     {% endif %}
-                    <hr class="my-1 mx-auto p-0 border-gradient" />
                 {% endfor %}
                 
                 {% if len(applications)-1 > 0 %}
@@ -88,6 +97,15 @@
                             {% endif %}
                             {% if app.is_early %}
                             <p><b>Early application</b></p>
+                            {% endif %}
+                            {% if student.username == current_user.username %}
+                                <a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                    <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
+                                </a>
+
+                                <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                    <button class="mt-2 btn btn-danger w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                                </a>
                             {% endif %}
                         {% endif %}
                         <hr class="my-1 mx-auto p-0 border-gradient" />
@@ -117,6 +135,15 @@
                             {% if app.is_early %}
                                 <p><b>Early application</b></p>
                             {% endif %}
+                            {% if student.username == current_user.username %}
+                                <a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                    <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
+                                </a>
+                                
+                                <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                    <button class="mt-2 btn btn-danger w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                                </a>
+                            {% endif %}
                         {% endif %}    
                         <hr class="my-1 mx-auto p-0 border-gradient" />
                     {% endfor %}
@@ -124,8 +151,11 @@
             {% endif %}
 
             {% if student.username == current_user.username %}
+                <a class="" href="{{ url_for('add_application', student_id=student.id) }}">
+                    <button class="mt-2 btn btn-primary w-100% md:w-fit mx-auto">Add Application Details</button>
+                </a>
                 <a class="" href="{{ url_for('edit_student', student_id=student.id) }}">
-                    <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto">Edit Profile</button>
+                    <button class="mt-2 btn btn-primary w-100% md:w-fit mx-auto">Edit Profile</button>
                 </a>
             {% endif %}
         </div>

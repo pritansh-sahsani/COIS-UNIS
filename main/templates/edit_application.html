@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
 <script src="../static/extensions/filter-multi-select-bundle-base.min.js"></script>  
 <script type=text/javascript>
-    
     function raise_error() {
         
         {% for item in [form.uni, form.course, form.minors, form.location, form.status, form.is_early, form.scholarship, form.selected_uni, form.other_details] %}
@@ -28,6 +27,13 @@
             const courses = $('#minors_ms').filterMultiSelect();
             $('#minors_ms').attr('class', 'filter-multi-select dropdown w-100% col-span-2 md:col-span-1')
             $('.placeholder').text("Minors");
+            {% for minor in old_app.minors %}
+            courses.selectOption('{{minor.name | safe}}');
+            {% endfor %}
+            $("#uni_select option:contains('{{old_app.uni.name | safe}}')").prop('selected', true);
+            $("#location_select option:contains('{{old_app.location.exact_location | safe}}')").prop('selected', true);
+            $("#course_select option:contains('{{old_app.course.name | safe}}')").prop('selected', true);
+            $("#status_select option:contains('{{old_app.status.name | safe}}')").prop('selected', true);
     });
 </script>
 
@@ -37,28 +43,34 @@
         <form action='' method="POST" class="w-90% md:w-80% mx-auto">
             <div class="w-100% grid md:grid-cols-2 md:gap-x-2 space-y-2 justify-items-center">
                 {{ form.hidden_tag() }}
-                {{ form.uni(placeholder="University", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
-                {{ form.location(placeholder="Location", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
-                {{ form.course(placeholder="Course", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
+                {{ form.uni( id='uni_select', placeholder="University", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
+                {{ form.location( id='location_select',  placeholder="Location", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
+                {{ form.course( id='course_select', placeholder="Course", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
                 
-                {{ form.status(placeholder='Application status (if recieved)', class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
-                {{ form.scholarship(placeholder="Scholarship (if any)", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
+                {{ form.status( id='status_select', placeholder='Application status (if recieved)', class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
+                {{ form.scholarship(value = old_app.scholarship, placeholder="Scholarship (if any)", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
                 {{ form.minors(placeholder="Minors, if any", id="minors_ms", class="") }}
-                {{ form.other_details(placeholder='Other details that you feel would be useful for other students to know.', class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2") }}
-                
-                
+                {{ form.other_details(value = old_app.other_details, placeholder='Other details that you feel would be useful for other students to know.', class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2") }}
             </div>
 
             <div class="mt-2% flex">
                 <label class="switch m-0 flex-none">
-                    {{ form.is_early(class="form-check-input", type="checkbox") }}
+                    {% if old_app.is_early %}
+                        {{ form.is_early(class="form-check-input", type="checkbox", checked=true) }}
+                    {% else %}
+                        {{ form.is_early(class="form-check-input", type="checkbox") }}
+                    {% endif %}
                     <span class="slider round"></span>
                 </label>
                 <p class="flex-initial relative text-base md:text-lg ml-2">Early Application</p>
             </div>
             <div class="mt-2% flex">
                 <label class="switch m-0 flex-none">
-                    {{ form.selected_uni(class="form-check-input", type="checkbox") }}
+                    {% if old_app.selected_uni %}
+                        {{ form.selected_uni(class="form-check-input", type="checkbox", checked=true) }}
+                    {% else %}
+                        {{ form.selected_uni(class="form-check-input", type="checkbox") }}
+                    {% endif %}
                     <span class="slider round"></span>
                 </label>
                 <p class="flex-initial relative text-base md:text-lg ml-2">Is this the university you have taken admission in?</p>

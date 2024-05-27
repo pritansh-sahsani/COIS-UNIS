@@ -763,7 +763,7 @@ def add_application():
             other_details = form.other_details.data,
             is_early = form.is_early.data).first()
 
-            Student_details.query.filter_by(user_id = current_user.id).update(dict(selected_uni_id=application.id))
+            Student_details.query.filter_by(user_id = current_user.id).update(dict(selected_app_id=application.id, selected_uni_id=form.uni.data))
             db.session.commit()
             
         return redirect(url_for('profile', username=current_user.username))
@@ -790,8 +790,7 @@ def edit_application(application_id):
     unis = [(uni.id, uni.name) for uni in Uni.query.with_entities(Uni.id, Uni.name).all()]
     locations = [(location.id, location.exact_location) for location in Location.query.with_entities(Location.id, Location.exact_location).all()]
 
-    form = ApplicationForm(formdata=request.form, courses=courses, minors=minors, unis=unis, locations=locations, 
-                           obj=application)
+    form = ApplicationForm(obj=application, formdata=request.form, courses=courses, minors=minors, unis=unis, locations=locations)
     
     if form.validate_on_submit():
         application.uni_id = int(form.uni.data)
@@ -808,15 +807,39 @@ def edit_application(application_id):
             if course:
                 application.minors.append(course)
 
-        db.session.commit()
-
         if form.selected_uni.data:
-            Student_details.query.filter_by(user_id=current_user.id).update(dict(selected_uni_id=application.id))
-            db.session.commit()
+            Student_details.query.filter_by(user_id=current_user.id).update(dict(selected_app_id=application.id, selected_uni_id=form.uni.data))
+        
+        if (Student_details.query.filter_by(user_id=current_user.id).first().selected_app_id == old_app.id ) and (not form.selected_uni.data):
+            Student_details.query.filter_by(user_id=current_user.id).update(dict(selected_app_id=None, selected_uni_id=None))
+        
+        db.session.commit()
             
         return redirect(url_for('profile', username=current_user.username))
 
     return render_template('edit_application.html', form=form, old_app=old_app, application=application)
+
+@app.route('/delete_application/<int:application_id>', methods=['GET', 'POST'])
+@login_required
+def delete_application(application_id):
+    app = Application.query.filter_by(id = application_id).first_or_404()
+
+    if allow_access("only_students") is not None: return allow_access("only_students")
+    
+    application = Application.query.get_or_404(application_id)
+    student_details = Student_details.query.filter_by(user_id=current_user.id).first_or_404()
+    
+    # Ensure the application belongs to the current user
+    if application.student_id != student_details.id:
+        abort(403)
+    
+    if student_details.selected_app_id == app.id :
+        Student_details.query.filter_by(user_id=current_user.id).update(dict(selected_app_id=None, selected_uni_id=None))
+
+    db.session.delete(app)
+    db.session.commit()
+
+    return redirect(url_for('profile', username=current_user.username))
 
 
 @app.route('/profile/<string:username>', methods=['GET', 'POST'])
