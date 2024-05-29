@@ -12,6 +12,7 @@
     
     <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5">
         <div class="m-3">
+            <img src="../static/profile_pics/{{ student.pfp }}">
             <p class="text-2xl">{{ student.fullname }}</p>
             <p class="mt-2">Username: {{ student.username }}</p>
             <p>Email: {{ student.email }}</p>
@@ -107,8 +108,8 @@
                                     <button class="mt-2 btn btn-danger w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
                                 </a>
                             {% endif %}
+                            <hr class="my-1 mx-auto p-0 border-gradient" />
                         {% endif %}
-                        <hr class="my-1 mx-auto p-0 border-gradient" />
                     {% endfor %}
                 {% endif %}
             {% else %}

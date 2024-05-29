@@ -11,6 +11,13 @@
 
     function raise_error() {
 
+        {% if form.pfp.errors %} 
+            {% for error in form.pfp.errors %}
+                $("#flash_text").text("{{error}}");
+                $("#flash_text_div").show();
+            {% endfor %}
+        {% endif %}
+
         {% if form.username.errors %} 
             {% for error in form.username.errors %}
                 $("#flash_text").text("{{error}}");
@@ -60,9 +67,13 @@
     <div class="mx-auto w-100% md:w-90% md:border-solid md:border-black md:rounded-md md:my-5% items-center md:border-0.5">
         <p class="text-center text-lg xsm:text-4xl w-90% md:w-80% mt-5% mx-auto">Register Admin</p>
         <hr class="border-black w-90% md:w-80% mx-auto my-3% sm:mt-2% sm:mb-1%" />
-        <form action='' method="POST" class="w-90% md:w-80% mx-auto">
+        <form action='' method="POST" class="w-90% md:w-80% mx-auto" enctype="multipart/form-data">
             <div class="w-100% grid md:grid-cols-2 md:gap-x-2 space-y-2 justify-items-center">
                 {{ form.hidden_tag() }}
+                <div class="custom-file">
+                    <label class="custom-file-label border-0.5 border-black text-sm md:text-lg" id="file-upload_label" for="file-upload">Upload Profile Picture</label>
+                    {{ form.pfp(class="custom-file-input", id="file-upload", type="file") }}
+                </div>
                 {{ form.username(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", placeholder="Username")}}
                 {{ form.fullname(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", placeholder="Full name")}}
                 {{ form.email(class="           text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", placeholder="Email") }}

@@ -492,6 +492,10 @@ def delete_admin(user_id):
     if current_user.id != user_id:
         if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     user = User.query.filter_by(id = user_id).first_or_404()
+
+    if user.pfp != "default.png":
+        os.remove(os.path.join(app.root_path, 'profile_pics', user.pfp))
+
     db.session.delete(user)
     db.session.commit()
     return redirect(url_for('manage_admins'))
@@ -521,7 +525,14 @@ def edit_admin(admin_id):
                 flash("This phone number is already registered.")
                 return render_template('edit_admin.html', form=form, old_admin=old_admin)
         
-        User.query.filter_by(id=old_admin.id).update(dict(email=form.email.data, username=form.username.data, fullname=form.fullname.data))
+        f = request.files['pfp']
+        if f:
+            filename = form.username.data + '.' + f.filename.rsplit('.', 1)[1].lower()
+            f.save(os.path.join(app.root_path, 'static', 'profile_pics', filename))
+        else:
+            filename=old_admin.pfp
+        
+        User.query.filter_by(id=old_admin.id).update(dict(email=form.email.data, username=form.username.data, fullname=form.fullname.data, pfp=filename))
 
         if form.password.data !="":
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -578,11 +589,20 @@ def admin_register():
 
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        
+        f = request.files['pfp']
+        if f:
+            filename = form.username.data + '.' + f.filename.rsplit('.', 1)[1].lower()
+            f.save(os.path.join(app.root_path, 'static', 'profile_pics', filename))
+        else:
+            filename="default.png"
+
         user = User(username=form.username.data,
                     fullname=form.fullname.data,
                     email=form.email.data,
                     phone_number = form.phone_number.data,
-                    password=hashed_password)
+                    password=hashed_password,
+                    pfp = filename)
 
         db.session.add(user)
         db.session.commit()
@@ -602,12 +622,21 @@ def student_register():
 
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        
+        f = request.files['pfp']
+        if f:
+            filename = form.username.data + '.' + f.filename.rsplit('.', 1)[1].lower()
+            f.save(os.path.join(app.root_path, 'static', 'profile_pics', filename))
+        else:
+            filename="default.png"
+
         user = User(username=form.username.data,
                     fullname=form.fullname.data,
                     email=form.email.data,
                     phone_number = form.phone_number.data,
                     password=hashed_password,
-                    is_student=True)
+                    is_student=True,
+                    pfp=filename)
         db.session.add(user)
         db.session.commit()
 
@@ -628,9 +657,9 @@ def student_register():
     return render_template('student_register.html', form=form)
 
 @app.route("/manage_students")
-# @login_required
+@login_required
 def manage_students():
-    # if allow_access("admins") is not None: return allow_access("admins")
+    if allow_access("admins") is not None: return allow_access("admins")
     students = User.query.filter_by(is_student = True).all()
     student_details = []
     for student in students:
@@ -647,6 +676,9 @@ def delete_student(student_id):
         if allow_access("admins") is not None: return allow_access("admins")
 
     student = User.query.get_or_404(student_id)
+    
+    if student.pfp != "default.png":
+        os.remove(os.path.join(app.root_path, 'profile_pics', student.pfp))
     
     student_details = Student_details.query.filter_by(user_id=student_id).all()
     for detail in student_details:
@@ -684,10 +716,18 @@ def edit_student(student_id):
                 flash("This phone number is already registered.")
                 return render_template('edit_student.html', form=form, old_student=old_student)
         
+        f = request.files['pfp']
+        if f:
+            filename = form.username.data + '.' + f.filename.rsplit('.', 1)[1].lower()
+            f.save(os.path.join(app.root_path, 'static', 'profile_pics', filename))
+        else:
+            filename="default.png"
+        
         User.query.filter_by(id=old_student.id).update(dict(email=form.email.data, 
                                                             username=form.username.data,
                                                             phone_number=form.phone_number.data,
-                                                            fullname = form.fullname.data))
+                                                            fullname = form.fullname.data,
+                                                            pfp=filename))
         
         Student_details.query.filter_by(user_id = old_student.id).update(dict(
             myp_score = form.myp_score.data,

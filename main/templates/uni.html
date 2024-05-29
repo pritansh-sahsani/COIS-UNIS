@@ -32,8 +32,7 @@
             <p>scholarships offered: {{ uni.scholarships }}</p>
             <p>requirements: {{ uni.requirements }}</p>
             <p>website: {{ uni.website }}</p>
-
-            {% if len(addmissions) > 0 %}
+            {% if len(admissions) > 0 %}
                 <p class="text-xl  mt-3">COIS Students Pursuing Further Studies:</p>
                 {% for add in admissions %}
                     <p>name: {{add['user'].fullname}} </p>

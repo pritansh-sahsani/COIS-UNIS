@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
     added_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     phone_number = db.Column(db.String(13), nullable=False, unique=True)
     is_student = db.Column(db.Boolean, nullable=False, default=False)
+    pfp = db.Column(db.String(104))
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(current_app.config['SECRET_KEY'], expires_sec)

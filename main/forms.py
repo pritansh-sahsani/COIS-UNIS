@@ -67,6 +67,7 @@ class AdminRegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
     confirm_password = PasswordField('Confirm Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
     phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
+    pfp = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
     submit = SubmitField('Sign Up')
 
     def validate_username(self, username):
@@ -100,6 +101,7 @@ class EditAdminForm(FlaskForm):
     password = PasswordField('Password')
     confirm_password = PasswordField('Confirm Password', validators=[EqualTo('password')])
     phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Phone Number', min='%(min)d', max='%(max)d'))])
+    pfp = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
     submit = SubmitField('Confirm Changes')
 
     def validate_username(self, username):
@@ -122,7 +124,8 @@ class StudentRegistrationForm(FlaskForm):
     password = PasswordField('Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Password', min='%(min)d', max='%(max)d'))])
     confirm_password = PasswordField('Confirm Password', validators=[Length(min=1, max=60, message=min_max_error_message.format(field='Confirm Password', min='%(min)d', max='%(max)d')), EqualTo('password')])
     phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Phone Number', min='%(min)d', max='%(max)d'))])
-
+    pfp = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
+    
     graduation_year = StringField("Graduatation Year", validators=[Length(min=4, max=4, message="Please enter a valid graduation year.")])
     myp_score = StringField('MYP-5 Score (out of 56)')
     dp_predicted = StringField('DP predicted score (out of 45)')
@@ -177,7 +180,8 @@ class EditStudentForm(FlaskForm):
     password = PasswordField('Password')
     confirm_password = PasswordField('Confirm Password', validators=[EqualTo('password')])
     phone_number = StringField("Phone Number", validators=[Length(min=1, max=13, message=min_max_error_message.format(field='Phone Number', min='%(min)d', max='%(max)d'))])
-
+    pfp = FileField('Profile Picture', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
+    
     graduation_year = StringField("Graduatation Year", validators=[Length(min=4, max=4, message="Please enter a valid graduation year.")])
     myp_score = StringField('MYP-5 Score (out of 56)')
     dp_predicted = StringField('DP predicted score (out of 45)')
