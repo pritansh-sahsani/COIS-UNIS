@@ -9,9 +9,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
       
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
-
     <!-- css -->
     <link rel="stylesheet" href="{{url_for('static',filename='css/custom.css')}}">
     <link rel="stylesheet" href="{{url_for('static',filename='css/output.css')}}">
@@ -37,9 +34,15 @@
 			<!-- pc navbar -->
 			<div class="hidden md:inline-block">
 				<nav class="grid grid-rows-1 grid-flow-col gap-x-12 items-end ml-4">
-					<a href="/" class="justify-self-start">
-						<img src="../static/assets/logo.png" class="w-12 inline" alt="" id="website-logo"/>
-					</a>
+					<div class="flex items-center" >
+						<a href="/" class="justify-self-end">
+							<img src="../static/assets/logo.png" class="w-12 inline" alt="" id="website-logo"/>
+						</a>
+						<img src="../static/assets/V_line.png" class="w-2 inline mx-2" alt="" id=""/>
+						<a href="https://cois.edu.in" class="">
+							<img src="../static/assets/cois_logo.png" class="w-12" alt="" id=""/>
+						</a>
+					</div>
 					{% if not current_user.is_authenticated %}
 						<div class="">
 							<a class="navbar-link" href="/">
@@ -134,20 +137,27 @@
 				</nav>
 			</div>
 
-			<a href="https://cois.edu.in" class="hidden md:inline float-right mr-3 mt-2">
-				<img src="../static/assets/cois_logo.png" class="w-36" alt="" id=""/>
-			</a>
+			{% if current_user.is_authenticated %}
+				<a class="hidden md:inline float-right mr-2 mt-1">
+					<img src="../static/profile_pics/{{current_user.pfp}}" class="w-10 rounded-full border-0.5 border-black border-solid" alt="" id=""/>
+				</a>
+			{% endif %}
+			
 
 			<hr class="hidden md:block w-100% m-0 p-0 border-gradient" id="navbar-hr"/>
 
 			<!-- phone navbar -->
 			<div id="phone_top_navbar" class="block md:hidden w-100%">
-				<div class="grid grid-cols-3 items-center w-100%">
-					<a href="/" class="ml-3% justify-self-start">
-						<img src="../static/assets/logo.png" class="w-10 sm:w-12 inline" alt="" />
-					</a>
-					
-					<img src="../static/assets/cois_logo.png" class="w-24 justify-self-center" alt="" id="website-logo"/>
+				<div class="grid grid-cols-2 items-center w-100%">
+					<div>
+						<a href="/" class="justify-self-start">
+							<img src="../static/assets/logo.png" class="inline w-10 sm:w-12 ml-2" alt="" />
+						</a>
+						<img src="../static/assets/V_line.png" class="w-2 inline mx-2" alt="" id=""/>
+						<a href="https://cois.edu.in" class="">
+							<img src="../static/assets/cois_logo.png" class="inline w-12" alt="" id=""/>
+						</a>
+					</div>
 
 					<div class="mr-3% cursor-pointer justify-self-end">
 						<svg

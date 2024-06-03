@@ -20,6 +20,13 @@
         {% endfor %}
     }
     setInterval('raise_error()', 1);
+
+    $(document).ready(function() {
+        $('#profile-pic').change(function(e) {
+            var filename = e.target.files[0].name;
+            $("#filename").text(filename);
+        });
+    });
 </script>
 
 <div class="mx-auto w-100% md:w-90% md:border-solid md:border-black md:rounded-md md:my-5% items-center md:border-0.5">
@@ -28,11 +35,15 @@
     <form action='' method="POST" class="w-90% md:w-80% mx-auto" enctype="multipart/form-data">
         <div class="w-100% grid md:grid-cols-2 md:gap-x-2 space-y-2 justify-items-center">
                 {{ form.hidden_tag() }}
-                <div class="custom-file">
-                    <label class="custom-file-label border-0.5 border-black text-sm md:text-lg" id="file-upload_label" for="file-upload">
-                        {% if old_admin.pfp %}{{ old_admin.pfp }}{% else %}Upload Profile Picture{% endif %}
+                <div class="flex items-center justify-center col-span-2">
+                    <label for="profile-pic" class="w-64 flex items-center p-2 bg-white text-blueC rounded-lg tracking-wide uppercase border-0.5 border-blueC border-solid cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span id="filename" class="ml-2 text-base text-blueC leading-normal">Upload Profile Picture</span>
+                        {{ form.pfp(class="hidden", id="profile-pic", type="file") }}
+
                     </label>
-                    {{ form.pfp(class="custom-file-input", id="file-upload", type="file") }}
                 </div>
                 {{ form.username(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_admin.username, placeholder="Username")}}
                 {{ form.fullname(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_admin.fullname, placeholder="Full Name")}}
@@ -41,7 +52,7 @@
                 {{ form.password(class="        text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_admin.password, placeholder="Password")}}
                 {{ form.confirm_password(class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1", value=old_admin.confirm_password, placeholder="Confirm Password") }}
             </div>
-            {{ form.submit(class="w-100% md:w-50% md:mx-25% mt-2 mb-5% btn btn-primary text-lg md:text-2xl") }}
+            {{ form.submit(class="w-100% md:w-50% md:mx-25% mt-2 mb-5% text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none text-lg md:text-2xl") }}
     </form>
     </div>
             

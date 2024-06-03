@@ -35,12 +35,18 @@ def v_myp_score(myp_score):
 class AddUniversityForm(FlaskForm):
     name = StringField('University Name', validators=[Length(min=1, max=100, message=min_max_error_message.format(field='University Name', min='%(min)d', max='%(max)d'))])
     logo = FileField('logo', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
+    banner = FileField('banner', validators=[FileAllowed(['jpg', 'png', 'jpeg'], 'Only .jpg, .png and .jpeg file formats are supported.')])
     website = StringField('University Official Website', validators=[Length(max=1000, message=min_max_error_message.format(field='Website', min=0, max='%(max)d'))])
     ib_cutoff = StringField('Cut off/required grade for IBDP')
-    requirements = TextAreaField('Requirements for admission')
-    scholarships = TextAreaField('Scholarships offered')
+    min_gpa = StringField('Minimum GPA', validators=[Length(max=10, message=min_max_error_message.format(field='Minimum GPA', min=0, max='%(max)d'))])
+    max_gpa = StringField('Maximum GPA', validators=[Length(max=10, message=min_max_error_message.format(field='Maximum GPA', min=0, max='%(max)d'))])
+    requirements = TextAreaField('Requirements for admission', validators=[Length(max=2000, message=min_max_error_message.format(field='Requirements', min=0, max='%(max)d'))])
+    scholarships = TextAreaField('Scholarships offered', validators=[Length(max=1000, message=min_max_error_message.format(field='Scholarship', min=0, max='%(max)d'))])
+    acceptance_rate = StringField('Acceptance Rate', validators=[Length(max=10, message=min_max_error_message.format(field='Acceptance rate', min=0, max='%(max)d'))])
+    avg_cost = StringField('Average Cost', validators=[Length(max=10, message=min_max_error_message.format(field='Average cost', min=0, max='%(max)d'))])
+    email = StringField('Contact Email', validators=[Length(max=100, message=min_max_error_message.format(field='Contact Email', min=0, max='%(max)d'))])
     courses = SelectMultipleField('Courses Offered', choices=[])
-    location = SelectMultipleField('Location', choices=[])
+    location = SelectField('Location', choices=[])
     
     save_draft = SubmitField('Save As Draft')
     submit = SubmitField('Add University')
@@ -219,7 +225,6 @@ class EditStudentForm(FlaskForm):
 class ApplicationForm(FlaskForm):
     uni = SelectField('University', choices=[])
     course = SelectField('Course', choices=[])
-    location = SelectField('Location', choices=[])
     minors = SelectMultipleField('Minors, if any', choices=[])
     status = SelectField('Application status (if recieved)', choices=['waitlist', 'accepted', 'rejected'])
     is_early = BooleanField('Early Application')
@@ -231,17 +236,24 @@ class ApplicationForm(FlaskForm):
     def __init__(self, formdata=None, **kwargs):
         super(ApplicationForm, self).__init__(formdata=formdata, **kwargs)
         self.course.choices = kwargs['courses']
-        self.location.choices = kwargs['locations']
         self.minors.choices = kwargs['minors']
         self.uni.choices = kwargs['unis']
 
 
 class FilterForm(FlaskForm):
-    ib_cutoff = StringField('Cut off/required grade for IBDP')
     requirements = StringField('Requirements for admission')
     scholarships = StringField('Scholarships')
     courses = SelectMultipleField('Courses', choices=[])
-    locations = SelectMultipleField('Location', choices=[])
+    locations = SelectField('Location', choices=[])
+    min_ib_cutoff = StringField('Minimum Cut off for IBDP')
+    max_ib_cutoff = StringField('Maximum Cut off for IBDP')
+    min_acceptance_rate = StringField('Minimum Acceptance Rate')
+    max_acceptance_rate = StringField('Maximum Acceptance Rate')
+    min_gpa = StringField('Minimum GPA')
+    max_gpa = StringField('Maximum GPA')
+    min_avg_cost = StringField('Maximum Average cost')
+    max_avg_cost = StringField('Minimum Average cost')
+    
     submit = SubmitField('Apply Filter')
     clear = SubmitField('Clear Filters')
     coisstudents = BooleanField('COIS students')

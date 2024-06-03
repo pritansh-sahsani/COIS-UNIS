@@ -57,12 +57,6 @@ class Student_details(db.Model):
     def __repr__(self):
         return f"details-{self.user}"
 
-locations_table = db.Table(
-    'location_association',
-    db.Column('uni_id', db.ForeignKey('uni.id'), primary_key=True),
-    db.Column('location_id', db.ForeignKey('location.id'), primary_key=True),
-)
-
 courses_table = db.Table(
     'course_association',
     db.Column('uni_id', db.ForeignKey('uni.id')),
@@ -74,14 +68,22 @@ class Uni(db.Model):
     id= db.Column(db.Integer, nullable=False, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     logo = db.Column(db.String(104))
+    banner = db.Column(db.String(104))
     added_at= db.Column(db.DateTime, default=datetime.now)
     ib_cutoff= db.Column(db.Integer)
     website = db.Column(db.String(1000))
     scholarships = db.Column(db.String(1000))
-    requirements = db.Column(db.String(1000))
+    requirements = db.Column(db.String(2000))
+    acceptance_rate = db.Column(db.Integer)
+    email = db.Column(db.String(100))
+    min_gpa = db.Column(db.String(10))
+    max_gpa = db.Column(db.String(10))
+    avg_cost = db.Column(db.String(100))
+
     is_draft = db.Column(db.Boolean, nullable=False)
 
-    locations = relationship('Location', secondary=locations_table, back_populates='unis')
+    location = db.relationship('Location', backref=db.backref('unis', lazy=True))
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     courses = relationship('Course', secondary=courses_table, back_populates='unis')
 
     def __repr__(self):
@@ -92,7 +94,6 @@ class Location(db.Model):
     city = db.Column(db.String(100), nullable=False)
     country = db.Column(db.String(100), nullable=False)
     exact_location = db.Column(db.String(202), nullable=False)
-    unis = relationship('Uni', secondary=locations_table, back_populates='locations')
 
     def __repr__(self):
         return f"<{self.exact_location}>"

@@ -10,156 +10,384 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     
-    <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5">
-        <div class="m-3">
-            <img src="../static/profile_pics/{{ student.pfp }}">
-            <p class="text-2xl">{{ student.fullname }}</p>
-            <p class="mt-2">Username: {{ student.username }}</p>
-            <p>Email: {{ student.email }}</p>
-            <p>Joined at: {{ student.added_at.strftime("%d %B %Y") }}</p>
-            <p>Phone number: {{ student.phone_number }}</p>
-            {% if student_details.graduation_year%}
-                <p>Graduation year: {{ student_details.graduation_year }}</p>
-            {%endif%}
-            {% if student_details.myp_score %}
-                <p>myp score: {{ student_details.myp_score }}</p>
-            {% endif %}
-            {% if student_details.dp_predicted %}
-                <p>dp predicted: {{ student_details.dp_predicted }}</p>
-            {% endif %}
-            {% if student_details.dp_score %}
-                <p>dp score: {{ student_details.dp_score }}</p>
-            {% endif %}
-            {% if student_details.has_diploma %}
-                <p>Opted for Diploma: Yes </p>
-            {%else%}
-                <p>Opted for Diploma: No</p>
-            {% endif %}
-            {% if student_details.portfolio %}
-                <p>Portfolio: {{ student_details.portfolio }}</p>
-            {% endif %}
+    <div class="w-85% mx-auto my-5 text-lg">
+        <div class="grid grid-cols-1 sm:grid-cols-3">
+            <div class="col-span-2 md:flex items-center">
+                <img class="w-24 rounded-full border-0.5 border-black border-solid mr-4" src="../static/profile_pics/{{ student.pfp }}">
+                <div class="self-center gap-y-2 mb-2">
+                    <p class="text-blueC text-3xl font-bold">{{ student.fullname }}</p>
+                    <p class="text-blueC text-xl">{{ student.username }} · Class of {{ student_details.graduation_year }}</p>
+                </div>
+            </div>
+            <div class="place-self-strech md:place-self-end text-right">
+                {% if student.username == current_user.username %}
+                    <a class="" href="{{ url_for('edit_student', student_id=student.id) }}">
+                        <button class="px-2 py-1 rounded-md border-redC border-0.5 border-solid text-redC w-100% md:w-fit mx-auto">
+                            <div class="flex w-fit mx-auto">Edit Profile<img class='inline place-self-center w-5 ml-1' src="../static/assets/edit-icon-red.png"/></div>
+                        </button>
+                    </a><br>
+                    <a class="" href="{{ url_for('add_application', student_id=student.id) }}">
+                        <button class="px-2 py-1 rounded-md border-redC border-0.5 border-solid text-redC w-100% md:w-fit mx-auto mt-2">
+                            <div class="flex w-fit mx-auto">Add Application Details<img class='inline place-self-center w-5 ml-1' src="../static/assets/add_button.svg"/></div>
+                        </button>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <hr class="border-black w-100% mx-auto my-3">
+        <p class="text-xl font-bold text-orangeC mb-3">Contact</p>
+        <table class="table-auto hidden md:block justify-start ml-4">
+            <tbody><tr>
+                <td class="w-96"><img class='inline place-self-center w-5 mr-1' src="../static/assets/mail.png"/><p class="inline w-fit place-self-center">{{ student.email }}</p></td>
+                <td class="inline-flex"><img class='inline place-self-center w-5 mr-1' src="../static/assets/phone.png"/><p class="inline w-fit place-self-center">+91 {{ student.phone_number }}</p></td>
+            </tr></tbody>
+        </table>
+        <div class="grid grid-cols-1 gap-2 md:hidden text-base">
+                <div class=""><img class='inline place-self-center w-5 mr-1' src="../static/assets/mail.png"/><p class="inline w-fit place-self-center">{{ student.email }}</p></div>
+                <div class=""><img class='inline place-self-center w-5 mr-1' src="../static/assets/phone.png"/><p class="inline w-fit place-self-center">+91 {{ student.phone_number }}</p></div>
+        </div>
+        
+        <hr class="border-black w-100% mx-auto my-3">
+        <p class="text-xl font-bold text-orangeC mb-3">Academic details</p>
+        <table class="table-auto hidden md:block justify-start ml-4">
+            <tbody>
+                <tr>
+                    {% if student_details.myp_score %}
+                        <td class="w-96">MYP score: {{ student_details.myp_score }} / 56</td>
+                    {% else %}
+                        <td class="w-96">MYP score: -- / 56</td>
+                    {% endif %}
+                    {% if student_details.has_diploma %}
+                        <td class="inline-flex">Opted for Diploma: Yes</td>
+                    {%else%}
+                        <td class="inline-flex">Opted for Diploma: No</td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    {% if student_details.dp_predicted %}
+                        <td class="w-96">DP predicted: {{ student_details.dp_predicted }} / 56</td>
+                    {% else %}
+                        <td class="w-96">DP predicted: -- / 56</td>
+                    {% endif %}
+                    {% if student_details.dp_score %}
+                        <td class="inline-flex" class="">DP score: {{ student_details.dp_score }} / 45</td>
+                    {% else %}
+                        <td class="inline-flex" class="">DP score: -- / 45</td>
+                    {% endif %}
+                </tr>
+            </tbody>
+        </table>
+        <div class="grid grid-cols-1 md:hidden gap-y-1 text-base">
+                {% if student_details.myp_score %}
+                    <p class="">MYP score: {{ student_details.myp_score }} / 56</p>
+                {% else %}
+                    <p class="">MYP score: -- / 56</p>
+                {% endif %}
+                {% if student_details.has_diploma %}
+                    <p class="">Opted for Diploma: Yes</p>
+                {%else%}
+                    <p class="">Opted for Diploma: No</p>
+                {% endif %}
+                {% if student_details.dp_predicted %}
+                    <p class="">DP predicted: {{ student_details.dp_predicted }} / 56</p>
+                {% else %}
+                    <p class="">DP predicted: -- / 56</p>
+                {% endif %}
+                {% if student_details.dp_score %}
+                    <p class="" class="">DP score: {{ student_details.dp_score }} / 45</p>
+                {% else %}
+                    <p class="" class="">DP score: -- / 45</p>
+                {% endif %}
+        </div>
+        {% if student_details.portfolio %}
+            <p class="ml-4">Link To Portfolio: <a class="underline text-linkC" href="https://{{ student_details.portfolio }}">{{ student_details.portfolio }}</a></p>
+        {% endif %}
 
 
-            {% if student_details.selected_app_id %}
-                <p class="text-lg mt-2">Further Studies</p>
-                <hr class="my-1 p-0 border-gradient" />
+        {% if student_details.selected_app_id %}
+            <hr class="border-black w-100% mx-auto my-3">
+            <p class="text-xl font-bold text-orangeC mb-3">Currently Pursuing</p>
                 {% for app in applications %}
                     {% if student_details.selected_app_id == app.id %}
-                        <p>University: {{ app.uni }}</p>
-                        <p>Course: {{ app.course }}</p>
-                        <p>Location: {{ app.location.exact_location }}</p>
-                        
-                        <p>Minors: 
-                        {% for minor in app.minors %}
-                        {{ minor.name }}, 
-                        {% endfor %}</p>
+                    <table class="hidden md:block table-auto justify-start ml-4">
+                        <tbody>
+                            <tr>
+                                <td class="w-96"><p>University: {{ app.uni }}</p></td>
+                                <td class=""><p>Course: {{ app.course }}</p></td>
+                            </tr>
+                            <tr>
+                                <td class="w-96"><p>Location: {{ app.location.exact_location }}</p></td>
+                                <td class="">
+                                <p>Minors: 
+                                    {% if len(minors) >0 %}
+                                    {% for minor in app.minors %}
+                                    {{ minor.name }},  
+                                    {% endfor %}
+                                    {% else %}None{% endif %}</p></td>
+                            </tr>
+                            <tr>
+                                {% if app.scholarship %}
+                                    <td class="w-96"><p>Scholarship: {{ app.scholarship }}</p></td>
+                                {% else %}
+                                    <td class="w-96"><p>Scholarship: None</p></td>
+                                {% endif %}
+                                {% if app.is_early %}
+                                    <td class="w-96"><p>Early Application: Yes</p></td>
+                                {% else %}
+                                <td class="w-96"><p>Early Application: No</p></td>
+                                {% endif %}
+                            </tr>
+                            {% if app.other_details %}
+                                <tr><td><p class= "w-96 ml-4">{{app.other_details}}</p></td></tr>
+                            {% endif %}
 
-                        {% if app.scholarship %}
-                        <p>Scholarship: {{ app.scholarship }}</p>
-                        {% endif %}
+                            {% if student.username == current_user.username %}
+                            <tr>
+                                <td><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                    <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>
+                                </a>
+                                
+                                <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                    <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-blueC.png"></button>
+                                </a></td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                    <div class="grid md:hidden text-base gap-y-1">
+                            <div class=""><p>University: {{ app.uni }}</p></div>
+                            <div class=""><p>Course: {{ app.course }}</p></div>
+                            <div class=""><p>Location: {{ app.location.exact_location }}</p></div>
+                            <div class="">
+                            <p>Minors: 
+                                {% if len(minors) >0 %}
+                                {% for minor in app.minors %}
+                                {{ minor.name }},  
+                                {% endfor %}
+                                {% else %}None{% endif %}</p></div>
+                            
+                            {% if app.scholarship %}
+                                <div class=""><p>Scholarship: {{ app.scholarship }}</p></div>
+                            {% else %}
+                                <div class=""><p>Scholarship: None</p></div>
+                            {% endif %}
+                            {% if app.is_early %}
+                                <div class=""><p>Early Application: Yes</p></div>
+                            {% else %}
+                            <div class=""><p>Early Application: No</p></div>
+                            {% endif %}
                         {% if app.other_details %}
-                        <p>Other details: {{ app.other_details }}</p>
+                            <div><p class= " ml-4">{{app.other_details}}</p></div>
                         {% endif %}
-                        {% if app.is_early %}
-                        <p><b>Early application</b></p>
-                        {% endif %}
+
                         {% if student.username == current_user.username %}
+                        <div>
                             <a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
-                                <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
+                                <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>
                             </a>
                             
                             <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
-                                <button class="mt-2 btn btn-danger w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                                <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-blueC.png"></button>
                             </a>
+                        </div>
                         {% endif %}
-                        <hr class="my-1 mx-auto p-0 border-gradient" />
+                    </div>
                     {% endif %}
                 {% endfor %}
                 
                 {% if len(applications)-1 > 0 %}
-                    <p class="text-lg mt-2">Other Applications</p>
-                    <hr class="my-1 mx-auto p-0 border-gradient" />
+                <hr class="border-black w-100% mx-auto my-3">
+                <p class="text-xl font-bold text-orangeC mb-3">Other Applications</p>
+                <table class="hidden md:block table-auto justify-start ml-4">
+                    <tbody>
                     {% for app in applications %}
                         {% if student_details.selected_app_id != app.id %}
-                            <p>University: {{ app.uni }}</p>
-                            <p>Course: {{ app.course }}</p>
-                            <p>Location: {{ app.location.exact_location }}</p>
-                            
-                            <p>Minors: 
-                            {% for minor in app.minors %}
-                            {{ minor.name }}, 
-                            {% endfor %}</p>
-                            <p>{{app.status}}</p>
-                            {% if app.scholarship %}
-                            <p>Scholarship: {{ app.scholarship }}</p>
-                            {% endif %}
-                            {% if app.other_details %}
-                            <p>Other details: {{ app.other_details }}</p>
-                            {% endif %}
-                            {% if app.is_early %}
-                            <p><b>Early application</b></p>
-                            {% endif %}
-                            {% if student.username == current_user.username %}
-                                <a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
-                                    <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
-                                </a>
+                                <tr class> 
+                                    <td class="w-96"><p>University: {{ app.uni }}</p></td>
+                                    <td class=""><p>Course: {{ app.course }}</p></td>
+                                </tr>
+                                <tr>
+                                    <td class="w-96"><p>Location: {{ app.location.exact_location }}</p></td>
+                                    <td class="">
+                                    <p>Minors: 
+                                        {% if len(minors) >0 %}
+                                        {% for minor in app.minors %}
+                                        {{ minor.name }},  
+                                        {% endfor %}
+                                        {% else %}None{% endif %}</p></td>
+                                </tr>
+                                <tr>
+                                    {% if app.scholarship %}
+                                        <td class="w-96"><p>Scholarship: {{ app.scholarship }}</p></td>
+                                    {% else %}
+                                        <td class="w-96"><p>Scholarship: None</p></td>
+                                    {% endif %}
+                                    {% if app.is_early %}
+                                        <td class=""><p>Early Application: Yes</p></td>
+                                    {% else %}
+                                    <td class=""><p>Early Application: No</p></td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <td class="w-96"><p>Status: {{ app.status }}</p></td>
+                                    {% if app.other_details %}
+                                        <td class=""><p>{{app.other_details}}</p></td>
+                                    {% endif %}
+                                </tr>
+                                <tr class="">
+                                    {% if student.username == current_user.username %}
+                                        <td class="pb-4"><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                            <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>
+                                        </a>
 
-                                <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
-                                    <button class="mt-2 btn btn-danger w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
-                                </a>
-                            {% endif %}
-                            <hr class="my-1 mx-auto p-0 border-gradient" />
+                                        <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                            <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-blueC.png"></button>
+                                        </a></td>
+                                        {% else %}
+                                        <td><div class="h-4"></div></td>
+                                    {% endif %}
+                                </tr>
                         {% endif %}
                     {% endfor %}
+                    </tbody>
+                </table>
+                <div class="grid md:hidden grid-cols-1 text-base gap-y-1">
+                    {% for app in applications %}
+                        {% if student_details.selected_app_id != app.id %}
+                            <div class=""><p>University: {{ app.uni }}</p></div>
+                            <div class=""><p>Course: {{ app.course }}</p></div>
+                            <div class=""><p>Location: {{ app.location.exact_location }}</p></div>
+                            <div class="">
+                            <p>Minors: 
+                            {% if len(minors) >0 %}
+                            {% for minor in app.minors %}
+                            {{ minor.name }},  
+                            {% endfor %}
+                            {% else %}None{% endif %}</p></div>
+                            {% if app.scholarship %}
+                                <div class=""><p>Scholarship: {{ app.scholarship }}</p></div>
+                            {% else %}
+                                <div class=""><p>Scholarship: None</p></div>
+                            {% endif %}
+                            {% if app.is_early %}
+                                <div class=""><p>Early Application: Yes</p></div>
+                            {% else %}
+                                <div class=""><p>Early Application: No</p></div>
+                            {% endif %}
+                            <div class=""><p>Status: {{ app.status }}</p></div>
+                            {% if app.other_details %}
+                                <div class=""><p>{{app.other_details}}</p></div>
+                            {% endif %}
+                            {% if student.username == current_user.username %}
+                                <div class="pb-4"><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                    <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>
+                                    </a>
+
+                                    <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                        <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-blueC.png"></button>
+                                    </a></div>
+                            {% else %}
+                                <div class="h-4"></div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
                 {% endif %}
             {% else %}
                 {% if len(applications) > 0 %}
-                    <p class="text-lg mt-2">Applications</p>
+                <hr class="border-black w-100% mx-auto my-3">
+                <p class="text-xl font-bold text-orangeC mb-3">Applications</p>
+                <table class="hidden md:block table-auto justify-start ml-4">
+                    <tbody>
                     {% for app in applications %}
-                        <hr class="my-1 mx-auto p-0 border-gradient" />
-                        {% if student_details.selected_app_id != app.id %}
-                            <p>University: {{ app.uni }}</p>
-                            <p>Course: {{ app.course }}</p>
-                            <p>Location: {{ app.location.exact_location }}</p>
-                            
-                            <p>Minors: 
-                                {% for minor in app.minors %}
-                                {{ minor.name }}, 
-                            {% endfor %}</p>
-                            <p>Status: {{app.status}}</p>
-                            {% if app.scholarship %}
-                                <p>Scholarship: {{ app.scholarship }}</p>
-                            {% endif %}
+                                <tr class>
+                                    <td class= "w-96"><p>University: {{ app.uni }}</p></td>
+                                    <td class=""><p>Course: {{ app.course }}</p></td>
+                                </tr>
+                                <tr>
+                                    <td class= "w-96"><p>Location: {{ app.location.exact_location }}</p></td>
+                                    <td class="">
+                                    <p>Minors: 
+                                    {% if len(minors) >0 %}
+                                    {% for minor in app.minors %}
+                                    {{ minor.name }},  
+                                    {% endfor %}
+                                    {% else %}None{% endif %}</p></td>
+                                </tr>
+                                <tr>
+                                    {% if app.scholarship %}
+                                        <td class= "w-96"><p>Scholarship: {{ app.scholarship }}</p></td>
+                                    {% else %}
+                                        <td class= "w-96"><p>Scholarship: None</p></td>
+                                    {% endif %}
+                                    {% if app.is_early %}
+                                        <td class=""><p>Early Application: Yes</p></td>
+                                    {% else %}
+                                    <td class=""><p>Early Application: No</p></td>
+                                    {% endif %}
+                                </tr>
+                                <tr>
+                                    <td class= "w-96"><p>Status: {{ app.status }}</p></td>
+                                    {% if app.other_details %}
+                                        <td class=""><p>{{app.other_details}}</p></td>
+                                    {% endif %}
+                                </tr>
+                                <tr class="">
+                                    {% if student.username == current_user.username %}
+                                        <td class="pb-4"><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                            <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>
+                                        </a>
+
+                                        <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                            <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-blueC.png"></button>
+                                        </a></td>
+                                        {% else %}
+                                        <td><div class="h-4"></div></td>
+                                    {% endif %}
+                                </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <div class="grid md:hidden gap-y-1 text-base">
+                    {% for app in applications %}
+                        <div class= ""><p>University: {{ app.uni }}</p></div>
+                        <div class=""><p>Course: {{ app.course }}</p></div>
+                        <div class= ""><p>Location: {{ app.location.exact_location }}</p></div>
+                        <div class="">
+                        <p>Minors: 
+                        {% if len(minors) >0 %}
+                        {% for minor in app.minors %}
+                        {{ minor.name }},  
+                        {% endfor %}
+                        {% else %}None{% endif %}</p></div>
+                        {% if app.scholarship %}
+                            <div class= ""><p>Scholarship: {{ app.scholarship }}</p></div>
+                        {% else %}
+                            <div class= ""><p>Scholarship: None</p></div>
+                        {% endif %}
+                        {% if app.is_early %}
+                            <div class=""><p>Early Application: Yes</p></div>
+                        {% else %}
+                            <div class=""><p>Early Application: No</p></div>
+                        {% endif %}
+                            <div class= ""><p>Status: {{ app.status }}</p></div>
                             {% if app.other_details %}
-                                <p>Other details: {{ app.other_details }}</p>
-                            {% endif %}
-                            {% if app.is_early %}
-                                <p><b>Early application</b></p>
+                                <div class=""><p>{{app.other_details}}</p></div>
                             {% endif %}
                             {% if student.username == current_user.username %}
-                                <a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
-                                    <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
-                                </a>
-                                
-                                <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
-                                    <button class="mt-2 btn btn-danger w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
-                                </a>
+                                <div class="pb-4"><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
+                                        <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>
+                                    </a>
+                                    <a class="" href="{{ url_for('delete_application', application_id = app.id) }}">
+                                        <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-blueC.png"></button>
+                                    </a></div>
+                            {% else %}
+                                <div class="h-4"></div>
                             {% endif %}
-                        {% endif %}    
-                        <hr class="my-1 mx-auto p-0 border-gradient" />
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 {% endif %}
             {% endif %}
-
-            {% if student.username == current_user.username %}
-                <a class="" href="{{ url_for('add_application', student_id=student.id) }}">
-                    <button class="mt-2 btn btn-primary w-100% md:w-fit mx-auto">Add Application Details</button>
-                </a>
-                <a class="" href="{{ url_for('edit_student', student_id=student.id) }}">
-                    <button class="mt-2 btn btn-primary w-100% md:w-fit mx-auto">Edit Profile</button>
-                </a>
-            {% endif %}
-        </div>
     </div>
 
 {% endblock main %}

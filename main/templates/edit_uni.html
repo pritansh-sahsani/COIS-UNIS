@@ -9,8 +9,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
     <script src="../static/extensions/filter-multi-select-bundle.min.js"></script>
-
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous"> 
 
     <script type=text/javascript>
         function raise_error() {
@@ -23,6 +22,13 @@
             
             {% if form.logo.errors %} 
                 {% for error in form.logo.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            
+            {% if form.banner.errors %} 
+                {% for error in form.banner.errors %}
                     $("#flash_text").text("{{error | safe }}");
                     $("#flash_text_div").show();
                 {% endfor %}
@@ -63,6 +69,39 @@
                 {% endfor %}
             {% endif %}
 
+            {% if form.min_gpa.errors %} 
+                {% for error in form.min_gpa.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
+            {% if form.max_gpa.errors %} 
+                {% for error in form.max_gpa.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
+            {% if form.avg_cost.errors %} 
+                {% for error in form.avg_cost.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+
+            {% if form.acceptance_rate.errors %} 
+                {% for error in form.acceptance_rate.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
+            {% if form.email.errors %} 
+                {% for error in form.email.errors %}
+                    $("#flash_text").text("{{error | safe }}");
+                    $("#flash_text_div").show();
+                {% endfor %}
+            {% endif %}
             {% if form.website.errors %} 
                 {% for error in form.website.errors %}
                     $("#flash_text").text("{{error | safe }}");
@@ -74,7 +113,6 @@
 
         $(document).ready(function() {
             const courses = $('#courses_ms').filterMultiSelect();
-            const locations = $('#locations_ms').filterMultiSelect();
             
             // If values are not blank, restore them to the fields
             var Name = sessionStorage.getItem('Name');
@@ -85,6 +123,17 @@
 
             var Requirements = sessionStorage.getItem('Requirements');
             if (Requirements !== null) $('#inputRequirements').val(Requirements);
+            
+            var Min_gpa = sessionStorage.getItem('Min_gpa');
+            if (Min_gpa !== null) $('#inputMin_gpa').val(Min_gpa);
+            var Max_gpa = sessionStorage.getItem('Max_gpa');
+            if (Max_gpa !== null) $('#inputMax_gpa').val(Max_gpa);
+            var Avg_cost = sessionStorage.getItem('Avg_cost');
+            if (Avg_cost !== null) $('#inputAvg_cost').val(Avg_cost);
+            var Email = sessionStorage.getItem('Email');
+            if (Email !== null) $('#inputEmail').val(Email);
+            var Acceptance_rate = sessionStorage.getItem('Acceptance_rate');
+            if (Acceptance_rate !== null) $('#inputAcceptance_rate').val(Acceptance_rate);
 
             var Scholarships = sessionStorage.getItem('Scholarships');
             if (Scholarships !== null) $('#inputScholarships').val(Scholarships);
@@ -93,7 +142,8 @@
             if (Ib_cutoff !== null) $('#inputIb_cutoff').val(Ib_cutoff);
             
             var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'));
-            var selectedLocations = JSON.parse(sessionStorage.getItem('Locations'));
+            var selectedLocation = JSON.parse(sessionStorage.getItem('Location'));
+            $("#location_select option[value='"+selectedLocation+"']").prop('selected', true);
             
             if (selectedCourses != null){
                 for(var i = 0; i < selectedCourses["courses"].length ; i++){
@@ -105,16 +155,6 @@
                     courses.selectOption('{{course.name | safe}}');
                 {% endfor %}
             }
-            if (selectedLocations != null){
-                for(var i = 0; i < selectedLocations["location"].length ; i++){
-                    locations.selectOption(selectedLocations["location"][i])
-                }
-            }
-            else{
-                {% for location in old_uni.locations %}
-                    locations.selectOption('{{location.exact_location | safe}}');
-                {% endfor %}
-            }
 
             // Before refreshing the page, save the form data to sessionStorage
             window.onbeforeunload = function() {
@@ -122,14 +162,24 @@
                 sessionStorage.setItem("Website", $('#inputWebsite').val());
                 sessionStorage.setItem("Requirements", $('#inputRequirements').val());
                 sessionStorage.setItem("Scholarships", $('#inputScholarships').val());
+                sessionStorage.setItem("Min_gpa", $('#inputMin_gpa').val());
+                sessionStorage.setItem("Max_gpa", $('#inputMax_gpa').val());
+                sessionStorage.setItem("Avg_cost", $('#inputAvg_cost').val());
+                sessionStorage.setItem("Acceptance_rate", $('#inputAcceptance_rate').val());
+                sessionStorage.setItem("Email", $('#inputEmail').val());
                 sessionStorage.setItem("Ib_cutoff", $('#inputIb_cutoff').val());
                 sessionStorage.setItem("Courses", courses.getSelectedOptionsAsJson(includeDisabled=true));
-                sessionStorage.setItem("Locations", locations.getSelectedOptionsAsJson(includeDisabled=true));
+                sessionStorage.setItem("Location", $('#location_select').val());
             }
 
-            $('input[type="file"]').change(function(e) {
+
+            $('#file-upload1').change(function(e) {
                 var filename = e.target.files[0].name;
-                $("#file-upload_label").text(filename);
+                $("#file-upload_label1").text(filename);
+            });
+            $('#file-upload2').change(function(e) {
+                var filename = e.target.files[0].name;
+                $("#file-upload_label2").text(filename);
             });
         });
 
@@ -138,15 +188,6 @@
             $('#courses_ms_newitem').on('click', function(e) {
                 var new_course_name = $('#courses_ms_filterinput').val();
                 $.getJSON('/add_course/'+new_course_name, function(data) {});
-                history.go(0);
-            });
-        });
-
-        // add location
-        $(function() {
-            $('#locations_ms_newitem').on('click', function(e) {
-                var new_location_name = $('#locations_ms_filterinput').val();
-                $.getJSON("/add_location/"+new_location_name,function(data) {});
                 history.go(0);
             });
         });
@@ -161,29 +202,48 @@
                 
                 {{ form.hidden_tag() }}
                 
-                {{ form.name(id="inputName", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="University Name", value=old_uni.name )}} 
-                
-                <div class="custom-file mt-4">
-                    <label class="custom-file-label border-0.5 border-black text-sm md:text-lg" id="file-upload_label" for="file-upload">
-                        {% if old_uni.logo %}{{ old_uni.logo }}{% else %}Upload University Logo{% endif %}
+                <div class="flex items-center justify-center col-span-2 mt-4">
+                    <label for="logo" class="w-64 flex items-center p-2 bg-white text-blueC rounded-lg tracking-wide uppercase border-0.5 border-blueC border-solid cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span id="logo-filename" class="ml-2 text-base text-blueC leading-normal">{% if old_uni.logo %}{{ old_uni.logo }}{% else %}Upload University Logo{% endif %}</span>
+                        {{ form.logo(class="hidden", id="logo", type="file") }}
+
                     </label>
-                    {{ form.logo(class="custom-file-input", id="file-upload", type="file") }}
                 </div>
 
-                <h3 class="w-100% text-center text-base md:text-lg mb-1 mt-2">Locations</h3>
-                {{ form.location(id="locations_ms") }} 
+                <div class="flex items-center justify-center col-span-2 mt-2">
+                    <label for="banner" class="w-64 flex items-center p-2 bg-white text-blueC rounded-lg tracking-wide uppercase border-0.5 border-blueC border-solid cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        <span id="banner-filename" class="ml-2 text-base text-blueC leading-normal">{% if old_uni.banner %}{{ old_uni.banner }}{% else %}Upload University Campus Photo{% endif %}</span>
+                        {{ form.banner(class="hidden", id="banner", type="file") }}
+                    </label>
+                </div>
+
+                {{ form.name(id="inputName", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-3 mb-4", placeholder="University Name", value=old_uni.name )}} 
+                
+                {{ form.location(id="location_select", placeholder="Location", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
+                
                 
                 <h3 class="w-100% text-center text-base md:text-lg mb-1 mt-2">Courses</h3>     
                 {{ form.courses(id="courses_ms") }}
 
                 {{ form.website(id="inputWebsite", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="University Website", value=old_uni.website )}} 
                 {{ form.requirements(id="inputRequirements", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4 py-1%", placeholder="University Requirements", value=old_uni.requirements )}} 
+                {{ form.min_gpa(id="inputMin_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Minimum GPA", value=old_uni.min_gpa )}} 
+                {{ form.max_gpa(id="inputMax_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Maximum GPA", value=old_uni.max_gpa )}} 
+                {{ form.avg_cost(id="inputAvg_cost", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Average Cost", value=old_uni.avg_cost )}} 
+                {{ form.email(id="inputEmail", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Email", value=old_uni.email)}} 
+                {{ form.acceptance_rate(id="inputAcceptance_rate", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Acceptance Rate", value=old_uni.acceptance_rate)}} 
                 {{ form.scholarships(id="inputScholarships", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4 py-1%", placeholder="University Scholarships", value=old_uni.scholarships )}} 
                 {{ form.ib_cutoff(id="inputIb_cutoff", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="Cut off/required grade for IBDP", value=old_uni.ib_cutoff )}} 
 
                 <center>
-                    {{ form.save_draft(class="submit inline-block btn btn-primary mt-3% w-100% sm:w-30% sm:mb-5% text-lg md:text-2xl") }}
-                    {{ form.submit(class="submit inline_block btn btn-primary mt-3% w-100% sm:w-30% mb-5% text-lg md:text-2xl") }}
+                    {{ form.save_draft(class="submit inline-block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% sm:mb-5% text-lg md:text-2xl") }}
+                    {{ form.submit(class="submit inline_block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% mb-5% text-lg md:text-2xl") }}
                 </center>
             </form>
         </div>

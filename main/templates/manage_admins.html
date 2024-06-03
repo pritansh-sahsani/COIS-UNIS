@@ -103,21 +103,27 @@ var user_len = 0;
 
     <div>
         <h3 id="no_user" class="hidden my-3 text-4xl"></h3>
-        {% for user in users %}
-            <div class="w-100% md:w-50% mx-auto mt-2 md:border-0.5 border-black rounded-md" id="user{{ user.id }}">
-                <div class="m-2 grid grid-cols-2 gap-x-2 ">
-                    <p class="">{{ user.username }}</p>
-                    <p class="justify-self-end text-right">joined: {{ user.added_at.strftime("%d %B %Y") }}</p>
-                    <p class="my-2 py-2 pl-2 text-left border-0.5 border-black rounded-md col-span-2">{{ user.fullname }} - {{ user.email }}</p>
-                    
-                    <a class="justify-self-center w-100% text-right" href="{{ url_for('edit_admin', admin_id=user.id) }}">
-                        <button class="btn btn-dark w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
-                    </a>
-                    <button class="btn btn-danger w-100% md:w-fit justify-self-left" id="delete_admin{{ user.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+        {% for admin in users %}
+            <hr class="border-grayC w-100% my-4">
+                <div class="w-90% mx-auto">
+                    <div class="sm:flex items-center">
+                        <img class="w-24 mr-4" src="../static/profile_pics/{{ admin.pfp }}">
+                        <a href="profile/{{admin.username}}">
+                            <div class="self-center gap-y-2 mb-2">
+                                <p class="text-blueC text-3xl font-bold">{{ admin.fullname }}</p>
+                                <p class="text-blueC text-xl">{{ admin.username }}</p>
+                            </div>
+                        </a>
+                        <div class="sm:ml-3 flex flex-col sm:block">
+                            <a class="justify-self-center w-100% text-right" href="{{ url_for('edit_admin', admin_id=admin.id) }}">
+                                <button class="text-white bg-gray-800 hover:bg-gray-900 rounded-lg px-5 py-2.5 w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
+                            </a>
+                            <button class="text-white bg-red-700 hover:bg-red-800 rounded-lg px-5 py-2.5 w-100% md:w-fit justify-self-left mt-2" id="delete_admin{{ admin.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <hr class="block md:hidden border-0.5 border-black my-4"/>
         {% endfor %}
+        <hr class="border-grayC w-100% my-4">
     </div>
 </div>
 <!-- add new user button -->

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    {{user.username}}
+    {{ user.username }}
 {% endblock %}
 
 {% block main %}
@@ -10,18 +10,38 @@
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     
-    <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5">
-        <div class="m-3">
-            <img src="../static/profile_pics/{{ user.pfp }}">
-            <p class="text-2xl">{{ user.fullname }}</p>
-            <p class="mt-2">Username: {{ user.username }}</p>
-            <p>Email: {{ user.email }}</p>
-            <p>Joined at: {{ user.added_at.strftime("%d %B %Y") }}</p>
-            <p>Phone number: {{ user.phone_number }}</p>
+    <div class="w-85% mx-auto my-3 md:my-5 text-lg">
+        <div class="grid grid-cols-1 md:grid-cols-3">
+            <div class="col-span-2 md:flex items-center">
+                <img class="w-24 rounded-full border-0.5 border-black border-solid mr-4" src="../static/profile_pics/{{ user.pfp }}">
+                <div class="self-center gap-y-2 mb-2 mt-2 md:mt-0">
+                    <p class="text-blueC text-3xl font-bold">{{ user.fullname }}</p>
+                    <p class="text-blueC text-xl">{{ user.username }}</p>
+                </div>
+            </div>
+            <div class="hidden md:block place-self-end text-right">
+                {% if user.username == current_user.username %}
+                    <a class="" href="{{ url_for('edit_admin', admin_id=user.id) }}">
+                        <button class="px-2 py-1 rounded-md border-redC border-0.5 border-solid text-redC w-100% md:w-fit mx-auto">
+                            <div class="flex">Edit Profile<img class='inline place-self-center w-5 ml-1' src="../static/assets/edit-icon-red.png"/></div>
+                        </button>
+                    </a><br>
+                {% endif %}
+            </div>
+        </div>
+        <hr class="border-black w-100% mx-auto my-3">
+        <p class="text-xl font-bold text-orangeC mb-3">Contact</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-2 justify-start ml-3 md:ml-4 text-base">
+                <div class="inline-flex md:w-96"><img class='inline place-self-center w-5 mr-2' src="../static/assets/mail.png"/><p class="inline w-fit place-self-center">{{ user.email }}</p></div>
+                <div class="inline-flex"><img class='inline place-self-center w-5 mr-2' src="../static/assets/phone.png"/><p class="inline w-fit place-self-center">+91 {{ user.phone_number }}</p></div>
+        </div>
+        <div class="block md:hidden mt-4 text-center">
             {% if user.username == current_user.username %}
-            <a class="" href="{{ url_for('edit_admin', admin_id=user.id) }}">
-                <button class="mt-2 btn btn-dark w-100% md:w-fit mx-auto">Edit Profile</button>
-            </a>
+                <a class="" href="{{ url_for('edit_admin', admin_id=user.id) }}">
+                    <button class="px-2 py-1 rounded-md border-redC border-0.5 border-solid text-redC w-100% md:w-fit mx-auto">
+                        <div class="flex justify-center">Edit Profile<img class='inline place-self-center w-5 ml-1' src="../static/assets/edit-icon-red.png"/></div>
+                    </button>
+                </a><br>
             {% endif %}
         </div>
     </div>

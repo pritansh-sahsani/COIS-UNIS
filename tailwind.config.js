@@ -11,15 +11,20 @@ module.exports = {
       sm: "640px", 
       xsm: "500px",
     },
+    colors: {
+      'redC':"#ff3131",
+      'black': "#000000",
+      'blueC': "#0F3FA2",
+      'orangeC': "#F16F43",
+      'linkC': "#1a0dab",
+      'grayC': '#868686',
+    },
     extend: {
       borderWidth: {
         0.5: "0.5px",
       },  
       space: {
         '5%': '5%',
-      },
-      colors: {
-        customblue: "#007bff",
       },
       inset: {
         "1%": "1%",

@@ -207,8 +207,8 @@
                     <p class="flex-initial relative text-base ml-2">COIS students applied</p>
                 </div>
     
-                {{ form.submit(class="btn btn-primary rounded-lg w-100% text-base") }}
-                {{ form.clear(id="clear_filter", class="btn btn-primary rounded-lg w-100% text-base float-right") }}
+                {{ form.submit(class="text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none rounded-lg w-100% text-base") }}
+                {{ form.clear(id="clear_filter", class="text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none rounded-lg w-100% text-base float-right") }}
             </form>
         </div>
     </div>
@@ -239,16 +239,45 @@
         <h3 id="no_unis" class="hidden w-100% text-center my-3 text-4xl"></h3>
         {% if p_unis_len != 0 %}    
             {% for uni,i in zip(unis, range(len(unis))) %}
-                <div class="w-100% md:w-50% mt-2 border-0.5 border-black rounded-md mx-auto" id="uni{{ uni.id }}">
-                    <div class="m-3 grid grid-cols-1 md:grid-cols-2 items-center justify-start gap-x-2">
-                        <img class="w-100% border-solid border-0.5 border-black rounded-md" src="../static/university_logos/{{ uni.logo }}" />
-                        <div class="grid grid-cols-2 gap-2">
-                            <p class="inline-block col-span-2 text-2xl text-center mt-3 md:mt-0"><a href="{{ url_for('uni', uni_name=uni.name) }}">{{ uni.name }}</a></p>
-                            <p class="inline-block col-span-2 text-center"><a href="{{ url_for('uni', uni_name=uni.name) }}">Students from COIS<br>applications: {{ no_app[i] + no_add[i] }}<br>addmissions: {{no_add[i]}}</a></p>
+                <hr class="border-grayC w-100% my-4">
+                <a href="/uni/{{uni.name}}">
+                <div class="hidden md:block w-90% mx-auto">
+                    <div class="m-3 sm:flex items-center justify-items-center">
+                        <img class="mr-4 w-40 " src="../static/university_logos/{{ uni.logo }}">
+                        <div class="">
+                            <p class="text-blueC text-3xl font-bold">{{ uni.name }}</p>
+                            <p class="text-grayC text-xl">{{ uni.location.exact_location }}</p>
+                            <table class="mt-3">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-lg w-96"><p class="inline font-bold">{{ uni.acceptance_rate }}%</p> Acceptance rate</td>
+                                        <td class="text-lg w-96"><p class="inline font-bold">{{ no_app[i] + no_add[i] }}</p> Students applied from COIS</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-lg pt-2 w-96"><p class="inline font-bold">{{ uni.min_gpa }} - {{ uni.max_gpa }}</p> GPA</td>
+                                        <td class="text-lg pt-2 w-96"><p class="inline font-bold">{{ uni.avg_cost }}</p> Average Cost per annum</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+                <div class="block md:hidden text-center">
+                    <img class="w-40 mx-auto" src="../static/university_logos/{{ uni.logo }}">
+                    <div class="">
+                        <p class="text-blueC text-3xl font-bold">{{ uni.name }}</p>
+                        <p class="text-grayC text-xl">{{ uni.location.exact_location }}</p>
+                        <div class="grid grid-cols-1 gap-y-1 md:hidden mt-3">
+                            <p class=""><b>{{ uni.acceptance_rate }}%</b> Acceptance rate</p>
+                            <p class=""><b>{{ no_app[i] + no_add[i] }}</b> Students applied from COIS</p>
+                            <p class=""><b>{{ uni.min_gpa }} - {{ uni.max_gpa }}</b> GPA</p>
+                            <p class=""><b>{{ uni.avg_cost }}</b> Average Cost per annum</p>
+                        </div>
+                    </div>
+                </div>
+                </a>
             {% endfor %}
+            <hr class="border-grayC w-100% my-4">
         {% else %}
             <h3 class="w-100% text-center text-4xl">No Universities Found</h3>
         {% endif %}

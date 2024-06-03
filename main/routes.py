@@ -13,6 +13,11 @@ load_dotenv()
 
 HASHED_SUPER_USER_KEY = os.getenv('HASHED_SUPER_USER_KEY')
 
+@app.route("/", methods=["GET", "POST"])
+@app.route("/home", methods=["GET", "POST"])
+def index():
+    return render_template("index.html")
+
 @app.route("/unis", methods=["GET", "POST"])
 @login_required
 def unis():
@@ -36,8 +41,16 @@ def unis():
     form = FilterForm(formdata = request.form, courses=courses, locations=locations)
 
     if form.validate_on_submit():
+        unis= Uni.query.filter_by(is_draft=False)
         if form.submit.data:
-            for filter in ['ib_cutoff', 'requirements', 'scholarships']:
+            for filter in ['acceptance_rate', 'gpa','ib_cutoff', 'avg_cost']:
+                if getattr(form, 'min_'+filter).data!="":
+                    unis=unis.filter(getattr(Uni, filter)>=getattr(form, 'min_'+filter).data)
+                if getattr(form, 'max_'+filter).data!="":
+                    unis=unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
+            unis=unis.all()
+
+            for filter in ['requirements', 'scholarships']:
                 if getattr(form, filter).data!="":
                     unis=sort_by_similarity(unis, getattr(form, filter).data, filter)
             for filter in ['courses', 'locations']:
@@ -70,13 +83,13 @@ def add_uni():
     courses=[]
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
-    locations_query = Location.query.with_entities(Location.exact_location).all()
+    locations_query = Location.query.all()
 
     for course in courses_query:
         courses.append((course.name, course.name))
 
     for location in locations_query:
-        locations.append((location.exact_location, location.exact_location))
+        locations.append((location.id, location.exact_location))
 
     form = AddUniversityForm(formdata = request.form, courses=courses, locations=locations)
 
@@ -85,7 +98,7 @@ def add_uni():
             flash('A university with this name has been added eariler.')
             return render_template("add_uni.html", form=form)
         
-        if not form.website.data or not form.ib_cutoff.data or not form.requirements.data or len(form.courses.data) == 0 or len(form.location.data) == 0:
+        if not form.website.data or not form.ib_cutoff.data or len(form.courses.data) == 0:
             is_draft = True
         else:
             is_draft = form.save_draft.data
@@ -101,24 +114,27 @@ def add_uni():
         else:
             form.ib_cutoff.data = 0
 
-        f = request.files['logo']
-        if f:
-            filename = form.name.data + '.' + f.filename.rsplit('.', 1)[1].lower()
-            f.save(os.path.join(app.root_path, 'static', 'university_logos', filename))
+        logo = request.files['logo']
+        banner = request.files['banner']
+        if logo:
+            logo_filename = form.name.data + '.' + logo.filename.rsplit('.', 1)[1].lower()
+            logo.save(os.path.join(app.root_path, 'static', 'university_logos', logo_filename))
         else:
-            filename = None
+            logo_filename = None
+            is_draft = True
+        if banner:
+            banner_filename = form.name.data + '.' + banner.filename.rsplit('.', 1)[1].lower()
+            banner.save(os.path.join(app.root_path, 'static', 'university_banners', banner_filename))
+        else:
+            banner_filename = None
             is_draft = True
 
-        uni = Uni(name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, is_draft=is_draft)
+        uni = Uni(name = form.name.data, location = Location.query.filter_by(id = int(form.location.data)).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
         
         for course_name in form.courses.data:
             course = Course.query.filter_by(name=course_name).first()
             uni.courses.append(course)
             course.unis.append(uni)
-        for location_name in form.location.data:
-            location = Location.query.filter_by(exact_location = location_name).first()
-            uni.locations.append(location)
-            location.unis.append(uni)
 
         db.session.add(uni)
         db.session.commit()
@@ -172,7 +188,20 @@ def manage_unis():
     
     if form.validate_on_submit():
         if form.submit.data:
-            for filter in ['ib_cutoff', 'requirements', 'scholarships']:
+            draft_unis = Uni.query.filter_by(is_draft=True)
+            published_unis = Uni.query.filter_by(is_draft=False)
+            
+            for filter in ['acceptance_rate', 'gpa','ib_cutoff', 'avg_cost']:
+                if getattr(form, 'min_'+filter).data!="":
+                    published_unis=published_unis.filter(getattr(Uni, filter)>=getattr(form, 'min_'+filter).data)
+                if getattr(form, 'max_'+filter).data!="":
+                    published_unis=published_unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
+            published_unis=published_unis.all()
+
+            for filter in ['requirements', 'scholarships']:
+                if getattr(form, filter).data!="":
+                    published_unis=sort_by_similarity(published_unis, getattr(form, filter).data, filter)
+            for filter in ['acceptance_rate', 'gpa','ib_cutoff']:
                 if getattr(form, filter).data!="":
                     published_unis=sort_by_similarity(published_unis, getattr(form, filter).data, filter)
             for filter in ['courses', 'locations']:
@@ -180,7 +209,18 @@ def manage_unis():
                     for item in getattr(form, filter).data:
                         published_unis=sort_by_similarity(published_unis, item, filter)
 
-            for filter in ['ib_cutoff', 'requirements', 'scholarships']:
+
+            for filter in ['acceptance_rate', 'gpa','ib_cutoff', 'avg_cost']:
+                if getattr(form, 'min_'+filter).data!="":
+                    draft_unis=draft_unis.filter(getattr(Uni, filter)>=getattr(form, 'min_'+filter).data)
+                if getattr(form, 'max_'+filter).data!="":
+                    draft_unis=draft_unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
+            draft_unis=draft_unis.all()
+
+            for filter in ['requirements', 'scholarships']:
+                if getattr(form, filter).data!="":
+                    draft_unis=sort_by_similarity(draft_unis, getattr(form, filter).data, filter)
+            for filter in ['acceptance_rate', 'gpa','ib_cutoff']:
                 if getattr(form, filter).data!="":
                     draft_unis=sort_by_similarity(draft_unis, getattr(form, filter).data, filter)
             for filter in ['courses', 'locations']:
@@ -333,7 +373,7 @@ def uni(uni_name):
                 'user': User.query.filter_by(id = student.user_id).first()
             })
 
-    return render_template("uni.html", uni=uni, admissions=admissions, others=others, len=len)
+    return render_template("uni.html", uni=uni, admissions=admissions, others=others, len=len, zip=zip, range=range)
 
 @app.route('/delete_uni/<int:uni_id>', methods=['GET', 'POST'])
 @login_required
@@ -349,7 +389,9 @@ def delete_uni(uni_id):
         location.unis.remove(uni)
 
     if uni.logo:
-        os.remove(os.path.join(app.root_path, 'university_logos', uni.logo))
+        os.remove(os.path.join(app.root_path, 'static', 'university_logos', uni.logo))
+    if uni.banner:
+        os.remove(os.path.join(app.root_path, 'static', 'university_banners', uni.banner))
     
     db.session.delete(uni)
     db.session.commit()
@@ -365,13 +407,13 @@ def edit_uni(uni_name):
     courses = []
     locations=[]
     courses_query= Course.query.with_entities(Course.name).all()
-    locations_query = Location.query.with_entities(Location.exact_location).all()
+    locations_query = Location.query.all()
 
     for course in courses_query:
         courses.append((course.name, course.name))
 
     for location in locations_query:
-        locations.append((location.exact_location, location.exact_location))
+        locations.append((location.id, location.exact_location))
 
     form = AddUniversityForm(obj=old_uni, formdata = request.form, courses=courses, locations=locations)
 
@@ -382,7 +424,7 @@ def edit_uni(uni_name):
                 flash("A university with this name already exists.")
                 return render_template("edit_uni.html", form=form, old_uni=old_uni)
         
-        if not form.website.data or not form.ib_cutoff.data or not form.requirements.data or len(form.courses.data) == 0 or len(form.location.data) == 0:
+        if not form.website.data or not form.ib_cutoff.data or len(form.courses.data) == 0:
             is_draft = True
         else:
             is_draft = form.save_draft.data
@@ -397,18 +439,29 @@ def edit_uni(uni_name):
                 return render_template("add_uni.html", form=form)
         else:
             form.ib_cutoff.data = 0
-
-        f = request.files['logo']
-        if f:
-            filename = form.name.data + '.' + f.filename.rsplit('.', 1)[1].lower()
-            f.save(os.path.join(app.root_path, 'university_logos', filename))
+        
+        logo = request.files['logo']
+        banner = request.files['banner']
+        if logo:
+            logo_filename = form.name.data + '.' + logo.filename.rsplit('.', 1)[1].lower()
+            logo.save(os.path.join(app.root_path, 'static', 'university_logos', logo_filename))
         elif old_uni.logo:
-            filename = old_uni.logo
+            logo_filename = old_uni.logo
         else:
-            filename = None
+            logo_filename = None
             is_draft = True
+        if banner:
+            banner_filename = form.name.data + '.' + banner.filename.rsplit('.', 1)[1].lower()
+            banner.save(os.path.join(app.root_path, 'static', 'university_banners', banner_filename))
+        elif old_uni.banner:
+            banner_filename = old_uni.banner
+        else:
+            banner_filename = None
+            is_draft = True
+        
+        print(form.location.data)
 
-        new_uni = Uni(id=old_uni.id, name = form.name.data, logo = filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, is_draft=is_draft)
+        new_uni = Uni(id=old_uni.id, name = form.name.data, location = Location.query.filter_by(id = int(form.location.data)).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
         db.session.delete(old_uni)
         db.session.add(new_uni)
         
@@ -416,10 +469,6 @@ def edit_uni(uni_name):
             course = Course.query.filter_by(name=course_name).first()
             new_uni.courses.append(course)
             course.unis.append(new_uni)
-        for location_name in form.location.data:
-            location = Location.query.filter_by(exact_location = location_name).first()
-            new_uni.locations.append(location)
-            location.unis.append(new_uni)
 
         db.session.commit()
 
@@ -532,7 +581,7 @@ def edit_admin(admin_id):
         else:
             filename=old_admin.pfp
         
-        User.query.filter_by(id=old_admin.id).update(dict(email=form.email.data, username=form.username.data, fullname=form.fullname.data, pfp=filename))
+        User.query.filter_by(id=old_admin.id).update(dict(email=form.email.data, username=form.username.data, fullname=form.fullname.data.title(), pfp=filename))
 
         if form.password.data !="":
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -598,7 +647,7 @@ def admin_register():
             filename="default.png"
 
         user = User(username=form.username.data,
-                    fullname=form.fullname.data,
+                    fullname=form.fullname.data.title(),
                     email=form.email.data,
                     phone_number = form.phone_number.data,
                     password=hashed_password,
@@ -631,7 +680,7 @@ def student_register():
             filename="default.png"
 
         user = User(username=form.username.data,
-                    fullname=form.fullname.data,
+                    fullname=form.fullname.data.title(),
                     email=form.email.data,
                     phone_number = form.phone_number.data,
                     password=hashed_password,
@@ -721,12 +770,12 @@ def edit_student(student_id):
             filename = form.username.data + '.' + f.filename.rsplit('.', 1)[1].lower()
             f.save(os.path.join(app.root_path, 'static', 'profile_pics', filename))
         else:
-            filename="default.png"
+            filename=old_student.pfp
         
         User.query.filter_by(id=old_student.id).update(dict(email=form.email.data, 
                                                             username=form.username.data,
                                                             phone_number=form.phone_number.data,
-                                                            fullname = form.fullname.data,
+                                                            fullname = form.fullname.data.title(),
                                                             pfp=filename))
         
         Student_details.query.filter_by(user_id = old_student.id).update(dict(
@@ -764,7 +813,6 @@ def add_application():
     locations=[]
     courses_query= Course.query.with_entities(Course.id, Course.name).all()
     unis_query = Uni.query.with_entities(Uni.id, Uni.name).all()
-    locations_query = Location.query.with_entities(Location.id, Location.exact_location).all()
 
     for course in courses_query:
         courses.append((course.id, course.name))
@@ -772,15 +820,13 @@ def add_application():
         minors.append((course.name, course.name))
     for uni in unis_query:
         unis.append((uni.id, uni.name))
-    for location in locations_query:
-        locations.append((location.id, location.exact_location))
 
     form = ApplicationForm(formdata = request.form, courses=courses, minors=minors, unis=unis, locations=locations)
     if form.validate_on_submit():
         application=Application(uni_id = int(form.uni.data),
             student_id = int(student_details.id),
             course_id = int(form.course.data),
-            location_id = int(form.location.data),
+            location_id = Uni.query.filter_by(id = form.uni.data).first().location_id,
             status = form.status.data,
             scholarship = form.scholarship.data,
             other_details = form.other_details.data,
@@ -797,7 +843,6 @@ def add_application():
             application = Application.query.filter_by(uni_id = int(form.uni.data),
             student_id = int(student_details.id),
             course_id = int(form.course.data),
-            location_id = int(form.location.data),
             status = form.status.data,
             scholarship = form.scholarship.data,
             other_details = form.other_details.data,
@@ -819,7 +864,9 @@ def edit_application(application_id):
     if allow_access("only_students") is not None: return allow_access("only_students")
     
     application = Application.query.get_or_404(application_id)
-    student_details = Student_details.query.filter_by(user_id=current_user.id).with_entities(Student_details.id).first_or_404()
+    student_details = Student_details.query.filter_by(user_id=current_user.id).with_entities(Student_details.id, Student_details.selected_app_id).first_or_404()
+
+    selected_app = student_details.selected_app_id == old_app.id
     
     # Ensure the application belongs to the current user
     if application.student_id != student_details.id:
@@ -828,14 +875,13 @@ def edit_application(application_id):
     courses = [(course.id, course.name) for course in Course.query.with_entities(Course.id, Course.name).all()]
     minors = [(course.name, course.name) for course in Course.query.with_entities(Course.id, Course.name).all()]
     unis = [(uni.id, uni.name) for uni in Uni.query.with_entities(Uni.id, Uni.name).all()]
-    locations = [(location.id, location.exact_location) for location in Location.query.with_entities(Location.id, Location.exact_location).all()]
 
-    form = ApplicationForm(obj=application, formdata=request.form, courses=courses, minors=minors, unis=unis, locations=locations)
+    form = ApplicationForm(obj=application, formdata=request.form, courses=courses, minors=minors, unis=unis)
     
     if form.validate_on_submit():
         application.uni_id = int(form.uni.data)
         application.course_id = int(form.course.data)
-        application.location_id = int(form.location.data)
+        application.location_id = Uni.query.filter_by(id = form.uni.data).first().location_id
         application.status = form.status.data
         application.scholarship = form.scholarship.data
         application.other_details = form.other_details.data
@@ -843,6 +889,7 @@ def edit_application(application_id):
 
         application.minors = []
         for minor in form.minors.data:
+            print(type(minor))
             course = Course.query.filter_by(name=minor).first()
             if course:
                 application.minors.append(course)
@@ -857,7 +904,7 @@ def edit_application(application_id):
             
         return redirect(url_for('profile', username=current_user.username))
 
-    return render_template('edit_application.html', form=form, old_app=old_app, application=application)
+    return render_template('edit_application.html', form=form, old_app=old_app, application=application, selected_app = selected_app)
 
 @app.route('/delete_application/<int:application_id>', methods=['GET', 'POST'])
 @login_required

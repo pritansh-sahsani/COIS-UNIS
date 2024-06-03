@@ -10,10 +10,12 @@
 <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
 <script src="../static/extensions/filter-multi-select-bundle-base.min.js"></script>  
 <script type=text/javascript>
+
+
     
     function raise_error() {
         
-        {% for item in [form.uni, form.course, form.minors, form.location, form.status, form.is_early, form.scholarship, form.selected_uni, form.other_details] %}
+        {% for item in [form.uni, form.course, form.minors, form.status, form.is_early, form.scholarship, form.selected_uni, form.other_details] %}
             {% if item.errors %} 
                 {% for error in item.errors %}
                     $("#flash_text").text("{{error | safe}}");
@@ -38,7 +40,6 @@
             <div class="w-100% grid md:grid-cols-2 md:gap-x-2 space-y-2 justify-items-center">
                 {{ form.hidden_tag() }}
                 {{ form.uni(placeholder="University", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
-                {{ form.location(placeholder="Location", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
                 {{ form.course(placeholder="Course", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
                 
                 {{ form.status(placeholder='Application status (if recieved)', class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
@@ -63,7 +64,7 @@
                 </label>
                 <p class="flex-initial relative text-base md:text-lg ml-2">Is this the university you have taken admission in?</p>
             </div>
-            {{ form.submit(class="btn btn-primary mt-2% md:ml-25% w-100% sm:w-50% mb-5% text-lg md:text-2xl") }}
+            {{ form.submit(class="text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-2% md:ml-25% w-100% sm:w-50% mb-5% text-lg md:text-2xl") }}
         </form>
     </div>
             

@@ -5,55 +5,169 @@
 {% endblock %}
 
 {% block main %}
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    
-    <div class="w-90% mx-auto border-solid border-black rounded-md my-5% items-center border-0.5 grid grid-cols-2 p-3 gap-3">
-        <img class="w-full" src="../static/university_logos/{{ uni.logo }}" />
-        <div class="grid grid-cols-1 gap-y-1">
-            <p class="text-2xl w-100% text-center pb-2">{{ uni.name }}</p>
-            
-            <p>locations: </p>
-            <div>
-                {% for location in uni.locations %}
-                <p class="inline border-solid border-black border-0.5 rounded-md p-1 w-fit m-1"> {{ location.exact_location }}</p>
-                {% endfor %}
-            </div>
-            <p>courses: </p>
-            <div>
-                {% for course in uni.courses %}
-                <p class="inline border-solid border-black border-0.5 rounded-md p-1  w-fit m-1"> {{ course.name }}</p>
-                {% endfor %}
-            </div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-            <p>ib cutoff: {{ uni.ib_cutoff }}</p>
-            <p>scholarships offered: {{ uni.scholarships }}</p>
-            <p>requirements: {{ uni.requirements }}</p>
-            <p>website: {{ uni.website }}</p>
-            {% if len(admissions) > 0 %}
-                <p class="text-xl  mt-3">COIS Students Pursuing Further Studies:</p>
-                {% for add in admissions %}
-                    <p>name: {{add['user'].fullname}} </p>
-                    <p>graduation year: {{add['details'].graduation_year}} </p>
-                    <p>course: {{add['application'].course}} </p>
-                    <hr class="w-90% my-1 mx-auto p-0 border-gradient" />
-                {% endfor %}
-            {% endif %}
-            
-            {% if len(others) > 0 %}
-                <p class="text-xl mt-3">COIS Students Who Applied Here:</p>
-                <hr class="w-90% my-1 mx-auto p-0 border-gradient" />
-                {% for student in others %}
-                    <p>name: {{student['user'].fullname}} </p>
-                    <p>graduation year: {{student['details'].graduation_year}} </p>
-                    <p>course: {{student['application'].course}} </p>
-                    <p>location: {{student['application'].location.exact_location}} </p>
-                    <p>status: {{student['application'].status }} </p>
-                    <hr class="w-90% my-1 mx-auto p-0 border-gradient" />
-                {% endfor %}
-            {% endif %}
+<script type=text/javascript>
+    
+        var shown = 1;
+        var button_classes=" text-blueC text-base md:text-xl inline cursor-pointer";
+        var div_classes=" w-fit mt-3 mb-5";
+        
+        $(document).ready(function() {
+        $("#overview_div").attr('class', div_classes);
+        $('#overview_button').attr('class', "text-orangeC"+button_classes);
+        });
+
+		$(function() {
+		    $('#overview_button').on('click', function(e) {
+                if(shown != 1){
+                    $("#overview_div").attr('class', div_classes);
+                    $("#courses_div").attr('class', "hidden"+div_classes);
+                    $("#students_div").attr('class', "hidden"+div_classes);
+                    shown = 1;
+                    $('#overview_button').attr('class', "text-orangeC"+button_classes);
+                    $('#courses_button').attr('class', "text-blueC"+button_classes);
+                    $('#students_button').attr('class', "text-blueC"+button_classes);
+                }
+			});
+        });
+
+		$(function() {
+		    $('#courses_button').on('click', function(e) {
+                if(shown != 2){
+                    $("#overview_div").attr('class', "hidden"+div_classes);
+                    $("#courses_div").attr('class', div_classes);
+                    $("#students_div").attr('class', "hidden"+div_classes);
+                    shown = 2;
+                    $('#overview_button').attr('class', "text-blueC"+button_classes);
+                    $('#courses_button').attr('class', "text-orangeC"+button_classes);
+                    $('#students_button').attr('class', "text-blueC"+button_classes);
+                }
+			});
+        });
+
+		$(function() {
+		    $('#students_button').on('click', function(e) {
+                if(shown != 3){
+                    $("#overview_div").attr('class', "hidden"+div_classes);
+                    $("#courses_div").attr('class', "hidden"+div_classes);
+                    $("#students_div").attr('class', div_classes);
+                    shown = 3;
+                    $('#overview_button').attr('class', "text-blueC"+button_classes);
+                    $('#courses_button').attr('class', "text-blueC"+button_classes);
+                    $('#students_button').attr('class', "text-orangeC"+button_classes);
+                }
+			});
+        });
+</script>
+<div class="w-90% mx-auto mt-5">
+    <img class="object-center object-cover h-40 w-100%" src="../static/university_banners/{{ uni.banner }}" />
+    <div class="grid grid-cols-3 mt-4 mb-4">
+        <div class="col-span-2 flex items-center">
+            <div class="self-center gap-y-2 mb-2">
+                <p class="text-blueC text-4xl font-bold">{{ uni.name }}</p>
+                <p class="text-grayC text-xl mt-2">{{ uni.location.exact_location }}</p>
+            </div>
+        </div>
+        <div class="self-start justify-self-end text-right">
+            <!-- {% if current_user.is_student %}
+                <a class="" href="">
+                    <button class="px-2 py-1 rounded-md border-redC border-0.5 border-solid text-redC w-100% md:w-fit mx-auto">
+                        <div class="flex">Add To My List<img class='inline place-self-center w-5 ml-1' src="../static/assets/heart_outline.svg"/></div>
+                    </button>
+                </a><br>
+            {% endif %} -->
         </div>
     </div>
+    <div class="mb-2 flex gap-x-4 md:gap-x-10">
+        <p class="text-blueC text-base md:text-xl inline cursor-pointer" id="overview_button">Overview</p>
+        <p class="text-blueC text-base md:text-xl inline cursor-pointer" id="courses_button">Courses</p>
+        <p class="text-blueC text-base md:text-xl inline cursor-pointer" id="students_button">COIS Students</p>
+    </div>
+    <hr class="100% border-black">
+    
+    <div id="overview_div" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10">
+            <div class="w-fit">
+                <p class="text-base md:text-xl text-blueC">Acceptance rate</p>
+                <p class="text-2xl md:text-3xl">{{ uni.acceptance_rate }}%</p>
+            </div>
+            <div class="w-fit mt-3 md:mt-0">
+                <p class="text-base md:text-xl text-blueC">IBDP score cut off</p>
+                <p class="text-2xl md:text-3xl">{{ uni.ib_cutoff }} / 45</p>
+            </div>
+        </div>
+        
+        <a href="https://{{uni.website}}">
+            <div class="flex items-center mb-3 mt-4">
+                <img class="w-6 md:w-8 mr-3" src="../static/assets/website_stock.png">
+                <p class="mb-1 text-base md:text-lg">{{ uni.website }}</p>
+            </div>
+        </a>
+            
+        <div class="flex items-center my-3">
+            <img class="w-6 md:w-8 mr-3" src="../static/assets/mail_black.png">
+            <p class="mb-1 text-base md:text-lg">{{ uni.email }}</p>
+        </div>
+
+        <p class="text-lg md:text-xl text-blueC mt-4">Scholarships Offered</p>
+        <p class="text-base md:text-lg">{{ uni.min_gpa }} - {{ uni.max_gpa }} GPA</p>
+        <p class="text-base md:text-lg">{{ uni.scholarships }}</p>
+            
+        <p class="text-lg md:text-xl text-blueC mt-4">Requirements</p>
+        <p class="text-base md:text-lg">{{ uni.requirements }}</p>
+    </div>
+    
+    <div id="courses_div" class="hidden">
+        <p class="text-blueC font-bold text-xl md:text-2xl mb-2">Courses:</p>
+        <table class="">
+            <tbody>
+                {% for c1, c2 in zip(uni.courses[::2], uni.courses[1::2]) %}
+                    <tr>
+                        <td><p class="text-lg md:text-xl w-40 pb-2"> {{ c1.name }}</p></td>
+                        <td><p class="text-lg md:text-xl "> {{ c2.name }}</p></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="students_div" class="hidden">
+        {% if len(admissions) > 0 %}
+                <p class="text-blueC font-bold text-xl md:text-2xl mb-2">COIS Students Pursuing Further Studies:</p>
+                {% for i in range(len(admissions)) %}
+                <div class="w-fit grid grid-cols-1 justify-start ml-4 gap-y-2">
+                    <p class="text-base md:text-lg">Name: {{ admissions[i]['user'].fullname }}</p>
+                    <p class="text-base md:text-lg">graduation year: {{admissions[i]['details'].graduation_year}} </p>
+                    <p class="text-base md:text-lg">Course: {{ admissions[i]['application'].course }}</p>
+                </div>
+                {% if i+1 < len(admissions) %}
+                    <hr class="border-black w-100% my-3">
+                {% endif %}
+                {% endfor %}
+            {% endif %}
+            
+        {% if len(others) > 0 %}
+            {% if len(admissions) > 0 %}
+                <p class="text-blueC font-bold text-xl md:text-2xl mb-2 mt-4">COIS Students Who Applied Here:</p>
+            {% else %}
+                <p class="text-blueC font-bold text-xl md:text-2xl mb-2">COIS Students Who Applied Here:</p>
+            {% endif %}
+                {% for i in range(len(others)) %}
+                <div class="w-fit grid grid-cols-1 justify-start ml-4 gap-y-2">
+                    <p class="text-base md:text-lg">Name: {{ others[i]['user'].fullname }}</p>
+                    <p class="text-base md:text-lg">graduation year: {{others[i]['details'].graduation_year}} </p>
+                    <p class="text-base md:text-lg">Course: {{ others[i]['application'].course }}</p>
+                    <p class="text-base md:text-lg">Status: {{ others[i]['application'].status }}</p>
+                </div>
+                {% if i+1 < len(others) %}
+                    <hr class="border-black w-100% my-3">
+                {% endif %}
+                {% endfor %}
+            {% endif %}
+    </div>
+</div>
 {% endblock main %}

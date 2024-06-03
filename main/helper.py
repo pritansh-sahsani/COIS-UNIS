@@ -5,17 +5,17 @@ from main.models import Student_details, User, Application
 def allow_access(level="All"):
     if level != "All":
         if not current_user.is_authenticated:
-            return render_template("/access_denied/not_signedin.html")
+            return render_template("/403.html")
         else:
             if level == "SUPERUSER":
                 if current_user.username != "SUPERUSER":
-                    return render_template("/access_denied/superuser.html")
+                    return render_template("/403.html")
             elif level == "admins":
                 if current_user.is_student:
-                    return render_template("/access_denied/admins.html")
+                    return render_template("/403.html")
             elif level == "only_students":
                 if not current_user.is_student:
-                    return render_template("/access_denied/students.html")
+                    return render_template("/403.html")
     return None
 
 def GetAppAndAddNo(unis):
