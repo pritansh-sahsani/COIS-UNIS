@@ -46,7 +46,7 @@ class AddUniversityForm(FlaskForm):
     avg_cost = StringField('Average Cost', validators=[Length(max=10, message=min_max_error_message.format(field='Average cost', min=0, max='%(max)d'))])
     email = StringField('Contact Email', validators=[Length(max=100, message=min_max_error_message.format(field='Contact Email', min=0, max='%(max)d'))])
     courses = SelectMultipleField('Courses Offered', choices=[])
-    location = SelectField('Location', choices=[])
+    location = StringField('Location')
     
     save_draft = SubmitField('Save As Draft')
     submit = SubmitField('Add University')
@@ -54,7 +54,6 @@ class AddUniversityForm(FlaskForm):
     def __init__(self, formdata=None, **kwargs):
         super(AddUniversityForm, self).__init__(formdata=formdata, **kwargs)
         self.courses.choices = kwargs['courses']
-        self.location.choices = kwargs['locations']
     
 
 class LoginForm(FlaskForm):
@@ -244,7 +243,7 @@ class FilterForm(FlaskForm):
     requirements = StringField('Requirements for admission')
     scholarships = StringField('Scholarships')
     courses = SelectMultipleField('Courses', choices=[])
-    locations = SelectField('Location', choices=[])
+    locations = StringField('Location')
     min_ib_cutoff = StringField('Minimum Cut off for IBDP')
     max_ib_cutoff = StringField('Maximum Cut off for IBDP')
     min_acceptance_rate = StringField('Minimum Acceptance Rate')
@@ -261,7 +260,6 @@ class FilterForm(FlaskForm):
     def __init__(self, formdata=None, **kwargs):
         super(FilterForm, self).__init__(formdata=formdata, **kwargs)
         self.courses.choices = kwargs['courses']
-        self.locations.choices = kwargs['locations']
 
         
 class FilterStudentsForm(FlaskForm):
@@ -276,7 +274,7 @@ class FilterStudentsForm(FlaskForm):
 
     uni = SelectField('University', choices=[])
     course = SelectField('Course', choices=[])
-    location = SelectField('Location', choices=[])
+    location = StringField('Location')
     status = SelectField('Application status', choices=['none', 'waitlist', 'accepted', 'rejected'])
     is_early = BooleanField('Early Application')
     selected_uni = BooleanField('Took admission')
@@ -299,5 +297,4 @@ class FilterStudentsForm(FlaskForm):
     def __init__(self, formdata=None, **kwargs):
         super(FilterStudentsForm, self).__init__(formdata=formdata, **kwargs)
         self.course.choices = kwargs['courses']
-        self.location.choices = kwargs['locations']
         self.uni.choices = kwargs['unis']

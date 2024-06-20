@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
     <script src="../static/extensions/filter-multi-select-bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous"> 
-
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script type=text/javascript>
         function raise_error() {
@@ -137,10 +137,11 @@
             
             var Ib_cutoff = sessionStorage.getItem('Ib_cutoff');
             if (Ib_cutoff !== null) $('#inputIb_cutoff').val(Ib_cutoff);
+
+            var location = sessionStorage.getItem('Location');
+            if (location !== null) $('#location_select').val(location);
             
             var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'));
-            var selectedLocation = JSON.parse(sessionStorage.getItem('Location'));
-            $("#location_select option[value='"+selectedLocation+"']").prop('selected', true);
 
             
             if (selectedCourses != null){
@@ -173,14 +174,36 @@
                 var filename = e.target.files[0].name;
                 $("#banner-filename").text(filename);
             });
-        });
 
-        // add course
-        $(function() {
+            // Add course
             $('#courses_ms_newitem').on('click', function(e) {
                 var new_course_name = $('#courses_ms_filterinput').val();
-                $.getJSON('add_course/'+new_course_name, function(data) {});
-                history.go(0);
+                $.getJSON('add_course/' + new_course_name, function(data) {
+                    location.reload();
+                });
+            });
+
+            // Add location
+            $('#new_location').on('click', function(e) {
+                var new_location_name = $('#location_select').val();
+                $.getJSON('add_location/' + new_location_name, function(data) {
+                    location.reload();
+                });
+                
+                $("#flash_text").text("Location Added.");
+                $("#flash_text_div").show();
+            });
+
+            // Autocomplete for location
+            var availableTags = [];
+            {% for location in locations %}
+                availableTags.push("{{ location[1] | safe }}");
+            {% endfor %}
+            $("#location_select").autocomplete({
+                source: availableTags,
+                open: function() {
+                    $("ul.ui-menu").width($("#search-div").innerWidth());
+                }
             });
         });
     </script>
@@ -190,10 +213,9 @@
         <hr class="border-black w-80% mx-auto my-3% sm:my-2%" />
         
         <div class="w-100%">
-            <form action="{{ url_for('add_uni') }}", method="POST" class="w-80% mx-auto"  enctype="multipart/form-data">
-                
+            <form action="{{ url_for('add_uni') }}" method="POST" class="w-80% mx-auto"  enctype="multipart/form-data">
                 {{ form.hidden_tag() }}
-                
+
                 <div class="flex items-center justify-center col-span-2 mt-4">
                     <label for="logo" class="w-64 flex items-center p-2 bg-white text-blueC rounded-lg tracking-wide uppercase border-0.5 border-blueC border-solid cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
@@ -201,7 +223,6 @@
                         </svg>
                         <span id="logo-filename" class="ml-2 text-base text-blueC leading-normal">Upload University Logo</span>
                         {{ form.logo(class="hidden", id="logo", type="file") }}
-
                     </label>
                 </div>
 
@@ -214,27 +235,28 @@
                         {{ form.banner(class="hidden", id="banner", type="file") }}
                     </label>
                 </div>
-                
-                {{ form.name(id="inputName", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-2", placeholder="University Name" )}} 
 
-                {{ form.location(id="location_select", placeholder="Location", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4") }}
-                
+                {{ form.name(id="inputName", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-2", placeholder="University Name" )}} 
+                <div class="flex mt-4">
+                    {{ form.location(id="location_select", placeholder="Location", class="autocomplete h-12 text-base md:text-lg flex-1 border-0.5 border-black text-center rounded-lg") }}
+                    <button id="new_location" class="inline_block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-4 py-2 focus:outline-none text-base md:text-lg">New Location</button>    
+                </div> 
                 <h3 class="w-100% text-center text-base md:text-lg mb-1 mt-2">Courses</h3>
                 {{ form.courses(id="courses_ms") }}
 
-                {{ form.website(id="inputWebsite", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4 ", placeholder="University Website" )}} 
-                {{ form.requirements(id="inputRequirements", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="University Requirements (requirement 1: details, requirement 2: details)" )}} 
-                {{ form.min_gpa(id="inputMin_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Minimum GPA" )}} 
-                {{ form.max_gpa(id="inputMax_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Maximum GPA" )}} 
-                {{ form.avg_cost(id="inputAvg_cost", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Average Cost" )}} 
-                {{ form.email(id="inputEmail", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Email" )}} 
-                {{ form.acceptance_rate(id="inputAcceptance_rate", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Acceptance Rate" )}} 
-                {{ form.scholarships(id="inputScholarships", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="University Scholarships" )}} 
-                {{ form.ib_cutoff(id="inputIb_cutoff", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4 ", placeholder="Cut off/required grade for IBDP" )}} 
+                {{ form.website(id="inputWebsite", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="University Website" )}} 
+                {{ form.requirements(id="inputRequirements", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4", placeholder="University Requirements (requirement 1: details, requirement 2: details)" )}} 
+                {{ form.min_gpa(id="inputMin_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4", placeholder="Minimum GPA" )}} 
+                {{ form.max_gpa(id="inputMax_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4", placeholder="Maximum GPA" )}} 
+                {{ form.avg_cost(id="inputAvg_cost", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4", placeholder="Average Cost" )}} 
+                {{ form.email(id="inputEmail", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4", placeholder="Email" )}} 
+                {{ form.acceptance_rate(id="inputAcceptance_rate", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4", placeholder="Acceptance Rate" )}} 
+                {{ form.scholarships(id="inputScholarships", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4", placeholder="University Scholarships" )}} 
+                {{ form.ib_cutoff(id="inputIb_cutoff", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="Cut off/required grade for IBDP" )}} 
 
                 <center>
-                    {{ form.save_draft(class="submit inline-block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% sm:mb-5% text-lg md:text-2xl") }}
-                    {{ form.submit(class="submit inline_block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% mb-5% text-lg md:text-2xl") }}
+                    {{ form.save_draft(type = None, class="submit text-center inline-block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% sm:mb-5% text-lg md:text-2xl") }}
+                    {{ form.submit(type = None,class="submit text-center inline_block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% mb-5% text-lg md:text-2xl") }}
                 </center>
             </form>
         </div>

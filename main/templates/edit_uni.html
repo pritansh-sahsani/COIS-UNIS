@@ -141,9 +141,10 @@
             var Ib_cutoff = sessionStorage.getItem('Ib_cutoff');
             if (Ib_cutoff !== null) $('#inputIb_cutoff').val(Ib_cutoff);
             
+            var location = sessionStorage.getItem('Location');
+            if (location !== null) $('#location_select').val(location);
+            
             var selectedCourses = JSON.parse(sessionStorage.getItem('Courses'));
-            var selectedLocation = JSON.parse(sessionStorage.getItem('Location'));
-            $("#location_select option[value='"+selectedLocation+"']").prop('selected', true);
             
             if (selectedCourses != null){
                 for(var i = 0; i < selectedCourses["courses"].length ; i++){
@@ -181,14 +182,36 @@
                 var filename = e.target.files[0].name;
                 $("#file-upload_label2").text(filename);
             });
-        });
 
-        // add course
-        $(function() {
+            // Add course
             $('#courses_ms_newitem').on('click', function(e) {
                 var new_course_name = $('#courses_ms_filterinput').val();
-                $.getJSON('/add_course/'+new_course_name, function(data) {});
-                history.go(0);
+                $.getJSON('add_course/' + new_course_name, function(data) {
+                    location.reload();
+                });
+            });
+
+            // Add location
+            $('#new_location').on('click', function(e) {
+                var new_location_name = $('#location_select').val();
+                $.getJSON('add_location/' + new_location_name, function(data) {
+                    location.reload();
+                });
+                
+                $("#flash_text").text("Location Added.");
+                $("#flash_text_div").show();
+            });
+
+            // Autocomplete for location
+            var availableTags = [];
+            {% for location in locations %}
+                availableTags.push("{{ location[1] | safe }}");
+            {% endfor %}
+            $("#location_select").autocomplete({
+                source: availableTags,
+                open: function() {
+                    $("ul.ui-menu").width($("#search-div").innerWidth());
+                }
             });
         });
     </script>
@@ -224,9 +247,10 @@
                 </div>
 
                 {{ form.name(id="inputName", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-3 mb-4", placeholder="University Name", value=old_uni.name )}} 
-                
-                {{ form.location(id="location_select", placeholder="Location", class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2 md:col-span-1") }}
-                
+                <div class="flex mt-4">
+                    {{ form.location(id="location_select", placeholder="Location", class="autocomplete h-12 text-base md:text-lg flex-1 border-0.5 border-black text-center rounded-lg") }}
+                    <button id="new_location" class="inline_block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-4 py-2 focus:outline-none text-base md:text-lg">New Location</button>    
+                </div> 
                 
                 <h3 class="w-100% text-center text-base md:text-lg mb-1 mt-2">Courses</h3>     
                 {{ form.courses(id="courses_ms") }}

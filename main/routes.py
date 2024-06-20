@@ -38,7 +38,7 @@ def unis():
     for location in locations_query:
         locations.append((location.exact_location, location.exact_location))
 
-    form = FilterForm(formdata = request.form, courses=courses, locations=locations)
+    form = FilterForm(formdata = request.form, courses=courses)
 
     if form.validate_on_submit():
         unis= Uni.query.filter_by(is_draft=False)
@@ -146,7 +146,7 @@ def add_uni():
 
         return redirect(url_for('manage_unis'))
 
-    return render_template("add_uni.html", form=form)
+    return render_template("add_uni.html", form=form, locations=locations)
 
 
 @app.route("/manage_unis", methods=['GET', 'POST'])
