@@ -53,7 +53,7 @@
                 {{ form.other_details(value = old_app.other_details, placeholder='Other details that you feel would be useful for other students to know.', class="text-base md:text-lg w-100% border-0.5 border-black text-center py-1% rounded-lg col-span-2") }}
             </div>
 
-            <div class="mt-2% flex">
+            <div class="mt-2% flex items-center">
                 <label class="switch m-0 flex-none">
                     {% if old_app.is_early %}
                         {{ form.is_early(class="form-check-input", type="checkbox", checked=true) }}
@@ -62,9 +62,9 @@
                     {% endif %}
                     <span class="slider round"></span>
                 </label>
-                <p class="flex-initial relative text-base md:text-lg ml-2">Early Application</p>
+                <p class="flex-initial relative text-base md:text-lg ml-2 mb-0">Early Application</p>
             </div>
-            <div class="mt-2% flex">
+            <div class="mt-2% flex items-center">
                 <label class="switch m-0 flex-none">
                     {% if selected_app %}
                         {{ form.selected_uni(class="form-check-input", type="checkbox", checked=true) }}
@@ -73,7 +73,7 @@
                     {% endif %}
                     <span class="slider round"></span>
                 </label>
-                <p class="flex-initial relative text-base md:text-lg ml-2">Is this the university you have taken admission in?</p>
+                <p class="flex-initial relative text-base md:text-lg ml-2 mb-0">Is this the university you have taken admission in?</p>
             </div>
             {{ form.submit(class="text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-2% md:ml-25% w-100% sm:w-50% mb-5% text-lg md:text-2xl") }}
         </form>

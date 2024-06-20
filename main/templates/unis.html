@@ -14,65 +14,29 @@
 
     <script type=text/javascript>
     function raise_error() {
-            {% if form.courses.errors %} 
-                {% for error in form.courses.errors %}
-                    $("#flash_text").text("{{error | safe }}");
-                    $("#flash_text_div").show();
-                {% endfor %}
-            {% endif %}
-            
-            {% if form.locations.errors %} 
-                {% for error in form.locations.errors %}
-                    $("#flash_text").text("{{error | safe }}");
-                    $("#flash_text_div").show();
-                {% endfor %}
-            {% endif %}
-            
-            {% if form.ib_cutoff.errors %} 
-                {% for error in form.ib_cutoff.errors %}
-                    $("#flash_text").text("{{error | safe }}");
-                    $("#flash_text_div").show();
-                {% endfor %}
-            {% endif %}
-            
-            {% if form.scholarships.errors %} 
-                {% for error in form.scholarships.errors %}
-                    $("#flash_text").text("{{error | safe }}");
-                    $("#flash_text_div").show();
-                {% endfor %}
-            {% endif %}
-
-            {% if form.requirements.errors %} 
-                {% for error in form.requirements.errors %}
-                    $("#flash_text").text("{{error | safe }}");
-                    $("#flash_text_div").show();
-                {% endfor %}
-            {% endif %}
+            {% for item in [form.requirements, form.scholarships, form.courses, form.location, form.min_ib_cutoff, form.max_ib_cutoff, form.min_acceptance_rate, form.max_acceptance_rate, form.min_gpa, form.max_gpa, form.min_avg_cost, form.max_avg_cost] %}
+                {% if item.errors %} 
+                    {% for error in item.errors %}
+                        $("#flash_text").text("{{error | safe}}");
+                        $("#flash_text_div").show();
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
         }
         setInterval('raise_error()', 1);
 
         var unis_len = 0
         {% for uni in unis %}unis_len = unis_len+1
         {% endfor %}
+        
         $(document).ready(function() {
-            const COURSES = $('#courses_ms').filterMultiSelect();
-            const LOCATIONS = $('#locations_ms').filterMultiSelect();
-
             $(function() {
                 $('#clear_filter').on('click', function(e) {
-                    $('#ib_cutoff').val('').change();
-                    $('#requirements').val('').change();
-                    $('#scholarships').val('').change();
-                    {% for course in courses %}
-                        COURSES.deselectOption({{course | safe}});
-                    {% endfor %}
-                    {% for location in locations %}
-                        LOCATIONS.deselectOption({{location | safe}});
-                    {% endfor %}
-                    
+                    $('.FilterInput').val('').change();
                 });
             });
         });
+
         function getUrlVars(){
             var vars = [], hash;
             var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
@@ -121,7 +85,7 @@
         $(function() {
             $('#search_button').on('click', function(e) {
                 var keyword = $("#search-input").val();
-                window.location = "/?keyword="+keyword;
+                window.location = "/unis?keyword="+keyword;
             });
         });
         
@@ -158,29 +122,25 @@
 
         $(function() {
 		    $('.FilterInput').on('change', function(e) {
-			    var filter_id = '#applied_filters_';
+                var filter_id = '#applied_filters_';
                 var input_id = '#FilterInput-';
-			    var filters = ['ib_cutoff','requirements','scholarships'];
-			    var filters_name = ['Ib Cutoff','Requirements','Scholarships'];
+                var filters = ['min_ib_cutoff', 'max_ib_cutoff', 'min_acceptance_rate', 'max_acceptance_rate', 'min_gpa', 'max_gpa', 'min_avg_cost', 'max_avg_cost','requirements','scholarships','locations','courses'];
+                var filters_name = ['Minimum IBDP Score', 'Maximum IBDP Score', 'Minimum Acceptance Rate', 'Maximum Acceptance Rate', 'Minimum GPA', 'Maximum GPA', 'Minimum Average Cost', 'Maximum Average Cost','Requirements','Scholarships','Locations','Courses'];
                 var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
-				for(var i = 0; i<3; i++)
+                for(var i = 0; i<filters_name.length; i++)
                 {
-                    if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null){
+                    if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null)
+                    {
                         $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
                         $(filter_id+filters[i]).attr('class', text_style);
                     }
-                    else{
+                    else
+                    {
                         $(filter_id+filters[i]).attr('class', 'hidden '+text_style);
                     }
                 }
 			});
 		});
-        $(document).ready(function() {
-            $('#courses_ms').attr('class', 'filter-multi-select dropdown w-100% col-span-2 md:col-span-1')
-            $('#courses_ms').find('.placeholder').text("courses");
-            $('#locations_ms').attr('class', 'filter-multi-select dropdown w-100% col-span-2 md:col-span-1')
-            $('#locations_ms').find('.placeholder').text("locations");
-    });
     </script>
 
 <div class="w-90% mx-auto">
@@ -188,17 +148,20 @@
         <div class="mx-auto w-90%">
             <form action='' method="POST" class="w-100% mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 my-4">
                 {{ form.hidden_tag() }}
-                {{ form.ib_cutoff(id="FilterInput-ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Cut off/required grade for IBDP') }}
+                {{ form.min_ib_cutoff(id="FilterInput-min_ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum IBDP Score') }}
+                {{ form.max_ib_cutoff(id="FilterInput-max_ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum IBDP Score') }}
+                {{ form.min_acceptance_rate(id="FilterInput-min_acceptance_rate", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum Acceptance Rate') }} 
+                {{ form.max_acceptance_rate(id="FilterInput-max_acceptance_rate", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum Acceptance Rate') }}
+                {{ form.min_gpa(id="FilterInput-min_gpa", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum GPA') }} 
+                {{ form.max_gpa(id="FilterInput-max_gpa", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum GPA') }}
+                {{ form.min_avg_cost(id="FilterInput-min_avg_cost", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum Average Cost') }} 
+                {{ form.max_avg_cost(id="FilterInput-max_avg_cost", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum Average Cost') }}
+        
                 {{ form.requirements(id="FilterInput-requirements", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Requirements for admission') }} 
                 {{ form.scholarships(id="FilterInput-scholarships", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Scholarships') }}
                 
-                <div class="w-100% inline-block">
-                    {{ form.locations(class="FilterInput", id="locations_ms") }} 
-                </div>
-                <div class="w-100% inline-block">
-                    {{ form.courses(class="FilterInput", id="courses_ms") }}
-                </div>    
-    
+                {{ form.location(id="FilterInput-locations", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Locations') }}
+                {{ form.courses(id="FilterInput-courses", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Courses') }}
                 <div class="flex place-self-center">
                     <label class="switch m-0 flex-none">
                         {{ form.coisstudents(class="form-check-input", type="checkbox") }}
@@ -220,15 +183,22 @@
     <div class="mt-2">
         <div class="w-100% md:w-50% mx-auto mb-2">
             <div class="w-fit mx-auto">
-                <p id="applied_filters_ib_cutoff"></p>
-                <p id="applied_filters_requirements"></p>
-                <p id="applied_filters_scholarships"></p>
-                <p id="applied_filters_locations_ms"></p>
-                <p id="applied_filters_courses_ms"></p>
+                <p id='applied_filters_min_ib_cutoff'></p>
+                 <p id='applied_filters_max_ib_cutoff'></p>
+                 <p id='applied_filters_min_acceptance_rate'></p>
+                 <p id='applied_filters_max_acceptance_rate'></p>
+                 <p id='applied_filters_min_gpa'></p>
+                 <p id='applied_filters_max_gpa'></p>
+                 <p id='applied_filters_min_avg_cost'></p>
+                 <p id='applied_filters_max_avg_cost'></p>
+                <p id='applied_filters_requirements'></p>
+                <p id='applied_filters_scholarships'></p>
+                <p id='applied_filters_locations'></p>
+                <p id='applied_filters_courses'></p>
             </div>
         </div>
         <div id="search-div" class="w-100% md:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
-            <input type="text" name="keyword" id="search-input" class="form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
+            <input type="text" name="keyword" id="search-input" class="rounded-lg form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
             <button id="search_button" class="float-right">
                 <img class="inline-block w-100% align-middle mt-9px pr-9px" src="../static/assets/arrow.svg"/>
             </button>

@@ -50,6 +50,9 @@ body{
         left: 0px;
     }
 }
+.form-control{
+  border:none !important;
+}
 
 /* this btn will be reused in the website multiple times */
 .primary-btn {

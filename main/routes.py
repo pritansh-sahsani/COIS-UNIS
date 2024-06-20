@@ -38,7 +38,7 @@ def unis():
     for location in locations_query:
         locations.append((location.exact_location, location.exact_location))
 
-    form = FilterForm(formdata = request.form, courses=courses)
+    form = FilterForm(formdata = request.form, courses=courses, locations = locations)
 
     if form.validate_on_submit():
         unis= Uni.query.filter_by(is_draft=False)
@@ -129,7 +129,7 @@ def add_uni():
             banner_filename = None
             is_draft = True
 
-        uni = Uni(name = form.name.data, location = Location.query.filter_by(id = int(form.location.data)).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
+        uni = Uni(name = form.name.data, location = Location.query.filter_by(exact_location = form.location.data).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
         
         for course_name in form.courses.data:
             course = Course.query.filter_by(name=course_name).first()
@@ -198,13 +198,10 @@ def manage_unis():
                     published_unis=published_unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
             published_unis=published_unis.all()
 
-            for filter in ['requirements', 'scholarships']:
+            for filter in ['requirements', 'scholarships', 'location']:
                 if getattr(form, filter).data!="":
                     published_unis=sort_by_similarity(published_unis, getattr(form, filter).data, filter)
-            for filter in ['acceptance_rate', 'gpa','ib_cutoff']:
-                if getattr(form, filter).data!="":
-                    published_unis=sort_by_similarity(published_unis, getattr(form, filter).data, filter)
-            for filter in ['courses', 'locations']:
+            for filter in ['courses']:
                 if len(getattr(form, filter).data)!=0:
                     for item in getattr(form, filter).data:
                         published_unis=sort_by_similarity(published_unis, item, filter)
@@ -217,13 +214,10 @@ def manage_unis():
                     draft_unis=draft_unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
             draft_unis=draft_unis.all()
 
-            for filter in ['requirements', 'scholarships']:
+            for filter in ['requirements', 'scholarships', 'location']:
                 if getattr(form, filter).data!="":
                     draft_unis=sort_by_similarity(draft_unis, getattr(form, filter).data, filter)
-            for filter in ['acceptance_rate', 'gpa','ib_cutoff']:
-                if getattr(form, filter).data!="":
-                    draft_unis=sort_by_similarity(draft_unis, getattr(form, filter).data, filter)
-            for filter in ['courses', 'locations']:
+            for filter in ['courses']:
                 if len(getattr(form, filter).data)!=0:
                     for item in getattr(form, filter).data:
                         draft_unis=sort_by_similarity(draft_unis, item, filter)
@@ -382,11 +376,8 @@ def delete_uni(uni_id):
     uni = Uni.query.filter_by(id = uni_id).first_or_404()
 
     courses = uni.courses
-    locations = uni.locations
     for course in courses:
         course.unis.remove(uni)
-    for location in locations:
-        location.unis.remove(uni)
 
     if uni.logo:
         os.remove(os.path.join(app.root_path, 'static', 'university_logos', uni.logo))
@@ -458,10 +449,8 @@ def edit_uni(uni_name):
         else:
             banner_filename = None
             is_draft = True
-        
-        print(form.location.data)
 
-        new_uni = Uni(id=old_uni.id, name = form.name.data, location = Location.query.filter_by(id = int(form.location.data)).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
+        new_uni = Uni(id=old_uni.id, name = form.name.data, location = Location.query.filter_by(exact_location = form.location.data).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
         db.session.delete(old_uni)
         db.session.add(new_uni)
         

@@ -242,8 +242,8 @@ class ApplicationForm(FlaskForm):
 class FilterForm(FlaskForm):
     requirements = StringField('Requirements for admission')
     scholarships = StringField('Scholarships')
-    courses = SelectMultipleField('Courses', choices=[])
-    locations = StringField('Location')
+    courses = SelectField('Courses', choices=[])
+    location = SelectField('Location', choices=[])
     min_ib_cutoff = StringField('Minimum Cut off for IBDP')
     max_ib_cutoff = StringField('Maximum Cut off for IBDP')
     min_acceptance_rate = StringField('Minimum Acceptance Rate')
@@ -260,7 +260,7 @@ class FilterForm(FlaskForm):
     def __init__(self, formdata=None, **kwargs):
         super(FilterForm, self).__init__(formdata=formdata, **kwargs)
         self.courses.choices = kwargs['courses']
-
+        self.location.choices = kwargs['locations']
         
 class FilterStudentsForm(FlaskForm):
     graduation_year = StringField("Graduatation Year", validators=[Length(max=4, message="Please enter a valid graduation year.")])

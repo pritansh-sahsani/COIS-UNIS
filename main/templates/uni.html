@@ -137,8 +137,8 @@
 
     <div id="students_div" class="hidden">
         {% if len(admissions) > 0 %}
-                <p class="text-blueC font-bold text-xl md:text-2xl mb-2">COIS Students Pursuing Further Studies:</p>
-                {% for i in range(len(admissions)) %}
+            <p class="text-blueC font-bold text-xl md:text-2xl mb-2">COIS Students Pursuing Further Studies:</p>
+            {% for i in range(len(admissions)) %}
                 <div class="w-fit grid grid-cols-1 justify-start ml-4 gap-y-2">
                     <p class="text-base md:text-lg">Name: {{ admissions[i]['user'].fullname }}</p>
                     <p class="text-base md:text-lg">graduation year: {{admissions[i]['details'].graduation_year}} </p>
@@ -147,8 +147,10 @@
                 {% if i+1 < len(admissions) %}
                     <hr class="border-black w-100% my-3">
                 {% endif %}
-                {% endfor %}
-            {% endif %}
+            {% endfor %}
+        {% else %}
+        {{admissions}}
+        {% endif %}
             
         {% if len(others) > 0 %}
             {% if len(admissions) > 0 %}
@@ -166,8 +168,10 @@
                 {% if i+1 < len(others) %}
                     <hr class="border-black w-100% my-3">
                 {% endif %}
-                {% endfor %}
-            {% endif %}
+            {% endfor %}
+        {% else %}
+            {{others}}
+        {% endif %}
     </div>
 </div>
 {% endblock main %}

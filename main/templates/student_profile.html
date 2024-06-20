@@ -119,7 +119,7 @@
                                 <td class="w-96"><p>Location: {{ app.location.exact_location }}</p></td>
                                 <td class="">
                                 <p>Minors: 
-                                    {% if len(minors) >0 %}
+                                    {% if len(app.minors) > 0 %}
                                     {% for minor in app.minors %}
                                     {{ minor.name }},  
                                     {% endfor %}
@@ -160,7 +160,7 @@
                             <div class=""><p>Location: {{ app.location.exact_location }}</p></div>
                             <div class="">
                             <p>Minors: 
-                                {% if len(minors) >0 %}
+                                {% if len(app.minors) >0 %}
                                 {% for minor in app.minors %}
                                 {{ minor.name }},  
                                 {% endfor %}
@@ -210,7 +210,7 @@
                                     <td class="w-96"><p>Location: {{ app.location.exact_location }}</p></td>
                                     <td class="">
                                     <p>Minors: 
-                                        {% if len(minors) >0 %}
+                                        {% if len(app.minors) >0 %}
                                         {% for minor in app.minors %}
                                         {{ minor.name }},  
                                         {% endfor %}
@@ -259,7 +259,7 @@
                             <div class=""><p>Location: {{ app.location.exact_location }}</p></div>
                             <div class="">
                             <p>Minors: 
-                            {% if len(minors) >0 %}
+                            {% if len(app.minors) >0 %}
                             {% for minor in app.minors %}
                             {{ minor.name }},  
                             {% endfor %}
@@ -308,7 +308,7 @@
                                     <td class= "w-96"><p>Location: {{ app.location.exact_location }}</p></td>
                                     <td class="">
                                     <p>Minors: 
-                                    {% if len(minors) >0 %}
+                                    {% if len(app.minors) >0 %}
                                     {% for minor in app.minors %}
                                     {{ minor.name }},  
                                     {% endfor %}
@@ -355,7 +355,7 @@
                         <div class= ""><p>Location: {{ app.location.exact_location }}</p></div>
                         <div class="">
                         <p>Minors: 
-                        {% if len(minors) >0 %}
+                        {% if len(app.minors) >0 %}
                         {% for minor in app.minors %}
                         {{ minor.name }},  
                         {% endfor %}

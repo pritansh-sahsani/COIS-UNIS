@@ -178,17 +178,13 @@
             // Add course
             $('#courses_ms_newitem').on('click', function(e) {
                 var new_course_name = $('#courses_ms_filterinput').val();
-                $.getJSON('add_course/' + new_course_name, function(data) {
-                    location.reload();
-                });
+                $.getJSON('add_course/' + new_course_name, function(data) {});
             });
 
             // Add location
             $('#new_location').on('click', function(e) {
                 var new_location_name = $('#location_select').val();
-                $.getJSON('add_location/' + new_location_name, function(data) {
-                    location.reload();
-                });
+                $.getJSON('add_location/' + new_location_name,function(data) {});
                 
                 $("#flash_text").text("Location Added.");
                 $("#flash_text_div").show();
@@ -255,8 +251,8 @@
                 {{ form.ib_cutoff(id="inputIb_cutoff", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="Cut off/required grade for IBDP" )}} 
 
                 <center>
-                    {{ form.save_draft(type = None, class="submit text-center inline-block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% sm:mb-5% text-lg md:text-2xl") }}
-                    {{ form.submit(type = None,class="submit text-center inline_block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% mb-5% text-lg md:text-2xl") }}
+                    {{ form.save_draft( class="submit text-center inline-block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% sm:mb-5% text-lg md:text-2xl") }}
+                    {{ form.submit(class="submit text-center inline_block text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none mt-3% w-100% sm:w-30% mb-5% text-lg md:text-2xl") }}
                 </center>
             </form>
         </div>
