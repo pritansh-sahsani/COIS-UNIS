@@ -39,7 +39,6 @@ class AddUniversityForm(FlaskForm):
     website = StringField('University Official Website', validators=[Length(max=1000, message=min_max_error_message.format(field='Website', min=0, max='%(max)d'))])
     ib_cutoff = StringField('Cut off/required grade for IBDP')
     min_gpa = StringField('Minimum GPA', validators=[Length(max=10, message=min_max_error_message.format(field='Minimum GPA', min=0, max='%(max)d'))])
-    max_gpa = StringField('Maximum GPA', validators=[Length(max=10, message=min_max_error_message.format(field='Maximum GPA', min=0, max='%(max)d'))])
     requirements = TextAreaField('Requirements for admission', validators=[Length(max=2000, message=min_max_error_message.format(field='Requirements', min=0, max='%(max)d'))])
     scholarships = TextAreaField('Scholarships offered', validators=[Length(max=1000, message=min_max_error_message.format(field='Scholarship', min=0, max='%(max)d'))])
     acceptance_rate = StringField('Acceptance Rate', validators=[Length(max=10, message=min_max_error_message.format(field='Acceptance rate', min=0, max='%(max)d'))])

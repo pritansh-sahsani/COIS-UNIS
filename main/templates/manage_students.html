@@ -103,29 +103,33 @@ var student_len = 0;
     <div>
         <h3 id="no_student" class="hidden my-3 text-4xl text-center mx-auto"></h3>
         {% for student, details in zip(students, student_details) %}
-        <hr class="border-grayC w-100% my-4">
-        <a href="profile/{{student.username}}">
-            <div class="w-90% mx-auto">
-                <div class="xsm:flex items-center">
-                    <img class="w-24 mr-4" src="../static/profile_pics/{{ student.pfp }}">
-                    <div class="self-center gap-y-2 mb-2">
-                        <p class="text-blueC text-xl md:text-3xl font-bold">{{ student.fullname }}</p>
-                        <p class="text-blueC text-lg md:text-xl">{{ student.username }} · Class of {{ details.graduation_year }}</p>
+        <div id="student{{ student.id }}">
+            <hr class="border-grayC w-100% my-4">
+            <a href="profile/{{student.username}}">
+                <div class="w-90% mx-auto">
+                    <div class="xsm:flex items-center">
+                        <img class="w-20 mr-4" src="../static/profile_pics/{{ student.pfp }}">
+                        <div class="self-center gap-y-2 mb-2">
+                            <p class="text-blueC text-xl md:text-3xl font-bold">{{ student.fullname }}</p>
+                            <p class="text-blueC text-lg md:text-xl">{{ student.username }} · Class of {{ details.graduation_year }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative mt-3 mb-3 float-right">
+                        <a class="justify-self-center w-100% text-right" href="{{ url_for('edit_student', student_id=student.id) }}">
+                            <button class="text-white border-redC border-0.5 rounded-lg px-5 py-2.5 w-100% md:w-fit mx-auto"><img class="w-5 h-5 mx-auto" src="../static/assets/edit-icon-red.png"></button>
+                        </a>
+                        <button class="text-white border-blueC border-0.5 rounded-lg px-5 py-2.5 w-100% md:w-fit justify-self-left mt-2 md:mt-0" id="delete_student{{ student.id }}"><img class="w-5 h-5 mx-auto" src="../static/assets/delete-button-blueC.png"></button>
+                    </div>
+                    <div class="md:ml-24 mt-3 grid grid-cols-1 md:grid-cols-2 w-80%">
+                        {% if details.myp_score %} <p class="text-base md:text-lg"><b>{{ details.myp_score }}</b> / 56 MYP score</p> {% endif %}
+                        {% if details.dp_score %} <p class="text-base md:text-lg"><b>{{ details.dp_score }}</b> / 45 DP score</p> {% endif %}
+                        {% if details.dp_predicted %} <p class="text-base md:text-lg"><b>{{ details.dp_predicted }}</b> / 45 DP predicted</p> {% endif %}
+                        {% if details.dp_predicted %} <p class="text-base md:text-lg">Diploma: {{ 'Yes' if details.has_diploma else 'No' }}</p> {% endif %}
                     </div>
                 </div>
-                <div class="md:ml-28 grid grid-cols-1 md:grid-cols-2">
-                    {% if details.myp_score %} <p class="text-base md:text-lg md:w-96"><b>{{ details.myp_score }}</b> / 56 MYP score</p> {% endif %}
-                    {% if details.dp_score %} <p class="text-base md:text-lg"><b>{{ details.dp_score }}</b> / 45 DP score</p> {% endif %}
-                    {% if details.dp_predicted %} <p class="text-base md:text-lg"><b>{{ details.dp_predicted }}</b> / 45 DP predicted</p> {% endif %}
-                </div>
-                <div class="md:ml-28 mt-3">
-                    <a class="justify-self-center w-100% text-right" href="{{ url_for('edit_student', student_id=student.id) }}">
-                        <button class="text-white bg-gray-800 hover:bg-gray-900 rounded-lg px-5 py-2.5 w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-white.svg"></button>
-                    </a>
-                    <button class="text-white bg-red-700 hover:bg-red-800 rounded-lg px-5 py-2.5 w-100% md:w-fit justify-self-left mt-2 md:mt-0" id="delete_student{{ student.id }}"><img class="w-7 h-7 mx-auto" src="../static/assets/delete-button-white.png"></button>
-                </div>
-            </div>
-        </a>
+            </a>
+        </div>
         {% endfor %}
         <hr class="border-grayC w-100% my-4">
 

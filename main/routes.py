@@ -128,8 +128,8 @@ def add_uni():
         else:
             banner_filename = None
             is_draft = True
-
-        uni = Uni(name = form.name.data, location = Location.query.filter_by(exact_location = form.location.data).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
+            
+        uni = Uni(name = form.name.data, location = Location.query.filter_by(exact_location = form.location.data).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
         
         for course_name in form.courses.data:
             course = Course.query.filter_by(name=course_name).first()
@@ -450,7 +450,7 @@ def edit_uni(uni_name):
             banner_filename = None
             is_draft = True
 
-        new_uni = Uni(id=old_uni.id, name = form.name.data, location = Location.query.filter_by(exact_location = form.location.data).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, max_gpa = form.max_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
+        new_uni = Uni(id=old_uni.id, name = form.name.data, location = Location.query.filter_by(exact_location = form.location.data).first(), logo = logo_filename, banner=banner_filename, website= form.website.data, ib_cutoff=form.ib_cutoff.data, scholarships=form.scholarships.data, requirements=form.requirements.data, email=form.email.data, min_gpa = form.min_gpa.data, avg_cost=form.avg_cost.data, acceptance_rate=form.acceptance_rate.data, is_draft=is_draft)
         db.session.delete(old_uni)
         db.session.add(new_uni)
         
@@ -715,12 +715,15 @@ def delete_student(student_id):
 
     student = User.query.get_or_404(student_id)
     
-    if student.pfp != "default.png":
-        os.remove(os.path.join(app.root_path, 'profile_pics', student.pfp))
+    if student.pfp != "default.png" and student.pfp is not None:
+        os.remove(os.path.join(app.root_path, 'static', 'profile_pics', student.pfp))
     
-    student_details = Student_details.query.filter_by(user_id=student_id).all()
-    for detail in student_details:
-        db.session.delete(detail)
+    student_detail = Student_details.query.filter_by(user_id=student_id).first()
+    db.session.delete(student_detail)
+
+    applications = Application.query.filter_by(user_id=student_detail.id).all()
+    for application in applications:
+        db.session.delete(application)
 
     db.session.delete(student)
     db.session.commit()

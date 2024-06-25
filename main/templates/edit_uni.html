@@ -76,13 +76,6 @@
                 {% endfor %}
             {% endif %}
 
-            {% if form.max_gpa.errors %} 
-                {% for error in form.max_gpa.errors %}
-                    $("#flash_text").text("{{error | safe }}");
-                    $("#flash_text_div").show();
-                {% endfor %}
-            {% endif %}
-
             {% if form.avg_cost.errors %} 
                 {% for error in form.avg_cost.errors %}
                     $("#flash_text").text("{{error | safe }}");
@@ -126,8 +119,6 @@
             
             var Min_gpa = sessionStorage.getItem('Min_gpa');
             if (Min_gpa !== null) $('#inputMin_gpa').val(Min_gpa);
-            var Max_gpa = sessionStorage.getItem('Max_gpa');
-            if (Max_gpa !== null) $('#inputMax_gpa').val(Max_gpa);
             var Avg_cost = sessionStorage.getItem('Avg_cost');
             if (Avg_cost !== null) $('#inputAvg_cost').val(Avg_cost);
             var Email = sessionStorage.getItem('Email');
@@ -164,7 +155,6 @@
                 sessionStorage.setItem("Requirements", $('#inputRequirements').val());
                 sessionStorage.setItem("Scholarships", $('#inputScholarships').val());
                 sessionStorage.setItem("Min_gpa", $('#inputMin_gpa').val());
-                sessionStorage.setItem("Max_gpa", $('#inputMax_gpa').val());
                 sessionStorage.setItem("Avg_cost", $('#inputAvg_cost').val());
                 sessionStorage.setItem("Acceptance_rate", $('#inputAcceptance_rate').val());
                 sessionStorage.setItem("Email", $('#inputEmail').val());
@@ -258,7 +248,6 @@
                 {{ form.website(id="inputWebsite", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4", placeholder="University Website", value=old_uni.website )}} 
                 {{ form.requirements(id="inputRequirements", class="text-base md:text-lg w-100% border-0.5 border-black text-center rounded-lg mt-4 py-1%", placeholder="University Requirements", value=old_uni.requirements )}} 
                 {{ form.min_gpa(id="inputMin_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Minimum GPA", value=old_uni.min_gpa )}} 
-                {{ form.max_gpa(id="inputMax_gpa", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Maximum GPA", value=old_uni.max_gpa )}} 
                 {{ form.avg_cost(id="inputAvg_cost", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Average Cost", value=old_uni.avg_cost )}} 
                 {{ form.email(id="inputEmail", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Email", value=old_uni.email)}} 
                 {{ form.acceptance_rate(id="inputAcceptance_rate", class="text-base md:text-lg w-100% border-0.5 py-1% border-black text-center rounded-lg mt-4 ", placeholder="Acceptance Rate", value=old_uni.acceptance_rate)}} 

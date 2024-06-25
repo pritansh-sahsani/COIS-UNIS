@@ -224,7 +224,7 @@
                                         <td class="text-lg w-96"><p class="inline font-bold">{{ no_app[i] + no_add[i] }}</p> Students applied from COIS</td>
                                     </tr>
                                     <tr>
-                                        <td class="text-lg pt-2 w-96"><p class="inline font-bold">{{ uni.min_gpa }} - {{ uni.max_gpa }}</p> GPA</td>
+                                        <td class="text-lg pt-2 w-96"><p class="inline font-bold">{{ uni.min_gpa }}</p> GPA</td>
                                         <td class="text-lg pt-2 w-96"><p class="inline font-bold">{{ uni.avg_cost }}</p> Average Cost per annum</td>
                                     </tr>
                                 </tbody>
@@ -240,8 +240,8 @@
                         <div class="grid grid-cols-1 gap-y-1 md:hidden mt-3">
                             <p class=""><b>{{ uni.acceptance_rate }}%</b> Acceptance rate</p>
                             <p class=""><b>{{ no_app[i] + no_add[i] }}</b> Students applied from COIS</p>
-                            <p class=""><b>{{ uni.min_gpa }} - {{ uni.max_gpa }}</b> GPA</p>
-                            <p class=""><b>{{ uni.avg_cost }}</b> Average Cost per annum</p>
+                            <p class=""><b>{{ uni.min_gpa }}</b> GPA</p>
+                            <p class=""><b>{{ uni.avg_cost }}</b> Avg. Cost</p>
                         </div>
                     </div>
                 </div>

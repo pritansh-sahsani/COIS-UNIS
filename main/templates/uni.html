@@ -11,7 +11,7 @@
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 <script type=text/javascript>
-    
+
         var shown = 1;
         var button_classes=" text-blueC text-base md:text-xl inline cursor-pointer";
         var div_classes=" w-fit mt-3 mb-5";
@@ -19,6 +19,25 @@
         $(document).ready(function() {
         $("#overview_div").attr('class', div_classes);
         $('#overview_button').attr('class', "text-orangeC"+button_classes);
+        var requirements = '{{ uni.requirements | safe }}';
+        requirements = requirements.split('');
+        var first= true
+        for(i=0; i<requirements.length; i++)
+        {
+            if (requirements[i] == "."){
+                if(first == false)
+                {
+                    requirements.splice(i-1, 0, '<br>');
+                    i = i+1;
+                }
+                else{
+                    first = false
+                }
+            }
+        }
+        requirements = requirements.join('');
+        $('#requirements').html(requirements).contents();
+
         });
 
 		$(function() {
@@ -113,12 +132,13 @@
             <p class="mb-1 text-base md:text-lg">{{ uni.email }}</p>
         </div>
 
-        <p class="text-lg md:text-xl text-blueC mt-4">Scholarships Offered</p>
-        <p class="text-base md:text-lg">{{ uni.min_gpa }} - {{ uni.max_gpa }} GPA</p>
-        <p class="text-base md:text-lg">{{ uni.scholarships }}</p>
+        <p class="text-lg md:text-xl text-blueC mt-4">Average Cost per Annum: </p><p class="text-lg md:text-xl">{{ uni.avg_cost }}</p>
+
+        <p class="text-lg md:text-xl text-blueC mt-4">Financial Aid: </p><p class="text-lg md:text-xl">{{ uni.scholarships }}</p>
             
-        <p class="text-lg md:text-xl text-blueC mt-4">Requirements</p>
-        <p class="text-base md:text-lg">{{ uni.requirements }}</p>
+        <p class="text-lg md:text-xl text-blueC mt-4">General Requirements</p>
+        <p class="text-base md:text-lg">{{ uni.min_gpa }} GPA</p>
+        <p id="requirements" class="text-base md:text-lg"></p>
     </div>
     
     <div id="courses_div" class="hidden">
@@ -148,8 +168,6 @@
                     <hr class="border-black w-100% my-3">
                 {% endif %}
             {% endfor %}
-        {% else %}
-        {{admissions}}
         {% endif %}
             
         {% if len(others) > 0 %}
@@ -170,7 +188,9 @@
                 {% endif %}
             {% endfor %}
         {% else %}
-            {{others}}
+            {% if len(admissions) == 0 %}
+                <p class="mt-3 text-xl">No COIS students have applied here.</p>
+            {% endif %}
         {% endif %}
     </div>
 </div>

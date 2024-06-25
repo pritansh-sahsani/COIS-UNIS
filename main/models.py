@@ -77,7 +77,6 @@ class Uni(db.Model):
     acceptance_rate = db.Column(db.Integer)
     email = db.Column(db.String(100))
     min_gpa = db.Column(db.String(10))
-    max_gpa = db.Column(db.String(10))
     avg_cost = db.Column(db.String(100))
 
     is_draft = db.Column(db.Boolean, nullable=False)
