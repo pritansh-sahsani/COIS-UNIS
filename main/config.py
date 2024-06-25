@@ -8,3 +8,4 @@ class Config:
     MSEARCH_INDEX_NAME = 'msearch'
     MSEARCH_PRIMARY_KEY = 'id'
     MSEARCH_ENABLE = True
+    SQLALCHEMY_TIMEOUT = 20
