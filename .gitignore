@@ -1,4 +1,5 @@
 
 .env
+node_modules
 main/__pycache__/
 venv

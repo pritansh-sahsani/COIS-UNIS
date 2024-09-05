@@ -72,6 +72,8 @@ body{
     color: var(--gradient);
     transition: all ease-in-out 250ms;
     border-radius: 0.5rem;
+    position:relative;
+    height: 50px;
 }
   
 .underline-btn-active::after, .underline-btn:hover::after {
@@ -84,10 +86,13 @@ body{
 }
   
 .underline-btn::after, .underline-btn-active::after{
-    margin-top: 0.625rem;
     content: "";
     display: flex;
-    height: 0.25rem;
+    position: absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height: 4px;
     background-color: var(--gradient);
 }
 
