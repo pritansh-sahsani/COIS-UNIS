@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload CSV and Images</title>
+</head>
+<body>
+    <h1>Upload Universities CSV and Images</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div>
+            {{ form.csv_file.label }}<br>
+            {{ form.csv_file() }}
+            {% if form.csv_file.errors %}
+                <div style="color: red;">{{ form.csv_file.errors[0] }}</div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.images_zip.label }}<br>
+            {{ form.images_zip() }}
+            {% if form.images_zip.errors %}
+                <div style="color: red;">{{ form.images_zip.errors[0] }}</div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.submit() }}
+        </div>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

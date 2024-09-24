@@ -1,9 +1,9 @@
-from main.forms import LoginForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm
+from main.forms import LoginForm, UploadCSVForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm
 from main.setup import app, db
 from main.models import User, Uni, Location, Course, Student_details, Application
 from main.helper import sort_by_similarity, allow_access, GetAppAndAddNo
 from main import bcrypt
-
+from werkzeug.utils import secure_filename
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
@@ -103,15 +103,7 @@ def add_uni():
         else:
             is_draft = form.save_draft.data
         
-        if form.ib_cutoff.data:
-            if form.ib_cutoff.data.isdigit():
-                if int(form.ib_cutoff.data) < 0 or int(form.ib_cutoff.data) > 45:
-                    flash('Please enter a valid IB grade for cut off (0 to 45).')
-                    return render_template("add_uni.html", form=form)
-            else:
-                flash('Please enter a valid IB grade.')
-                return render_template("add_uni.html", form=form)
-        else:
+        if not form.ib_cutoff.data:
             form.ib_cutoff.data = 0
 
         logo = request.files['logo']
@@ -148,6 +140,171 @@ def add_uni():
 
     return render_template("add_uni.html", form=form, locations=locations)
 
+import csv
+import zipfile
+
+
+
+# Path configurations for saving uploaded files and images
+UPLOAD_FOLDER = os.path.join(app.root_path, 'temp')
+IMAGES_FOLDER = os.path.join(app.root_path, 'static', 'university_images')
+LOGOS_FOLDER = os.path.join(app.root_path, 'static', 'university_logos')
+BANNERS_FOLDER = os.path.join(app.root_path, 'static', 'university_banners')
+
+
+@app.route('/upload_csv', methods=['GET', 'POST'])
+@login_required
+def upload_csv():
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
+    if not os.path.exists(IMAGES_FOLDER):
+        os.makedirs(IMAGES_FOLDER)
+    
+    if allow_access("admins") is not None:
+        return allow_access("admins")
+
+    form = UploadCSVForm()
+
+    if form.validate_on_submit():
+        # Check if both CSV and ZIP files are present in the request
+        csv_file = form.csv_file.data
+        images_zip = form.images_zip.data
+
+        # Secure filenames and save the uploaded files
+        csv_filename = secure_filename(csv_file.filename)
+        zip_filename = secure_filename(images_zip.filename)
+
+        csv_path = os.path.join(UPLOAD_FOLDER, csv_filename)
+        zip_path = os.path.join(UPLOAD_FOLDER, zip_filename)
+
+        csv_file.save(csv_path)
+        images_zip.save(zip_path)
+
+        # Unzip the image files
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(IMAGES_FOLDER)  # Extract images to a general images folder
+        except zipfile.BadZipFile:
+            flash('The uploaded ZIP file is invalid.', 'error')
+            return redirect(url_for('upload_csv'))
+
+        # Read the CSV file
+        with open(csv_path, newline='', encoding='utf-8') as csvfile:
+            csv_data = csv.reader(csvfile)
+            next(csv_data)  # Skip the header row
+
+            for row in csv_data:
+                # Assuming the CSV has columns in this order with logo and banner columns
+                name, ib_cutoff, scholarships, requirements, acceptance_rate, website, email, min_gpa, avg_cost, city, country, course_names, logo_name, banner_name = row
+
+                # Step 1: Combine city and country into exact_location
+                exact_location = f'{city}, {country}'
+
+                # Step 2: Check if university already exists
+                if Uni.query.filter_by(name=name).first():
+                    flash(f'University {name} already exists.', 'warning')
+                    continue
+
+                # Step 3: Handle missing data and draft status
+                is_draft = False
+                if not website or not ib_cutoff or not course_names:
+                    is_draft = True
+
+                if not ib_cutoff:
+                    ib_cutoff = 0  # Default IB cutoff if missing
+
+                # Step 4: Process logo and banner from the extracted images
+                logo_filename = None
+                banner_filename = None
+
+                logo_name_reformat = logo_name + ".png"
+                banner_name_reformat = banner_name + ".png"
+
+                # Check if the provided logo and banner names exist in the unzipped folder
+                logo_path = os.path.join(IMAGES_FOLDER, logo_name_reformat)
+                banner_path = os.path.join(IMAGES_FOLDER, banner_name_reformat)
+
+                print("logo path", logo_path)
+                print("logo path", banner_path)
+
+                new_logo_filename = None
+                new_logo_path = None
+                new_banner_filename = None
+                new_banner_path = None
+
+                # Ensure the logo file exists, rename it, and move it to LOGOS_FOLDER
+                if os.path.exists(logo_path):
+                    new_logo_filename = f'{name}.png'
+                    new_logo_path = os.path.join(LOGOS_FOLDER, new_logo_filename)
+                    try:
+                        os.rename(logo_path, new_logo_path)  # Rename and move logo to LOGOS_FOLDER
+                        logo_filename = new_logo_filename
+                    except OSError:
+                        flash(f"Failed to save logo for {name}.", "error")
+                        is_draft = True
+                else:
+                    is_draft = True  # Mark as draft if logo is missing
+
+                # Ensure the banner file exists, rename it, and move it to BANNERS_FOLDER
+                if os.path.exists(banner_path):
+                    new_banner_filename = f'{name}.png'
+                    new_banner_path = os.path.join(BANNERS_FOLDER, new_banner_filename)
+                    try:
+                        os.rename(banner_path, new_banner_path)  # Rename and move banner to BANNERS_FOLDER
+                        banner_filename = new_banner_filename
+                    except OSError:
+                        flash(f"Failed to save banner for {name}.", "error")
+                        is_draft = True
+                else:
+                    is_draft = True  # Mark as draft if banner is missing
+
+                # Step 5: Find or create location based on exact_location
+                location = Location.query.filter_by(exact_location=exact_location).first()
+                if not location:
+                    location = Location(city=city, country=country, exact_location=exact_location)
+                    db.session.add(location)
+                    db.session.commit()
+
+                # Step 6: Create university record
+                uni = Uni(
+                    name=name,
+                    ib_cutoff=ib_cutoff,
+                    scholarships=scholarships,
+                    requirements=requirements,
+                    acceptance_rate=acceptance_rate,
+                    website=website,
+                    email=email,
+                    min_gpa=min_gpa,
+                    avg_cost=avg_cost,
+                    logo=new_logo_filename,
+                    banner=new_banner_filename,
+                    location=location,
+                    is_draft=is_draft
+                )
+
+                # Step 7: Process courses
+                for course_name in course_names.split(','):
+                    course = Course.query.filter_by(name=course_name.strip()).first()
+                    if not course:
+                        course = Course(name=course_name.strip())
+                        db.session.add(course)
+                    uni.courses.append(course)
+
+                # Step 8: Add university to database
+                db.session.add(uni)
+
+            # Commit all changes to the database
+            db.session.commit()
+
+        # Clean up the uploaded files
+        os.remove(csv_path)
+        os.remove(zip_path)
+
+        flash('Universities uploaded successfully!', 'success')
+        return redirect(url_for('manage_unis'))
+    
+    return render_template('upload_csv.html', form=form)
 
 @app.route("/manage_unis", methods=['GET', 'POST'])
 @login_required
