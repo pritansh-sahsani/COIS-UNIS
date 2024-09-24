@@ -22,7 +22,11 @@ def index():
 @login_required
 def unis():
     keyword = request.args.get('keyword')
-    unis = Uni.query.filter_by(is_draft=False).all()
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    unis = Uni.query.filter_by(is_draft=False).paginate(page=page, per_page=per_page, error_out=False)
 
     if keyword is not None and keyword != '':
         unis=sort_by_similarity(unis, keyword, column='name')
@@ -59,7 +63,7 @@ def unis():
                         unis=sort_by_similarity(unis, item, filter)
             
             if form.coisstudents.data:
-                no_add, no_app = GetAppAndAddNo(unis)
+                no_add, no_app = GetAppAndAddNo(unis.items)
                 temp = unis
                 unis = []
                 for i in range(len(temp)):
@@ -70,11 +74,11 @@ def unis():
                 if uni not in unis:
                     unis.append(uni)
 
-            no_add, no_app = GetAppAndAddNo(unis)
-            return render_template("unis.html", unis=unis, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
+            no_add, no_app = GetAppAndAddNo(unis.items)
+            return render_template("unis.html", uni_query = unis, unis=unis.items, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
     
-    no_add, no_app = GetAppAndAddNo(unis)
-    return render_template("unis.html", unis=unis, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
+    no_add, no_app = GetAppAndAddNo(unis.items)
+    return render_template("unis.html", uni_query = unis, unis=unis.items, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
 
 @app.route("/add_uni", methods=['GET', 'POST'])
 @login_required
@@ -310,9 +314,13 @@ def upload_csv():
 @login_required
 def manage_unis():
     if allow_access("admins") is not None: return allow_access("admins")
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
     keyword = request.args.get('keyword')
-    draft_unis_query = Uni.query.filter_by(is_draft=True).all()
-    published_unis_query = Uni.query.filter_by(is_draft=False).all()
+    draft_unis_query = Uni.query.filter_by(is_draft=True).paginate(page=page, per_page=per_page, error_out=False)
+    published_unis_query = Uni.query.filter_by(is_draft=False).paginate(page=page, per_page=per_page, error_out=False)
     
     if keyword is not None and keyword != '':
         draft_unis_query=sort_by_similarity(draft_unis_query, keyword, 'name')
@@ -334,13 +342,13 @@ def manage_unis():
     draft_unis = []
     published_unis = []
     
-    for uni in draft_unis_query:
+    for uni in draft_unis_query.items:
         draft_unis.append(uni)
-    for uni in published_unis_query:
+    for uni in published_unis_query.items:
         published_unis.append(uni)
         
-    d_unis_len=len(draft_unis_query)
-    p_unis_len=len(published_unis_query)
+    d_unis_len=len(draft_unis)
+    p_unis_len=len(published_unis)
     flash = "University Deleted Successfully!"
     
     if form.validate_on_submit():
@@ -397,30 +405,34 @@ def manage_unis():
                     draft_unis.append(uni)
 
             no_add, no_app = GetAppAndAddNo(published_unis)
-            return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
+            return render_template("manage_unis.html", draft_unis_query=draft_unis_query, published_unis_query=published_unis_query, published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
     
     no_add, no_app = GetAppAndAddNo(published_unis)
-    return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
+    return render_template("manage_unis.html", draft_unis_query=draft_unis_query, published_unis_query=published_unis_query, published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
 
 @app.route("/manage_courses", methods=['GET', 'POST'])
 @login_required
 def manage_courses():
     if allow_access("admins") is not None: return allow_access("admins")
+
+    page = request.args.get("page", 1, type=int)
+    per_page = 15
+
     keyword = request.args.get('keyword')
-    courses_query= Course.query.with_entities(Course.id, Course.name).all()
+    courses_query= Course.query.with_entities(Course.id, Course.name).paginate(page=page, per_page=per_page)
     
     if keyword is not None and keyword != '':
         courses_query=sort_by_similarity(courses_query, keyword, 'name')
 
     courses = []
     
-    for course in courses_query:
+    for course in courses_query.items:
         courses.append(course)
 
     courses_len=len(courses)
     flash = "Course Deleted Successfully!"
 
-    return render_template("manage_courses.html", courses = courses, courses_len=courses_len, flash=flash)
+    return render_template("manage_courses.html", courses_query=courses_query, courses = courses, courses_len=courses_len, flash=flash)
 
 @app.route('/delete_course/<int:course_id>', methods=['GET', 'POST'])
 @login_required
@@ -448,21 +460,24 @@ def edit_course(course_id, course_name):
 @login_required
 def manage_locations():
     if allow_access("admins") is not None: return allow_access("admins")
+    page = request.args.get("page", 1, type=int)
+    per_page = 15
+    
     keyword = request.args.get('keyword')
-    locations_query= Location.query.all()
+    locations_query= Location.query.paginate(page=page, per_page=per_page)
     
     if keyword is not None and keyword != '':
         locations_query=sort_by_similarity(locations_query, keyword, 'exact_location')
 
     locations = []
     
-    for location in locations_query:
+    for location in locations_query.items:
         locations.append(location)
 
     locations_len=len(locations)
     flash = "Location Deleted Successfully!"
 
-    return render_template("manage_locations.html", locations = locations, locations_len=locations_len, flash=flash)
+    return render_template("manage_locations.html", locations_query=locations_query, locations = locations, locations_len=locations_len, flash=flash)
 
 @app.route('/delete_location/<int:location_id>', methods=['GET', 'POST'])
 @login_required
@@ -666,20 +681,23 @@ def add_location(name):
 def manage_admins():
     if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     keyword = request.args.get('keyword')
-    user_query = User.query.all()
-    users = []
-    for user in user_query:
-        if user.username != "SUPERUSER" and user.is_student == False:
-            users.append(user)
 
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    user_query = User.query.filter(User.is_student == False, User.username != 'SUPERUSER').paginate(page=page, per_page=per_page, error_out=False)
+    users = []
+    for user in user_query.items:
+        users.append(user)
+    print('users', users)
     if keyword is not None and keyword!='':
         users = sort_by_similarity(users, keyword, column='username')
     
     if len(users) == 0:
-        return render_template("manage_admins.html", users=users)
+        return render_template("manage_admins.html", users=users, user_query=user_query)
     
     del_flash = "User Deleted successfully!"
-    return render_template("manage_admins.html", del_flash=del_flash, users=users)
+    return render_template("manage_admins.html", del_flash=del_flash, users=users, user_query=user_query)
     
 @app.route('/delete_admin/<int:user_id>', methods=['GET', 'POST'])
 @login_required
@@ -855,14 +873,18 @@ def student_register():
 @login_required
 def manage_students():
     if allow_access("admins") is not None: return allow_access("admins")
-    students = User.query.filter_by(is_student = True).all()
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    students = User.query.filter_by(is_student = True).paginate(page=page, per_page=per_page, error_out=False)
     student_details = []
-    for student in students:
+    for student in students.items:
         student_details.append(Student_details.query.filter_by(user_id = student.id).first())
     
     del_flash = "Student Deleted successfully!"
 
-    return render_template('manage_students.html', students = students, student_details = student_details, zip=zip, del_flash=del_flash)
+    return render_template('manage_students.html', students_query = students, students = students.items, student_details = student_details, zip=zip, del_flash=del_flash)
 
 @app.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
@@ -1098,6 +1120,9 @@ def profile(username):
 @app.route('/students', methods=['GET', 'POST'])
 @login_required
 def students():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
     courses=[('None', 'None')]
     minors=[('None', 'None')]
     unis=[('None', 'None')]
@@ -1116,10 +1141,10 @@ def students():
         locations.append((location.id, location.exact_location))
 
     form = FilterStudentsForm(formdata = request.form, courses=courses, minors=minors, unis=unis, locations=locations)
-    students = User.query.filter_by(is_student=True).all()
+    students = User.query.filter_by(is_student=True).paginate(page=page, per_page=per_page, error_out=False)
     student_details=[]
     applications=[]
-    for student in students:
+    for student in students.items:
         details = Student_details.query.filter_by(user_id=student.id).first_or_404()
         student_details.append(details)
         applications.append(Application.query.filter_by(student_id=details.id).all())
@@ -1165,12 +1190,12 @@ def students():
             user = User.query.filter_by(id=details.user_id).first_or_404()
             students.append(user)
             applications.append(Application.query.filter_by(student_id=details.id).all())
-        return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications, zip=zip)
+        return render_template("students.html", form=form, students_query=students, students=students.items, student_details=student_details, applications=applications, zip=zip)
     else:
         if form.clear.data:
             return redirect(url_for("students"))    
     
-    return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications, zip=zip)
+    return render_template("students.html", form=form, students_query=students, students=students.items, student_details=student_details, applications=applications, zip=zip)
 
 @app.errorhandler(404)
 def page_not_found(e):
