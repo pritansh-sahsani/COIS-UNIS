@@ -224,7 +224,7 @@ class ApplicationForm(FlaskForm):
     uni = SelectField('University', choices=[])
     course = SelectField('Course', choices=[])
     minors = SelectMultipleField('Minors, if any', choices=[])
-    status = SelectField('Application status (if recieved)', choices=['waitlist', 'accepted', 'rejected'])
+    status = SelectField('Application status (if recieved)', choices=['considering', 'applied', 'waitlist', 'accepted', 'rejected'])
     is_early = BooleanField('Early Application')
     scholarship = StringField('Scholarship if recieved any')
     selected_uni = BooleanField('Is this the university you have taken admission in?')
@@ -249,8 +249,6 @@ class FilterForm(FlaskForm):
     max_acceptance_rate = StringField('Maximum Acceptance Rate')
     min_gpa = StringField('Minimum GPA')
     max_gpa = StringField('Maximum GPA')
-    min_avg_cost = StringField('Maximum Average cost')
-    max_avg_cost = StringField('Minimum Average cost')
     
     submit = SubmitField('Apply Filter')
     clear = SubmitField('Clear Filters')
@@ -273,8 +271,8 @@ class FilterStudentsForm(FlaskForm):
 
     uni = SelectField('University', choices=[])
     course = SelectField('Course', choices=[])
-    location = StringField('Location')
-    status = SelectField('Application status', choices=['none', 'waitlist', 'accepted', 'rejected'])
+    location = SelectField('Location')
+    status = SelectField('Application status', choices=['Application Status', 'waitlist', 'accepted', 'rejected'])
     is_early = BooleanField('Early Application')
     selected_uni = BooleanField('Took admission')
 
@@ -297,3 +295,4 @@ class FilterStudentsForm(FlaskForm):
         super(FilterStudentsForm, self).__init__(formdata=formdata, **kwargs)
         self.course.choices = kwargs['courses']
         self.uni.choices = kwargs['unis']
+        self.location.choices = kwargs['locations']

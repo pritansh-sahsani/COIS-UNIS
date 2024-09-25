@@ -6,12 +6,10 @@
 
 {% block main %}
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="../static/extensions/filter-multi-select-bundle-base.min.js"></script>
-
+    
     <script type=text/javascript>
         var student_len = 0;
         {% for student in students %}
@@ -43,39 +41,6 @@
             return vars;
         }
 
-        $(document).ready(function(){
-            vars= getUrlVars();
-            var keyword = decodeURI(vars['keyword']);
-            if(keyword == 'undefined'){keyword='';}
-            $("#search-input").val(keyword).change();
-            
-            if(student_len==0)
-                {
-                    $('#no_student').text("No Students Found");
-                    $("#no_student").toggle();
-                }
-
-            var filter_id = '#applied_filters_';
-            var input_id = '#FilterInput-';
-            var filters = ['graduation_year', 'myp_score_min', 'myp_score_max', 'dp_predicted_min', 'dp_predicted_max', 'dp_score_min', 'dp_score_max', 'uni', 'course', 'location', 'status', 'is_early', 'selected_uni', 'has_diploma'];
-            var filters_name = ['Graduation year', 'Min MYP score', 'Max MYP score', 'Min DP predicted', 'Max DP predicted', 'Min DP score', 'Max DP score', 'University', 'Course', 'Location', 'Status', 'Early app', 'Took Admission', 'diploma'];
-            var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg m-1' 
-
-            for(var i = 0; i<filters_name.length; i++)
-            {
-                var para = $("<p></p>").attr('id', "applied_filters_"+filters[i]);
-                $("#tags").append(para)
-                if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null && ($(input_id+filters[i]).val()) != 'None' && ($(input_id+filters[i]).val()) != 'none')
-                {
-                    $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
-                    $(filter_id+filters[i]).attr('class', text_style);
-                }
-                else
-                {
-                    $(filter_id+filters[i]).attr('class', 'hidden '+text_style);
-                }
-            }
-        });
 
         $(function() {
             $('#search_button').on('click', function(e) {

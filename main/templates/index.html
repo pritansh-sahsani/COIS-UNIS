@@ -5,10 +5,159 @@
 {% endblock %}
 
 {% block main %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+    @media (min-width: 800px) {
+        .text-overlay .title {
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+        font-size: 60px;
+        }
+        .text-overlay .caption{
+            font-size: 22px;
+            font-weight: 400;
+        }
+        .text-overlay {
+        position: absolute;
+        top: 50%;
+        left: 30%;
+        transform: translate(-50%, -50%);
+        text-align: left;
+        color: #0F3FA2;
+        }
 
-    <!-- login form -->
-    <div class="mx-auto w-100% md:w-50% md:my-5% items-center ">
-        <p class="text-center text-lg md:text-4xl w-90% md:w-80% mt-5% mx-auto">Home</p>
+        .text-overlay p:last-child {
+        margin-top: 20px;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .text-overlay .title {
+        font-family: "Poppins", sans-serif;
+        font-weight: 800;
+        font-size: 18px;
+        }
+        .text-overlay .caption{
+            font-size: 8px;
+            font-weight: 400;
+        }
+        .text-overlay {
+        position: absolute;
+        top: 50%;
+        left: 32.5%;
+        transform: translate(-50%, -50%);
+        text-align: left;
+        color: #0F3FA2;
+        }
+        
+        .text-overlay p:first-child {
+        margin-bottom: 10px; /* Adjust the spacing as needed */
+        }
+
+        .text-overlay p:last-child {
+        margin-top: 10px;
+        }
+    }
+
+    .image-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-container img {
+      width: 100%;
+
+    }
+    .explore-section {
+        text-align: center;
+        padding: 20px;
+    }
+    .explore-title {
+        font-size: 24px;
+        color: #FF6D38;
+        font-family: "Poppins", sans-serif;
+    }
+    .explore-container {
+        justify-content: center;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    .explore-item {
+        width: 300px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        text-align: center;
+        height: fit-content;
+    }
+    .explore-item h3 {
+        font-size: 20px;
+        color: #0F3FA2;
+        font-family: "Cardo", serif;
+        font-weight: 400;
+        font-style: normal;
+    }
+    .explore-item p {
+        font-size: 14px;
+        color: #555;
+        margin: 10px 0;
+        font-family: "Cardo", serif;
+        font-weight: 400;
+        font-style: normal;
+    }
+    .explore-item a {
+        display: inline-block;
+        background-color: #FF6D38;
+        color: #fff;
+        padding: 10px 20px;
+        font-weight: bold;
+        margin-top: 10px;
+        font-size: 12px;
+        font-family: "Poppins", sans-serif;
+    }
+    @media (min-width: 800px) {
+        #center-explore-item{
+            padding-bottom: 30px;
+            padding-top: 30px;
+        }
+    }
+</style>
+
+<div class="image-container">
+    <img src="../static/assets/home_page/home-page-banner.png" alt="Stepping Stone">
+    <div class="text-overlay">
+      <p class="title">Welcome to</p>
+      <p class="title">&emsp;Stepping Stone</p>
+      <p class="caption">A place to take you closer to all your dreams</p>
     </div>
-            
+  </div>
+
+<div class="explore-section">
+    <h2 class="explore-title mt-3"><b>Explore</b></h2>
+    <div class="explore-container grid md:flex">
+        <div class="explore-item">
+            <img class="mx-auto w-36" src="../static/assets/home_page/orange_blue_graphic (2).png" alt="Courses Icon">
+            <h3>Explore Courses</h3>
+            <p>All types of courses, from engineering to humanities, offered by all the famous universities in one place.</p>
+            <a href="/unis">DISCOVER MORE</a>
+        </div>
+        <div class="explore-item" id="center-explore-item">
+            <img class="mx-auto w-36" src="../static/assets/home_page/orange_blue_graphic (1).png" alt="Universities Icon">
+            <h3>Explore Universities</h3>
+            <p>From Ivy Leagues to Oxford & Cambridge, all your dream universities from your dream countries in one place.</p>
+            <a href="/unis">DISCOVER MORE</a>
+        </div>
+        <div class="explore-item">
+            <img class="mx-auto w-36" src="../static/assets/home_page/orange_blue_graphic (3).png" alt="Students Icon">
+            <h3>Explore Students</h3>
+            <p>It's like a student portal! See all the students and universities they got accepted in/wish to go, all in one place.</p>
+            <a href="/students">DISCOVER MORE</a>
+        </div>
+    </div>
+</div>
+<div>
+    <img class="w-100%" src="../static/assets/home_page/affiliations_banner.jpg">
+</div>
 {% endblock main %}

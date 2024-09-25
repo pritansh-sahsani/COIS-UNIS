@@ -19,7 +19,7 @@
         $(document).ready(function() {
         $("#overview_div").attr('class', div_classes);
         $('#overview_button').attr('class', "text-orangeC"+button_classes);
-        var requirements = '{{ uni.requirements | safe }}';
+        var requirements = `{{ uni.requirements | safe }}`;
         requirements = requirements.split('');
         var first= true
         for(i=0; i<requirements.length; i++)
@@ -143,16 +143,22 @@
     
     <div id="courses_div" class="hidden">
         <p class="text-blueC font-bold text-xl md:text-2xl mb-2">Courses:</p>
-        <table class="">
-            <tbody>
-                {% for c1, c2 in zip(uni.courses[::2], uni.courses[1::2]) %}
-                    <tr>
-                        <td><p class="text-lg md:text-xl w-40 pb-2"> {{ c1.name }}</p></td>
-                        <td><p class="text-lg md:text-xl "> {{ c2.name }}</p></td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="sm:flex">    
+            <div class="">
+                <ul>
+                    {% for course in uni.courses[:uni.courses|length//2+1] %}
+                    <li class="text-lg mt-2 mr-5">{{ course.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="">
+                <ul>
+                    {% for course in uni.courses[uni.courses|length//2+1:] %}
+                    <li class="text-lg mt-2">{{ course.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 
     <div id="students_div" class="hidden">
@@ -160,9 +166,11 @@
             <p class="text-blueC font-bold text-xl md:text-2xl mb-2">COIS Students Pursuing Further Studies:</p>
             {% for i in range(len(admissions)) %}
                 <div class="w-fit grid grid-cols-1 justify-start ml-4 gap-y-2">
-                    <p class="text-base md:text-lg">Name: {{ admissions[i]['user'].fullname }}</p>
-                    <p class="text-base md:text-lg">graduation year: {{admissions[i]['details'].graduation_year}} </p>
-                    <p class="text-base md:text-lg">Course: {{ admissions[i]['application'].course }}</p>
+                    <a href="{{url_for('profile', username = admissions[i]['user'].username)}}">
+                        <p class="text-base md:text-lg">Name: {{ admissions[i]['user'].fullname }}</p>
+                        <p class="text-base md:text-lg">graduation year: {{admissions[i]['details'].graduation_year}} </p>
+                        <p class="text-base md:text-lg">Course: {{ admissions[i]['application'].course }}</p>
+                    </a>
                 </div>
                 {% if i+1 < len(admissions) %}
                     <hr class="border-black w-100% my-3">
@@ -178,10 +186,12 @@
             {% endif %}
                 {% for i in range(len(others)) %}
                 <div class="w-fit grid grid-cols-1 justify-start ml-4 gap-y-2">
-                    <p class="text-base md:text-lg">Name: {{ others[i]['user'].fullname }}</p>
-                    <p class="text-base md:text-lg">graduation year: {{others[i]['details'].graduation_year}} </p>
-                    <p class="text-base md:text-lg">Course: {{ others[i]['application'].course }}</p>
-                    <p class="text-base md:text-lg">Status: {{ others[i]['application'].status }}</p>
+                    <a href="{{url_for('profile', username = others[i]['user'].username)}}">
+                        <p class="text-base md:text-lg">Name: {{ others[i]['user'].fullname }}</p>
+                        <p class="text-base md:text-lg">graduation year: {{others[i]['details'].graduation_year}} </p>
+                        <p class="text-base md:text-lg">Course: {{ others[i]['application'].course }}</p>
+                        <p class="text-base md:text-lg">Status: {{ others[i]['application'].status }}</p>
+                    </a>
                 </div>
                 {% if i+1 < len(others) %}
                     <hr class="border-black w-100% my-3">

@@ -65,9 +65,9 @@
                 </tr>
                 <tr>
                     {% if student_details.dp_predicted %}
-                        <td class="w-96">DP predicted: {{ student_details.dp_predicted }} / 56</td>
+                        <td class="w-96">DP predicted: {{ student_details.dp_predicted }} / 45</td>
                     {% else %}
-                        <td class="w-96">DP predicted: -- / 56</td>
+                        <td class="w-96">DP predicted: -- / 45</td>
                     {% endif %}
                     {% if student_details.dp_score %}
                         <td class="inline-flex" class="">DP score: {{ student_details.dp_score }} / 45</td>
@@ -110,8 +110,8 @@
                 {% for app in applications %}
                     {% if student_details.selected_app_id == app.id %}
                     <table class="hidden md:block table-auto justify-start ml-4">
-                        <tbody>
-                            <tr>
+                    <tbody>
+                            <tr onclick="location.href='/uni/{{app.uni.name}}'" class="cursor-pointer">
                                 <td class="w-96"><p>University: {{ app.uni }}</p></td>
                                 <td class=""><p>Course: {{ app.course }}</p></td>
                             </tr>
@@ -140,7 +140,6 @@
                             {% if app.other_details %}
                                 <tr><td><p class= "w-96 ml-4">{{app.other_details}}</p></td></tr>
                             {% endif %}
-
                             {% if student.username == current_user.username %}
                             <tr>
                                 <td><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
@@ -155,6 +154,7 @@
                         </tbody>
                     </table>
                     <div class="grid md:hidden text-base gap-y-1">
+                        <a href="/uni/{{app.uni.name}}">
                             <div class=""><p>University: {{ app.uni }}</p></div>
                             <div class=""><p>Course: {{ app.course }}</p></div>
                             <div class=""><p>Location: {{ app.location.exact_location }}</p></div>
@@ -174,12 +174,12 @@
                             {% if app.is_early %}
                                 <div class=""><p>Early Application: Yes</p></div>
                             {% else %}
-                            <div class=""><p>Early Application: No</p></div>
+                                <div class=""><p>Early Application: No</p></div>
                             {% endif %}
-                        {% if app.other_details %}
-                            <div><p class= " ml-4">{{app.other_details}}</p></div>
-                        {% endif %}
-
+                            {% if app.other_details %}
+                                <div><p class= " ml-4">{{app.other_details}}</p></div>
+                            {% endif %}
+                        </a>
                         {% if student.username == current_user.username %}
                         <div>
                             <a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
@@ -202,7 +202,7 @@
                     <tbody>
                     {% for app in applications %}
                         {% if student_details.selected_app_id != app.id %}
-                                <tr class> 
+                                <tr onclick="location.href='/uni/{{app.uni.name}}'" class="cursor-pointer">
                                     <td class="w-96"><p>University: {{ app.uni }}</p></td>
                                     <td class=""><p>Course: {{ app.course }}</p></td>
                                 </tr>
@@ -254,6 +254,8 @@
                 <div class="grid md:hidden grid-cols-1 text-base gap-y-1">
                     {% for app in applications %}
                         {% if student_details.selected_app_id != app.id %}
+                        
+                        <a href="/uni/{{app.uni.name}}">
                             <div class=""><p>University: {{ app.uni }}</p></div>
                             <div class=""><p>Course: {{ app.course }}</p></div>
                             <div class=""><p>Location: {{ app.location.exact_location }}</p></div>
@@ -278,6 +280,7 @@
                             {% if app.other_details %}
                                 <div class=""><p>{{app.other_details}}</p></div>
                             {% endif %}
+                        </a>
                             {% if student.username == current_user.username %}
                                 <div class="pb-4"><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
                                     <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>
@@ -300,7 +303,7 @@
                 <table class="hidden md:block table-auto justify-start ml-4">
                     <tbody>
                     {% for app in applications %}
-                                <tr class>
+                                <tr onclick="location.href='/uni/{{app.uni.name}}'" class="cursor-pointer">
                                     <td class= "w-96"><p>University: {{ app.uni }}</p></td>
                                     <td class=""><p>Course: {{ app.course }}</p></td>
                                 </tr>
@@ -350,30 +353,32 @@
                 </table>
                 <div class="grid md:hidden gap-y-1 text-base">
                     {% for app in applications %}
-                        <div class= ""><p>University: {{ app.uni }}</p></div>
-                        <div class=""><p>Course: {{ app.course }}</p></div>
-                        <div class= ""><p>Location: {{ app.location.exact_location }}</p></div>
-                        <div class="">
-                        <p>Minors: 
-                        {% if len(app.minors) >0 %}
-                        {% for minor in app.minors %}
-                        {{ minor.name }},  
-                        {% endfor %}
-                        {% else %}None{% endif %}</p></div>
-                        {% if app.scholarship %}
-                            <div class= ""><p>Scholarship: {{ app.scholarship }}</p></div>
-                        {% else %}
-                            <div class= ""><p>Scholarship: None</p></div>
-                        {% endif %}
-                        {% if app.is_early %}
-                            <div class=""><p>Early Application: Yes</p></div>
-                        {% else %}
-                            <div class=""><p>Early Application: No</p></div>
-                        {% endif %}
-                            <div class= ""><p>Status: {{ app.status }}</p></div>
+                        <a href="/uni/{{app.uni.name}}">
+                            <div class= ""><p>University: {{ app.uni }}</p></div>
+                            <div class=""><p>Course: {{ app.course }}</p></div>
+                            <div class= ""><p>Location: {{ app.location.exact_location }}</p></div>
+                            <div class="">
+                            <p>Minors: 
+                            {% if len(app.minors) >0 %}
+                            {% for minor in app.minors %}
+                            {{ minor.name }},  
+                            {% endfor %}
+                            {% else %}None{% endif %}</p></div>
+                            {% if app.scholarship %}
+                                <div class= ""><p>Scholarship: {{ app.scholarship }}</p></div>
+                            {% else %}
+                                <div class= ""><p>Scholarship: None</p></div>
+                            {% endif %}
+                            {% if app.is_early %}
+                                <div class=""><p>Early Application: Yes</p></div>
+                            {% else %}
+                                <div class=""><p>Early Application: No</p></div>
+                            {% endif %}
+                                <div class= ""><p>Status: {{ app.status }}</p></div>
                             {% if app.other_details %}
                                 <div class=""><p>{{app.other_details}}</p></div>
                             {% endif %}
+                        </a>
                             {% if student.username == current_user.username %}
                                 <div class="pb-4"><a class="" href="{{ url_for('edit_application', application_id = app.id) }}">
                                         <button class="mt-2 rounded-md p-2 bg-none border-0.5 border-solid border-blueC w-100% md:w-fit mx-auto"><img class="w-7 h-7 mx-auto" src="../static/assets/edit-icon-blueC.svg"></button>

@@ -19,6 +19,7 @@ def index():
     return render_template("index.html")
 
 @app.route("/unis", methods=["GET", "POST"])
+# paginate
 @login_required
 def unis():
     keyword = request.args.get('keyword')
@@ -27,8 +28,8 @@ def unis():
     if keyword is not None and keyword != '':
         unis=sort_by_similarity(unis, keyword, column='name')
     
-    courses = []
-    locations=[]
+    courses = [(None, 'Course')]
+    locations=[(None, 'Location')]
     courses_query= Course.query.with_entities(Course.name).all()
     locations_query = Location.query.with_entities(Location.exact_location).all()
 
@@ -43,20 +44,28 @@ def unis():
     if form.validate_on_submit():
         unis= Uni.query.filter_by(is_draft=False)
         if form.submit.data:
-            for filter in ['acceptance_rate', 'gpa','ib_cutoff', 'avg_cost']:
+            for filter in ['acceptance_rate','ib_cutoff']:
                 if getattr(form, 'min_'+filter).data!="":
                     unis=unis.filter(getattr(Uni, filter)>=getattr(form, 'min_'+filter).data)
                 if getattr(form, 'max_'+filter).data!="":
                     unis=unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
-            unis=unis.all()
+        
+            if form.min_gpa.data!="":
+                unis=unis.filter(Uni.min_gpa>=form.min_gpa.data)
+            if form.max_gpa.data!="":
+                unis=unis.filter(Uni.min_gpa<=form.max_gpa.data)
+
+            if form.location.data!='None':
+                unis=unis.filter_by(location=Location.query.filter_by(exact_location=form.location.data).first())
+        
+            if form.courses.data !='None':
+                unis=unis.filter(Uni.courses.contains(Course.query.filter_by(name=form.courses.data).first()))
 
             for filter in ['requirements', 'scholarships']:
                 if getattr(form, filter).data!="":
-                    unis=sort_by_similarity(unis, getattr(form, filter).data, filter)
-            for filter in ['courses', 'locations']:
-                if len(getattr(form, filter).data)!=0:
-                    for item in getattr(form, filter).data:
-                        unis=sort_by_similarity(unis, item, filter)
+                    unis=unis.filter(getattr(Uni, filter).contains(getattr(form, filter).data))
+
+            unis=unis.all()
             
             if form.coisstudents.data:
                 no_add, no_app = GetAppAndAddNo(unis)
@@ -161,19 +170,6 @@ def manage_unis():
         draft_unis_query=sort_by_similarity(draft_unis_query, keyword, 'name')
         published_unis_query=sort_by_similarity(published_unis_query, keyword, 'name')
 
-    courses = []
-    locations=[]
-    courses_query= Course.query.with_entities(Course.name).all()
-    locations_query = Location.query.with_entities(Location.exact_location).all()
-    
-    for course in courses_query:
-        courses.append((course.name, course.name))
-
-    for location in locations_query:
-        locations.append((location.exact_location, location.exact_location))
-
-    form = FilterForm(formdata = request.form, courses=courses, locations=locations)
-
     draft_unis = []
     published_unis = []
     
@@ -185,65 +181,8 @@ def manage_unis():
     d_unis_len=len(draft_unis_query)
     p_unis_len=len(published_unis_query)
     flash = "University Deleted Successfully!"
-    
-    if form.validate_on_submit():
-        if form.submit.data:
-            draft_unis = Uni.query.filter_by(is_draft=True)
-            published_unis = Uni.query.filter_by(is_draft=False)
-            
-            for filter in ['acceptance_rate', 'gpa','ib_cutoff', 'avg_cost']:
-                if getattr(form, 'min_'+filter).data!="":
-                    published_unis=published_unis.filter(getattr(Uni, filter)>=getattr(form, 'min_'+filter).data)
-                if getattr(form, 'max_'+filter).data!="":
-                    published_unis=published_unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
-            published_unis=published_unis.all()
-
-            for filter in ['requirements', 'scholarships', 'location']:
-                if getattr(form, filter).data!="":
-                    published_unis=sort_by_similarity(published_unis, getattr(form, filter).data, filter)
-            for filter in ['courses']:
-                if len(getattr(form, filter).data)!=0:
-                    for item in getattr(form, filter).data:
-                        published_unis=sort_by_similarity(published_unis, item, filter)
-
-
-            for filter in ['acceptance_rate', 'gpa','ib_cutoff', 'avg_cost']:
-                if getattr(form, 'min_'+filter).data!="":
-                    draft_unis=draft_unis.filter(getattr(Uni, filter)>=getattr(form, 'min_'+filter).data)
-                if getattr(form, 'max_'+filter).data!="":
-                    draft_unis=draft_unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
-            draft_unis=draft_unis.all()
-
-            for filter in ['requirements', 'scholarships', 'location']:
-                if getattr(form, filter).data!="":
-                    draft_unis=sort_by_similarity(draft_unis, getattr(form, filter).data, filter)
-            for filter in ['courses']:
-                if len(getattr(form, filter).data)!=0:
-                    for item in getattr(form, filter).data:
-                        draft_unis=sort_by_similarity(draft_unis, item, filter)
-            
-            
-            if form.coisstudents.data:
-                no_add, no_app = GetAppAndAddNo(published_unis)
-                temp = published_unis
-                published_unis = []
-                for i in range(len(temp)):
-                    if no_add[i] + no_app[i] != 0:
-                        published_unis.append(temp[i])
-                
-            for uni in Uni.query.filter_by(is_draft=False).all():
-                if uni not in published_unis:
-                    published_unis.append(uni)
-
-            for uni in Uni.query.filter_by(is_draft=True).all():
-                if uni not in draft_unis:
-                    draft_unis.append(uni)
-
-            no_add, no_app = GetAppAndAddNo(published_unis)
-            return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
-    
     no_add, no_app = GetAppAndAddNo(published_unis)
-    return render_template("manage_unis.html", published_unis = published_unis, form=form, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
+    return render_template("manage_unis.html", published_unis = published_unis, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
 
 @app.route("/manage_courses", methods=['GET', 'POST'])
 @login_required
@@ -651,11 +590,9 @@ def admin_register():
     return render_template('admin_register.html', form=form)
 
 @app.route("/student_register", methods=['GET', 'POST'])
-def student_register():
-    if current_user.is_authenticated:
-        if allow_access("admins") is not None: return allow_access("admins")
-        logout_user()
-
+def student_register():    
+    if allow_access("admins") is not None: return allow_access("admins")
+    
     form = StudentRegistrationForm(formdata = request.form)
 
     if form.validate_on_submit():
@@ -700,6 +637,9 @@ def manage_students():
     if allow_access("admins") is not None: return allow_access("admins")
     students = User.query.filter_by(is_student = True).all()
     student_details = []
+    keyword = request.args.get('keyword')
+    if keyword is not None and keyword != '':
+        students=sort_by_similarity(students, keyword, column='fullname')
     for student in students:
         student_details.append(Student_details.query.filter_by(user_id = student.id).first())
     
@@ -790,7 +730,7 @@ def edit_student(student_id):
             return redirect(url_for('profile', username = current_user.username))
         else:
             flash(f'Student data updated successfully!', 'success')
-            return redirect(url_for('manage_admins'))
+            return redirect(url_for('manage_students'))
 
     return render_template('edit_student.html', form=form, old_student=old_student, old_student_details=old_student_details)
 
@@ -881,7 +821,6 @@ def edit_application(application_id):
 
         application.minors = []
         for minor in form.minors.data:
-            print(type(minor))
             course = Course.query.filter_by(name=minor).first()
             if course:
                 application.minors.append(course)
@@ -941,10 +880,10 @@ def profile(username):
 @app.route('/students', methods=['GET', 'POST'])
 @login_required
 def students():
-    courses=[('None', 'None')]
-    minors=[('None', 'None')]
-    unis=[('None', 'None')]
-    locations=[('None', 'None')]
+    courses=[(None, 'Courses')]
+    minors=[(None, 'Minors')]
+    unis=[(None, 'University')]
+    locations=[(None, 'Location')]
     courses_query= Course.query.with_entities(Course.id, Course.name).all()
     unis_query = Uni.query.with_entities(Uni.id, Uni.name).all()
     locations_query = Location.query.with_entities(Location.id, Location.exact_location).all()

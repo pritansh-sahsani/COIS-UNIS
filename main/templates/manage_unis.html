@@ -9,9 +9,7 @@
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="../static/extensions/filter-multi-select-bundle-base.min.js"></script>
-    <link rel="stylesheet" href="../static/css/filter_multi_select.css" />
-
+    
     <script type=text/javascript>
         function raise_error() {
             {% for item in [form.requirements, form.scholarships, form.courses, form.location, form.min_ib_cutoff, form.max_ib_cutoff, form.min_acceptance_rate, form.max_acceptance_rate, form.min_gpa, form.max_gpa, form.min_avg_cost, form.max_avg_cost] %}
@@ -148,14 +146,6 @@
             });
         });
         
-        $(document).ready(function() {
-            $(function() {
-                $('#clear_filter').on('click', function(e) {
-                    $('.FilterInput').val('').change();
-                });
-            });
-        });
-        
         $(function() {
             $("#search-input").keypress(function (event) {
                 if (event.keyCode === 13) {
@@ -163,107 +153,14 @@
                 }
             });
         });
-
-    $(function() {
-        $('#ShowFilter').on('click', function(e) {
-            var ImageSrc = $('#ShowFilterImg');
-            var TextSrc = $('#ShowFilterText');
-            if ( ImageSrc.attr('src') == '../static/assets/dropdown-icon.svg')
-                    {
-                        ImageSrc.attr('src', '../static/assets/dropdown-icon-clicked.svg');
-                        TextSrc.text('Hide Filters');
-                    }
-                    else
-                    {
-                        ImageSrc.attr('src', '../static/assets/dropdown-icon.svg');
-                        TextSrc.text('Show Filters');
-                    }
-                });
-            });
-            $(function() {
-		    $('.FilterInput').on('change', function(e) {
-                var filter_id = '#applied_filters_';
-                var input_id = '#FilterInput-';
-                var filters = ['min_ib_cutoff', 'max_ib_cutoff', 'min_acceptance_rate', 'max_acceptance_rate', 'min_gpa', 'max_gpa', 'min_avg_cost', 'max_avg_cost','requirements','scholarships','locations','courses'];
-                var filters_name = ['Minimum IBDP Score', 'Maximum IBDP Score', 'Minimum Acceptance Rate', 'Maximum Acceptance Rate', 'Minimum GPA', 'Maximum GPA', 'Minimum Average Cost', 'Maximum Average Cost','Requirements','Scholarships','Locations','Courses'];
-                var text_style = 'inline-block w-fit px-3 py-1 border-black border-0.5 rounded-lg' 
-                for(var i = 0; i<filters_name.length; i++)
-                {
-                    if ($(input_id+filters[i]).val() != "" && ($(input_id+filters[i]).val()) != null)
-                    {
-                        $(filter_id+filters[i]).text(filters_name[i]+': '+$(input_id+filters[i]).val());
-                        $(filter_id+filters[i]).attr('class', text_style);
-                    }
-                    else
-                    {
-                        $(filter_id+filters[i]).attr('class', 'hidden '+text_style);
-                    }
-                }
-			});
-		});
     </script>
 <div class="w-90% mx-auto">
-<div id="dropdownHover" class="hidden w-90% md:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
-    <div class="mx-auto w-90%">
-        <form action='' method="POST" class="w-100% mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 my-4">
-            {{ form.hidden_tag() }}
-            {{ form.min_ib_cutoff(id="FilterInput-min_ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum IBDP Score') }}
-            {{ form.max_ib_cutoff(id="FilterInput-max_ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum IBDP Score') }}
-            {{ form.min_acceptance_rate(id="FilterInput-min_acceptance_rate", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum Acceptance Rate') }} 
-            {{ form.max_acceptance_rate(id="FilterInput-max_acceptance_rate", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum Acceptance Rate') }}
-            {{ form.min_gpa(id="FilterInput-min_gpa", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum GPA') }} 
-            {{ form.max_gpa(id="FilterInput-max_gpa", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum GPA') }}
-            {{ form.min_avg_cost(id="FilterInput-min_avg_cost", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum Average Cost') }} 
-            {{ form.max_avg_cost(id="FilterInput-max_avg_cost", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum Average Cost') }}
-    
-            {{ form.requirements(id="FilterInput-requirements", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Requirements for admission') }} 
-            {{ form.scholarships(id="FilterInput-scholarships", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Scholarships') }}
-            
-            {{ form.location(id="FilterInput-locations", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Locations') }}
-            {{ form.courses(id="FilterInput-courses", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Courses') }}
-
-            <div class="flex place-self-center">
-                <label class="switch m-0 flex-none">
-                    {{ form.coisstudents(class="form-check-input", type="checkbox") }}
-                    <span class="slider round"></span>
-                </label>
-                <p class="flex-initial relative text-base md:text-lg ml-2">COIS students applied</p>
-            </div>
-
-            {{ form.submit(class="w-100% md:w-50% md:mx-25% mt-2% mb-5% text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none text-xl") }}
-            {{ form.clear(id="clear_filter", class="w-100% md:w-50% md:mx-25% mt-2% mb-5% text-white bg-blue-700 hover:bg-blue-800 rounded-lg px-5 py-2.5 focus:outline-none text-xl") }}
-        </form>
-    </div>
-</div>
-
     <div class="mt-5 mb-3">
         <button class="underline-btn-active text-2xl ml-0" id="show_published">Published</button>
         <button class="underline-btn text-2xl ml-8 960:ml-14" id="show_drafts">Drafts</button>
-        <hr class="mx-auto border-black mb-3" id="manage-unis-hr"><div class="w-100% text-center items-center mb-3 mt-5" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="click"  id="ShowFilter">
     </div> 
     
-    <div class="w-100% text-center items-center mt-5" data-dropdown-toggle="dropdownHover" data-dropdown-trigger="click"  id="ShowFilter">
-        <p class="inline-block" id="ShowFilterText">Show Filters</p>
-        <img class="inline-block mb-1 w-4 h-4" id="ShowFilterImg" src="../static/assets/dropdown-icon.svg">
-    </div>
-    
     <div class="mt-2">
-        <div class="w-100% md:w-50% mx-auto mb-2">
-            <div class="w-fit mx-auto">
-                <p id='applied_filters_min_ib_cutoff'></p>
-                 <p id='applied_filters_max_ib_cutoff'></p>
-                 <p id='applied_filters_min_acceptance_rate'></p>
-                 <p id='applied_filters_max_acceptance_rate'></p>
-                 <p id='applied_filters_min_gpa'></p>
-                 <p id='applied_filters_max_gpa'></p>
-                 <p id='applied_filters_min_avg_cost'></p>
-                 <p id='applied_filters_max_avg_cost'></p>
-                <p id='applied_filters_requirements'></p>
-                <p id='applied_filters_scholarships'></p>
-                <p id='applied_filters_locations'></p>
-                <p id='applied_filters_courses'></p>
-            </div>
-        </div>
         <div id="search-div" class="w-100% md:w-50% mx-auto border-0.5 border-gradient rounded-lg text-left z-10 bg-white">
         <input type="text" name="keyword" id="search-input" class="rounded-lg form-control autocomplete border-0 inline-block w-80% text-lg text-gradient focus:text-gradient" placeholder="Search...">
             <button id="search_button" class="float-right">

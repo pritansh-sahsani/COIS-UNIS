@@ -83,7 +83,7 @@ class Uni(db.Model):
 
     location = db.relationship('Location', backref=db.backref('unis', lazy=True))
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    courses = relationship('Course', secondary=courses_table, back_populates='unis')
+    courses = db.relationship('Course', secondary=courses_table, back_populates='unis')
 
     def __repr__(self):
         return f"{self.name}"

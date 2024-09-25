@@ -38,9 +38,9 @@
 						<a href="/" class="justify-self-end">
 							<img src="../static/assets/logo.png" class="w-12 inline" alt="" id="website-logo"/>
 						</a>
-						<img src="../static/assets/V_line.png" class="w-2 inline mx-2" alt="" id=""/>
+						<img src="../static/assets/V_line.png" class="w-2 inline ml-2" alt="" id=""/>
 						<a href="https://cois.edu.in" class="">
-							<img src="../static/assets/cois_logo.png" class="w-12" alt="" id=""/>
+							<img src="../static/assets/cois_logo.jpg" class="w-36" alt="" id=""/>
 						</a>
 					</div>
 					{% if not current_user.is_authenticated %}
@@ -52,11 +52,6 @@
 						<div class="">
 							<a class="navbar-link" href="/login">
 								<button class="underline-btn">Login</button>
-							</a>
-						</div>
-						<div class="">
-							<a class="navbar-link" href="/student_register">
-								<button class="underline-btn">Register</button>
 							</a>
 						</div>
 					{% else %}
@@ -148,14 +143,14 @@
 
 			<!-- phone navbar -->
 			<div id="phone_top_navbar" class="block md:hidden w-100%">
-				<div class="grid grid-cols-2 items-center w-100%">
-					<div>
+				<div class="grid grid-cols-4 items-center w-100%">
+					<div class="col-span-3">
 						<a href="/" class="justify-self-start">
 							<img src="../static/assets/logo.png" class="inline w-10 sm:w-12 ml-2" alt="" />
 						</a>
-						<img src="../static/assets/V_line.png" class="w-2 inline mx-2" alt="" id=""/>
+						<img src="../static/assets/V_line.png" class="w-2 inline ml-2" alt="" id=""/>
 						<a href="https://cois.edu.in" class="">
-							<img src="../static/assets/cois_logo.png" class="inline w-12" alt="" id=""/>
+							<img src="../static/assets/cois_logo.jpg" class="inline w-28" alt="" id=""/>
 						</a>
 					</div>
 
@@ -186,7 +181,6 @@
 								{% if not current_user.is_authenticated %}
 									<a href="/" class="w-fit mt-0 mx-auto block rounded">Home</a>
 									<a href="/login" class="w-fit mt-0 mx-auto block rounded">Login</a>
-									<a href="/student_register" class="w-fit mt-0 mx-auto block rounded">Register</a>
 								{% else %}
 									{% if current_user.is_student %}
 										<a href="/unis" class="w-fit mt-0 mx-auto block rounded">Universities</a>
@@ -264,7 +258,7 @@
     </div>      
 
     <!-- Individual page content -->
-    <main class="py-2">
+    <main class="">
       {% block main %}{% endblock main %}
     </main>
   </body>
