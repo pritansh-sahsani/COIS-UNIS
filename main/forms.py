@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectMultipleField, TextAreaField, SelectField
+from flask_wtf.file import FileAllowed, FileRequired
 from wtforms.validators import EqualTo, Email, Length, ValidationError
 from flask_wtf.file import FileAllowed, FileField
 import re
@@ -50,10 +51,22 @@ class AddUniversityForm(FlaskForm):
     save_draft = SubmitField('Save As Draft')
     submit = SubmitField('Add University')
 
+
     def __init__(self, formdata=None, **kwargs):
         super(AddUniversityForm, self).__init__(formdata=formdata, **kwargs)
         self.courses.choices = kwargs['courses']
     
+class UploadCSVForm(FlaskForm):
+    csv_file = FileField('CSV File', validators=[
+        FileRequired(),
+        FileAllowed(['csv'], 'CSV files only!')
+    ])
+    images_zip = FileField('Images ZIP', validators=[
+        FileRequired(),
+        FileAllowed(['zip'], 'ZIP files only!')
+    ])
+    submit = SubmitField('Upload Files')
+
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Username', min='%(min)d', max='%(max)d'))])

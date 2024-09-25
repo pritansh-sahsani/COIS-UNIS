@@ -1,9 +1,9 @@
-from main.forms import LoginForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm
+from main.forms import LoginForm, UploadCSVForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm
 from main.setup import app, db
 from main.models import User, Uni, Location, Course, Student_details, Application
 from main.helper import sort_by_similarity, allow_access, GetAppAndAddNo
 from main import bcrypt
-
+from werkzeug.utils import secure_filename
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
@@ -23,7 +23,11 @@ def index():
 @login_required
 def unis():
     keyword = request.args.get('keyword')
-    unis = Uni.query.filter_by(is_draft=False).all()
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    unis = Uni.query.filter_by(is_draft=False).paginate(page=page, per_page=per_page, error_out=False)
 
     if keyword is not None and keyword != '':
         unis=sort_by_similarity(unis, keyword, column='name')
@@ -68,7 +72,7 @@ def unis():
             unis=unis.all()
             
             if form.coisstudents.data:
-                no_add, no_app = GetAppAndAddNo(unis)
+                no_add, no_app = GetAppAndAddNo(unis.items)
                 temp = unis
                 unis = []
                 for i in range(len(temp)):
@@ -79,11 +83,11 @@ def unis():
                 if uni not in unis:
                     unis.append(uni)
 
-            no_add, no_app = GetAppAndAddNo(unis)
-            return render_template("unis.html", unis=unis, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
+            no_add, no_app = GetAppAndAddNo(unis.items)
+            return render_template("unis.html", uni_query = unis, unis=unis.items, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
     
-    no_add, no_app = GetAppAndAddNo(unis)
-    return render_template("unis.html", unis=unis, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
+    no_add, no_app = GetAppAndAddNo(unis.items)
+    return render_template("unis.html", uni_query = unis, unis=unis.items, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
 
 @app.route("/add_uni", methods=['GET', 'POST'])
 @login_required
@@ -112,15 +116,7 @@ def add_uni():
         else:
             is_draft = form.save_draft.data
         
-        if form.ib_cutoff.data:
-            if form.ib_cutoff.data.isdigit():
-                if int(form.ib_cutoff.data) < 0 or int(form.ib_cutoff.data) > 45:
-                    flash('Please enter a valid IB grade for cut off (0 to 45).')
-                    return render_template("add_uni.html", form=form)
-            else:
-                flash('Please enter a valid IB grade.')
-                return render_template("add_uni.html", form=form)
-        else:
+        if not form.ib_cutoff.data:
             form.ib_cutoff.data = 0
 
         logo = request.files['logo']
@@ -157,14 +153,183 @@ def add_uni():
 
     return render_template("add_uni.html", form=form, locations=locations)
 
+import csv
+import zipfile
+
+
+
+# Path configurations for saving uploaded files and images
+UPLOAD_FOLDER = os.path.join(app.root_path, 'temp')
+IMAGES_FOLDER = os.path.join(app.root_path, 'static', 'university_images')
+LOGOS_FOLDER = os.path.join(app.root_path, 'static', 'university_logos')
+BANNERS_FOLDER = os.path.join(app.root_path, 'static', 'university_banners')
+
+
+@app.route('/upload_csv', methods=['GET', 'POST'])
+@login_required
+def upload_csv():
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+
+    if not os.path.exists(IMAGES_FOLDER):
+        os.makedirs(IMAGES_FOLDER)
+    
+    if allow_access("admins") is not None:
+        return allow_access("admins")
+
+    form = UploadCSVForm()
+
+    if form.validate_on_submit():
+        # Check if both CSV and ZIP files are present in the request
+        csv_file = form.csv_file.data
+        images_zip = form.images_zip.data
+
+        # Secure filenames and save the uploaded files
+        csv_filename = secure_filename(csv_file.filename)
+        zip_filename = secure_filename(images_zip.filename)
+
+        csv_path = os.path.join(UPLOAD_FOLDER, csv_filename)
+        zip_path = os.path.join(UPLOAD_FOLDER, zip_filename)
+
+        csv_file.save(csv_path)
+        images_zip.save(zip_path)
+
+        # Unzip the image files
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(IMAGES_FOLDER)  # Extract images to a general images folder
+        except zipfile.BadZipFile:
+            flash('The uploaded ZIP file is invalid.', 'error')
+            return redirect(url_for('upload_csv'))
+
+        # Read the CSV file
+        with open(csv_path, newline='', encoding='utf-8') as csvfile:
+            csv_data = csv.reader(csvfile)
+            next(csv_data)  # Skip the header row
+
+            for row in csv_data:
+                # Assuming the CSV has columns in this order with logo and banner columns
+                name, ib_cutoff, scholarships, requirements, acceptance_rate, website, email, min_gpa, avg_cost, city, country, course_names, logo_name, banner_name = row
+
+                # Step 1: Combine city and country into exact_location
+                exact_location = f'{city}, {country}'
+
+                # Step 2: Check if university already exists
+                if Uni.query.filter_by(name=name).first():
+                    flash(f'University {name} already exists.', 'warning')
+                    continue
+
+                # Step 3: Handle missing data and draft status
+                is_draft = False
+                if not website or not ib_cutoff or not course_names:
+                    is_draft = True
+
+                if not ib_cutoff:
+                    ib_cutoff = 0  # Default IB cutoff if missing
+
+                # Step 4: Process logo and banner from the extracted images
+                logo_filename = None
+                banner_filename = None
+
+                logo_name_reformat = logo_name + ".png"
+                banner_name_reformat = banner_name + ".png"
+
+                # Check if the provided logo and banner names exist in the unzipped folder
+                logo_path = os.path.join(IMAGES_FOLDER, logo_name_reformat)
+                banner_path = os.path.join(IMAGES_FOLDER, banner_name_reformat)
+
+                print("logo path", logo_path)
+                print("logo path", banner_path)
+
+                new_logo_filename = None
+                new_logo_path = None
+                new_banner_filename = None
+                new_banner_path = None
+
+                # Ensure the logo file exists, rename it, and move it to LOGOS_FOLDER
+                if os.path.exists(logo_path):
+                    new_logo_filename = f'{name}.png'
+                    new_logo_path = os.path.join(LOGOS_FOLDER, new_logo_filename)
+                    try:
+                        os.rename(logo_path, new_logo_path)  # Rename and move logo to LOGOS_FOLDER
+                        logo_filename = new_logo_filename
+                    except OSError:
+                        flash(f"Failed to save logo for {name}.", "error")
+                        is_draft = True
+                else:
+                    is_draft = True  # Mark as draft if logo is missing
+
+                # Ensure the banner file exists, rename it, and move it to BANNERS_FOLDER
+                if os.path.exists(banner_path):
+                    new_banner_filename = f'{name}.png'
+                    new_banner_path = os.path.join(BANNERS_FOLDER, new_banner_filename)
+                    try:
+                        os.rename(banner_path, new_banner_path)  # Rename and move banner to BANNERS_FOLDER
+                        banner_filename = new_banner_filename
+                    except OSError:
+                        flash(f"Failed to save banner for {name}.", "error")
+                        is_draft = True
+                else:
+                    is_draft = True  # Mark as draft if banner is missing
+
+                # Step 5: Find or create location based on exact_location
+                location = Location.query.filter_by(exact_location=exact_location).first()
+                if not location:
+                    location = Location(city=city, country=country, exact_location=exact_location)
+                    db.session.add(location)
+                    db.session.commit()
+
+                # Step 6: Create university record
+                uni = Uni(
+                    name=name,
+                    ib_cutoff=ib_cutoff,
+                    scholarships=scholarships,
+                    requirements=requirements,
+                    acceptance_rate=acceptance_rate,
+                    website=website,
+                    email=email,
+                    min_gpa=min_gpa,
+                    avg_cost=avg_cost,
+                    logo=new_logo_filename,
+                    banner=new_banner_filename,
+                    location=location,
+                    is_draft=is_draft
+                )
+
+                # Step 7: Process courses
+                for course_name in course_names.split(','):
+                    course = Course.query.filter_by(name=course_name.strip()).first()
+                    if not course:
+                        course = Course(name=course_name.strip())
+                        db.session.add(course)
+                    uni.courses.append(course)
+
+                # Step 8: Add university to database
+                db.session.add(uni)
+
+            # Commit all changes to the database
+            db.session.commit()
+
+        # Clean up the uploaded files
+        os.remove(csv_path)
+        os.remove(zip_path)
+
+        flash('Universities uploaded successfully!', 'success')
+        return redirect(url_for('manage_unis'))
+    
+    return render_template('upload_csv.html', form=form)
 
 @app.route("/manage_unis", methods=['GET', 'POST'])
 @login_required
 def manage_unis():
     if allow_access("admins") is not None: return allow_access("admins")
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
     keyword = request.args.get('keyword')
-    draft_unis_query = Uni.query.filter_by(is_draft=True).all()
-    published_unis_query = Uni.query.filter_by(is_draft=False).all()
+    draft_unis_query = Uni.query.filter_by(is_draft=True).paginate(page=page, per_page=per_page, error_out=False)
+    published_unis_query = Uni.query.filter_by(is_draft=False).paginate(page=page, per_page=per_page, error_out=False)
     
     if keyword is not None and keyword != '':
         draft_unis_query=sort_by_similarity(draft_unis_query, keyword, 'name')
@@ -173,13 +338,13 @@ def manage_unis():
     draft_unis = []
     published_unis = []
     
-    for uni in draft_unis_query:
+    for uni in draft_unis_query.items:
         draft_unis.append(uni)
-    for uni in published_unis_query:
+    for uni in published_unis_query.items:
         published_unis.append(uni)
         
-    d_unis_len=len(draft_unis_query)
-    p_unis_len=len(published_unis_query)
+    d_unis_len=len(draft_unis)
+    p_unis_len=len(published_unis)
     flash = "University Deleted Successfully!"
     no_add, no_app = GetAppAndAddNo(published_unis)
     return render_template("manage_unis.html", published_unis = published_unis, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
@@ -188,21 +353,25 @@ def manage_unis():
 @login_required
 def manage_courses():
     if allow_access("admins") is not None: return allow_access("admins")
+
+    page = request.args.get("page", 1, type=int)
+    per_page = 15
+
     keyword = request.args.get('keyword')
-    courses_query= Course.query.with_entities(Course.id, Course.name).all()
+    courses_query= Course.query.with_entities(Course.id, Course.name).paginate(page=page, per_page=per_page)
     
     if keyword is not None and keyword != '':
         courses_query=sort_by_similarity(courses_query, keyword, 'name')
 
     courses = []
     
-    for course in courses_query:
+    for course in courses_query.items:
         courses.append(course)
 
     courses_len=len(courses)
     flash = "Course Deleted Successfully!"
 
-    return render_template("manage_courses.html", courses = courses, courses_len=courses_len, flash=flash)
+    return render_template("manage_courses.html", courses_query=courses_query, courses = courses, courses_len=courses_len, flash=flash)
 
 @app.route('/delete_course/<int:course_id>', methods=['GET', 'POST'])
 @login_required
@@ -230,21 +399,24 @@ def edit_course(course_id, course_name):
 @login_required
 def manage_locations():
     if allow_access("admins") is not None: return allow_access("admins")
+    page = request.args.get("page", 1, type=int)
+    per_page = 15
+    
     keyword = request.args.get('keyword')
-    locations_query= Location.query.all()
+    locations_query= Location.query.paginate(page=page, per_page=per_page)
     
     if keyword is not None and keyword != '':
         locations_query=sort_by_similarity(locations_query, keyword, 'exact_location')
 
     locations = []
     
-    for location in locations_query:
+    for location in locations_query.items:
         locations.append(location)
 
     locations_len=len(locations)
     flash = "Location Deleted Successfully!"
 
-    return render_template("manage_locations.html", locations = locations, locations_len=locations_len, flash=flash)
+    return render_template("manage_locations.html", locations_query=locations_query, locations = locations, locations_len=locations_len, flash=flash)
 
 @app.route('/delete_location/<int:location_id>', methods=['GET', 'POST'])
 @login_required
@@ -448,20 +620,23 @@ def add_location(name):
 def manage_admins():
     if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
     keyword = request.args.get('keyword')
-    user_query = User.query.all()
-    users = []
-    for user in user_query:
-        if user.username != "SUPERUSER" and user.is_student == False:
-            users.append(user)
 
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    user_query = User.query.filter(User.is_student == False, User.username != 'SUPERUSER').paginate(page=page, per_page=per_page, error_out=False)
+    users = []
+    for user in user_query.items:
+        users.append(user)
+    print('users', users)
     if keyword is not None and keyword!='':
         users = sort_by_similarity(users, keyword, column='username')
     
     if len(users) == 0:
-        return render_template("manage_admins.html", users=users)
+        return render_template("manage_admins.html", users=users, user_query=user_query)
     
     del_flash = "User Deleted successfully!"
-    return render_template("manage_admins.html", del_flash=del_flash, users=users)
+    return render_template("manage_admins.html", del_flash=del_flash, users=users, user_query=user_query)
     
 @app.route('/delete_admin/<int:user_id>', methods=['GET', 'POST'])
 @login_required
@@ -635,7 +810,11 @@ def student_register():
 @login_required
 def manage_students():
     if allow_access("admins") is not None: return allow_access("admins")
-    students = User.query.filter_by(is_student = True).all()
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    students = User.query.filter_by(is_student = True).paginate(page=page, per_page=per_page, error_out=False)
     student_details = []
     keyword = request.args.get('keyword')
     if keyword is not None and keyword != '':
@@ -645,7 +824,7 @@ def manage_students():
     
     del_flash = "Student Deleted successfully!"
 
-    return render_template('manage_students.html', students = students, student_details = student_details, zip=zip, del_flash=del_flash)
+    return render_template('manage_students.html', students_query = students, students = students.items, student_details = student_details, zip=zip, del_flash=del_flash)
 
 @app.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
@@ -898,10 +1077,10 @@ def students():
         locations.append((location.id, location.exact_location))
 
     form = FilterStudentsForm(formdata = request.form, courses=courses, minors=minors, unis=unis, locations=locations)
-    students = User.query.filter_by(is_student=True).all()
+    students = User.query.filter_by(is_student=True).paginate(page=page, per_page=per_page, error_out=False)
     student_details=[]
     applications=[]
-    for student in students:
+    for student in students.items:
         details = Student_details.query.filter_by(user_id=student.id).first_or_404()
         student_details.append(details)
         applications.append(Application.query.filter_by(student_id=details.id).all())
@@ -947,12 +1126,12 @@ def students():
             user = User.query.filter_by(id=details.user_id).first_or_404()
             students.append(user)
             applications.append(Application.query.filter_by(student_id=details.id).all())
-        return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications, zip=zip)
+        return render_template("students.html", form=form, students_query=students, students=students.items, student_details=student_details, applications=applications, zip=zip)
     else:
         if form.clear.data:
             return redirect(url_for("students"))    
     
-    return render_template("students.html", form=form, students=students, student_details=student_details, applications=applications, zip=zip)
+    return render_template("students.html", form=form, students_query=students, students=students.items, student_details=student_details, applications=applications, zip=zip)
 
 @app.errorhandler(404)
 def page_not_found(e):
