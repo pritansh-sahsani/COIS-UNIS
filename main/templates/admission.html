@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    New Admission
+{% endblock %}
+
+{% block main %}
+<script type=text/javascript>
+    function raise_error() {
+
+        {% for field, errors in form.errors.items() %}
+            {% for error in errors %}
+                $("#flash_text").text("{{error}}");
+                $("#flash_text_div").show();
+            {% endfor %}
+        {% endfor %}
+    }
+    setInterval('raise_error()', 1);
+</script>
+    <h1>Admission Form</h1>
+    {% if form.errors %}
+        <div id="flash_text_div" style="display: block;">
+            <p id="flash_text">
+                {% for field, errors in form.errors.items() %}
+                    {% for error in errors %}
+                        {{ field }} - {{ error }}<br>
+                    {% endfor %}
+                {% endfor %}
+            </p>
+        </div>
+    {% endif %}
+    <form action="{{ url_for('admission') }}" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>        
+        {{ form.grade_sought.label }} {{ form.grade_sought }}<br>
+        {{ form.academic_year.label }} {{ form.academic_year }}<br>
+        {{ form.student_first_name.label }} {{ form.student_first_name }}<br>
+        {{ form.student_middle_name.label }} {{ form.student_middle_name }}<br>
+        {{ form.student_last_name.label }} {{ form.student_last_name }}<br>
+        {{ form.dob.label }} <input type="date" name="dob"><br>
+        {{ form.place_of_birth.label }} {{ form.place_of_birth }}<br>
+        {{ form.nationality.label }} {{ form.nationality }}<br>
+        {{ form.religion.label }} {{ form.religion }}<br>
+        {{ form.father_name.label }} {{ form.father_name }}<br>
+        {{ form.father_nationality.label }} {{ form.father_nationality }}<br>
+        {{ form.father_profession.label }} {{ form.father_profession }}<br>
+        {{ form.father_designation.label }} {{ form.father_designation }}<br>
+        {{ form.father_organisation.label }} {{ form.father_organisation }}<br>
+        {{ form.father_mobile.label }} {{ form.father_mobile }}<br>
+        {{ form.father_email.label }} {{ form.father_email }}<br>
+        {{ form.mother_name.label }} {{ form.mother_name }}<br>
+        {{ form.mother_nationality.label }} {{ form.mother_nationality }}<br>
+        {{ form.mother_profession.label }} {{ form.mother_profession }}<br>
+        {{ form.mother_designation.label }} {{ form.mother_designation }}<br>
+        {{ form.mother_organisation.label }} {{ form.mother_organisation }}<br>
+        {{ form.mother_mobile.label }} {{ form.mother_mobile }}<br>
+        {{ form.mother_email.label }} {{ form.mother_email }}<br>
+        {{ form.home_address.label }} {{ form.home_address }}<br>
+        {{ form.home_phone.label }} {{ form.home_phone }}<br>
+        {{ form.school_last_attended.label }} {{ form.school_last_attended }}<br>
+        {{ form.board.label }} {{ form.board }}<br>
+        {{ form.class_studying.label }} {{ form.class_studying }}<br>
+        {{ form.extra_curricular_interests.label }} {{ form.extra_curricular_interests }}<br>
+        {{ form.allergies.label }} {{ form.allergies }}<br>
+        {{ form.blood_group.label }} {{ form.blood_group }}<br>
+        {{ form.submit }}
+    </form>
+{% endblock main %}

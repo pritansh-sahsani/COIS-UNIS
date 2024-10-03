@@ -89,3 +89,30 @@ def similarity_of_2_strings(string1, string2):
  
     # The final element in the last row contains the Levenshtein distance
     return curr_row[n]
+
+def paginate_list(arr, page, per_page):
+    """
+    Paginate a list manually after sorting by similarity.
+    :param arr: List of items to paginate.
+    :param page: Current page number.
+    :param per_page: Number of items per page.
+    :return: Paginated sublist and SQLAlchemy-like pagination metadata.
+    """
+    total_items = len(arr)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_items = arr[start:end]
+
+    pagination = {
+        'items': paginated_items,
+        'total': total_items,
+        'page': page,
+        'pages': (total_items + per_page - 1) // per_page,  # Total pages
+        'next_num': page + 1 if end < total_items else None,
+        'prev_num': page - 1 if start > 0 else None,
+        'has_next': end < total_items,
+        'has_prev': start > 0,
+        'iter_pages': lambda left_edge=1, right_edge=1: range(1, (total_items + per_page - 1) // per_page + 1)
+    }
+
+    return paginated_items, pagination

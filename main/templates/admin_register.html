@@ -75,7 +75,7 @@
         <hr class="border-black w-90% md:w-80% mx-auto my-3% sm:mt-2% sm:mb-1%" />
         <form action='' method="POST" class="w-90% md:w-80% mx-auto" enctype="multipart/form-data">
             <div class="w-100% grid md:grid-cols-2 md:gap-x-2 space-y-2 justify-items-center">
-                {{ form.hidden_tag() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="flex items-center justify-center col-span-2">
                     <label for="profile-pic" class="w-64 flex items-center p-2 bg-white text-blueC rounded-lg tracking-wide uppercase border-0.5 border-blueC border-solid cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">

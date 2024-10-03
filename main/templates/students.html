@@ -97,7 +97,7 @@
     <div id="dropdownHover" class="hidden w-90% md:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
         <div class="mx-auto w-90% md:w-80%">
             <form action='' method="POST" class="w-100% mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 m-3">
-                {{ form.hidden_tag() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
                 {{ form.myp_score_min(id="FilterInput-myp_score_min", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Minimum MYP-5 score') }}
                 {{ form.myp_score_max(id="FilterInput-myp_score_max", class="FilterInput w-100% border-0.5 border-black text-center py-1% rounded-lg", placeholder='Maximum MYP-5 score') }}

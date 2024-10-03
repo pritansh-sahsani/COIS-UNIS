@@ -9,6 +9,43 @@ from sqlalchemy.orm import relationship
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+class Admission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    grade_sought = db.Column(db.String(50), nullable=False)
+    academic_year = db.Column(db.String(10), nullable=False)
+    student_first_name = db.Column(db.String(100), nullable=False)
+    student_middle_name = db.Column(db.String(100), nullable=True)
+    student_last_name = db.Column(db.String(100), nullable=False)
+    dob = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    place_of_birth = db.Column(db.String(100), nullable=False)
+    nationality = db.Column(db.String(50), nullable=False)
+    religion = db.Column(db.String(50), nullable=True)
+    father_name = db.Column(db.String(100), nullable=False)
+    father_nationality = db.Column(db.String(50), nullable=False)
+    father_profession = db.Column(db.String(100), nullable=False)
+    father_designation = db.Column(db.String(100), nullable=True)
+    father_organisation = db.Column(db.String(100), nullable=True)
+    father_mobile = db.Column(db.String(20), nullable=False)
+    father_email = db.Column(db.String(100), nullable=True)
+    mother_name = db.Column(db.String(100), nullable=False)
+    mother_nationality = db.Column(db.String(50), nullable=False)
+    mother_profession = db.Column(db.String(100), nullable=False)
+    mother_designation = db.Column(db.String(100), nullable=True)
+    mother_organisation = db.Column(db.String(100), nullable=True)
+    mother_mobile = db.Column(db.String(20), nullable=False)
+    mother_email = db.Column(db.String(100), nullable=True)
+    home_address = db.Column(db.String(255), nullable=False)
+    home_phone = db.Column(db.String(20), nullable=True)
+    school_last_attended = db.Column(db.String(255), nullable=True)
+    board = db.Column(db.String(100), nullable=True)
+    class_studying = db.Column(db.String(50), nullable=True)
+    extra_curricular_interests = db.Column(db.String(255), nullable=True)
+    allergies = db.Column(db.String(255), nullable=True)
+    blood_group = db.Column(db.String(10), nullable=True)
+
+    def __repr__(self):
+        return f"details-{self.student_first_name}"
+
 class User(db.Model, UserMixin):
     __searchable__ = ['username', 'email']
 
