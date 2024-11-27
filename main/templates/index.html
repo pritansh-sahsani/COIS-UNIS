@@ -10,11 +10,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-    @media (min-width: 800px) {
+    .text-overlay{
+        width: 80%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: #0F3FA2;
+    }
+    @media (min-width: 1000px) {
         .text-overlay .title {
         font-family: "Poppins", sans-serif;
         font-weight: 800;
-        font-size: 60px;
+        font-size: 80px;
         }
         .text-overlay .caption{
             font-size: 22px;
@@ -22,44 +29,72 @@
         }
         .text-overlay {
         position: absolute;
-        top: 50%;
-        left: 30%;
-        transform: translate(-50%, -50%);
-        text-align: left;
-        color: #0F3FA2;
+        top: 35%;
         }
 
         .text-overlay p:last-child {
         margin-top: 20px;
         }
+        
+        .image-container img {
+            margin-top: 10%;
+        }
     }
 
-    @media (max-width: 800px) {
-        .text-overlay .title {
-        font-family: "Poppins", sans-serif;
-        font-weight: 800;
-        font-size: 18px;
-        }
-        .text-overlay .caption{
-            font-size: 8px;
-            font-weight: 400;
-        }
-        .text-overlay {
-        position: absolute;
-        top: 50%;
-        left: 32.5%;
-        transform: translate(-50%, -50%);
-        text-align: left;
-        color: #0F3FA2;
-        }
+    @media (max-width: 1000px) {
         
-        .text-overlay p:first-child {
-        margin-bottom: 10px; /* Adjust the spacing as needed */
+        
+        @media (max-width: 600px) {
+            .text-overlay .title {
+            font-family: "Poppins", sans-serif;
+            font-weight: 800;
+            font-size: 32px;
+            line-height: 40px;
+            }
+            .text-overlay .caption{
+                font-size: 16px;
+                font-weight: 400;
+            }
+            .text-overlay {
+            position: absolute;
+            top: 40%;
+            }
+                    
+            .image-container img {
+                margin-top: 50%;
+            }
+            .text-overlay p:last-child {
+            margin-top: 15px;
+            }
         }
 
-        .text-overlay p:last-child {
-        margin-top: 10px;
+        @media (min-width: 600px) {
+            .text-overlay .title {
+            font-family: "Poppins", sans-serif;
+            font-weight: 800;
+            font-size: 40px;
+            }
+            .text-overlay .caption{
+                font-size: 20px;
+                font-weight: 400;
+            }
+            .text-overlay {
+            position: absolute;
+            top: 32.5%;
+            }
+            
+            .image-container img {
+                margin-top: 10%;
+            }
+            .text-overlay p:last-child {
+            margin-top: 10px;
+            }
         }
+            
+            .text-overlay p:first-child {
+            margin-bottom: 10px; 
+            }
+
     }
 
     .image-container {
@@ -69,7 +104,6 @@
 
     .image-container img {
       width: 100%;
-
     }
     .explore-section {
         text-align: center;
@@ -126,11 +160,11 @@
 </style>
 
 <div class="image-container">
-    <img src="../static/assets/home_page/home-page-banner.png" alt="Stepping Stone">
+    <img src="../static/assets/home_page/school background.png" alt="Stepping Stone">
     <div class="text-overlay">
       <p class="title">Welcome to</p>
-      <p class="title">&emsp;Stepping Stone</p>
-      <p class="caption">A place to take you closer to all your dreams</p>
+      <p class="title">Stepping Stone</p>
+      <p class="caption">Your Path to University Applications: Discover, Connect, and Achieve Your Goals!</p>
     </div>
   </div>
 
@@ -158,6 +192,6 @@
     </div>
 </div>
 <div>
-    <img class="w-100%" src="../static/assets/home_page/affiliations_banner.jpg">
+    <img class="w-90% mx-auto mb-10" src="../static/assets/home_page/affiliations_banner.jpg">
 </div>
 {% endblock main %}
