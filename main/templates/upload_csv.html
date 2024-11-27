@@ -9,7 +9,7 @@
     <h1>Upload Universities CSV and Images</h1>
 
     <form method="POST" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
         <div>
             {{ form.csv_file.label }}<br>

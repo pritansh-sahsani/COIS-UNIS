@@ -104,7 +104,7 @@
     <div id="dropdownHover" class="hidden w-90% md:w-50% mx-auto bg-white border-0.5 border-black rounded-lg">
         <div class="mx-auto w-90%">
             <form action='' method="POST" class="w-100% mx-auto grid grid-cols-1 md:grid-cols-2 gap-2 my-4">
-                {{ form.hidden_tag() }}
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 {{ form.min_ib_cutoff(id="FilterInput-min_ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum IBDP Score') }}
                 {{ form.max_ib_cutoff(id="FilterInput-max_ib_cutoff", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Maximum IBDP Score') }}
                 {{ form.min_acceptance_rate(id="FilterInput-min_acceptance_rate", class="FilterInput text-base w-100% border-0.5 border-black text-center rounded-lg", placeholder='Minimum Acceptance Rate') }} 

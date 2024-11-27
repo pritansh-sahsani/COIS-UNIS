@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectMultipleField, TextAreaField, SelectField
+from wtforms.fields import DateField
 from flask_wtf.file import FileAllowed, FileRequired
-from wtforms.validators import EqualTo, Email, Length, ValidationError
+from wtforms.validators import EqualTo, Email, Length, ValidationError, DataRequired
 from flask_wtf.file import FileAllowed, FileField
 import re
 
@@ -67,6 +68,43 @@ class UploadCSVForm(FlaskForm):
     ])
     submit = SubmitField('Upload Files')
 
+
+class AdmissionForm(FlaskForm):
+    grade_sought = StringField('Grade in which admission is sought')
+    academic_year = StringField('Academic Year')
+    student_first_name = StringField('Student First Name')
+    student_middle_name = StringField('Student Middle Name')
+    student_last_name = StringField('Student Last Name')
+    dob = DateField('Date of Birth (dd/mm/yyyy)', format='%Y-%m-%d', validators=[DataRequired()])
+    place_of_birth = StringField('Place of Birth')
+    nationality = StringField('Nationality')
+    religion = StringField('Religion')
+    father_name = StringField("Father's Name")
+    father_nationality = StringField("Father's Nationality")
+    father_profession = StringField("Father's Profession")
+    father_designation = StringField("Father's Designation")
+    father_organisation = StringField("Father's Organisation")
+    father_mobile = StringField("Father's Mobile")
+    father_email = StringField("Father's Email")
+    mother_name = StringField("Mother's Name")
+    mother_nationality = StringField("Mother's Nationality")
+    mother_profession = StringField("Mother's Profession")
+    mother_designation = StringField("Mother's Designation")
+    mother_organisation = StringField("Mother's Organisation")
+    mother_mobile = StringField("Mother's Mobile")
+    mother_email = StringField("Mother's Email")
+    home_address = TextAreaField('Home Address')
+    home_phone = StringField('Home Phone Number')
+    school_last_attended = StringField('School Last Attended')
+    board = StringField('Board Followed by Last School')
+    class_studying = StringField('Class Currently Studying In')
+    extra_curricular_interests = TextAreaField('Extra-curricular Interests')
+    allergies = TextAreaField('Allergies')
+    blood_group = StringField('Blood Group')
+    submit = SubmitField('Submit')
+
+    def __init__(self, formdata=None, **kwargs):
+        super(AdmissionForm, self).__init__(formdata=formdata, **kwargs)
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[Length(min=1, max=120, message=min_max_error_message.format(field='Username', min='%(min)d', max='%(max)d'))])
@@ -260,6 +298,8 @@ class FilterForm(FlaskForm):
     max_ib_cutoff = StringField('Maximum Cut off for IBDP')
     min_acceptance_rate = StringField('Minimum Acceptance Rate')
     max_acceptance_rate = StringField('Maximum Acceptance Rate')
+    min_avg_cost = StringField('Minimum Average Cost')
+    max_avg_cost = StringField('Maximum Average Cost')
     min_gpa = StringField('Minimum GPA')
     max_gpa = StringField('Maximum GPA')
     

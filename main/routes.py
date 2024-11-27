@@ -1,12 +1,13 @@
-from main.forms import LoginForm, UploadCSVForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm
+from main.forms import LoginForm, UploadCSVForm, AdminRegistrationForm, EditAdminForm, AddUniversityForm, StudentRegistrationForm, EditStudentForm, ApplicationForm, FilterForm, FilterStudentsForm, AdminRegistrationForm, AdmissionForm
 from main.setup import app, db
-from main.models import User, Uni, Location, Course, Student_details, Application
-from main.helper import sort_by_similarity, allow_access, GetAppAndAddNo
+from main.models import User, Uni, Location, Course, Student_details, Application, Admission
+from main.helper import sort_by_similarity, allow_access, GetAppAndAddNo, paginate_list
 from main import bcrypt
 from werkzeug.utils import secure_filename
 from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user, login_user, logout_user, login_required
 from dotenv import load_dotenv
+from datetime import datetime
 import os
 
 load_dotenv()
@@ -19,22 +20,25 @@ def index():
     return render_template("index.html")
 
 @app.route("/unis", methods=["GET", "POST"])
-# paginate
 @login_required
 def unis():
     keyword = request.args.get('keyword')
-
     page = request.args.get('page', 1, type=int)
     per_page = 10
 
-    unis = Uni.query.filter_by(is_draft=False).paginate(page=page, per_page=per_page, error_out=False)
+    unis_query = Uni.query.filter_by(is_draft=False).all()
 
-    if keyword is not None and keyword != '':
-        unis=sort_by_similarity(unis, keyword, column='name')
-    
+    if keyword is not None and keyword.strip() != '':
+        unis = sort_by_similarity(unis_query, keyword, column='name')
+    else:
+        unis = unis_query
+
+    unis_paginated, pagination_info = paginate_list(unis, page, per_page)
+
     courses = [(None, 'Course')]
-    locations=[(None, 'Location')]
-    courses_query= Course.query.with_entities(Course.name).all()
+    locations = [(None, 'Location')]
+
+    courses_query = Course.query.with_entities(Course.name).all()
     locations_query = Location.query.with_entities(Location.exact_location).all()
 
     for course in courses_query:
@@ -43,51 +47,48 @@ def unis():
     for location in locations_query:
         locations.append((location.exact_location, location.exact_location))
 
-    form = FilterForm(formdata = request.form, courses=courses, locations = locations)
+    form = FilterForm(formdata=request.form, courses=courses, locations=locations)
 
     if form.validate_on_submit():
-        unis= Uni.query.filter_by(is_draft=False)
-        if form.submit.data:
-            for filter in ['acceptance_rate','ib_cutoff']:
-                if getattr(form, 'min_'+filter).data!="":
-                    unis=unis.filter(getattr(Uni, filter)>=getattr(form, 'min_'+filter).data)
-                if getattr(form, 'max_'+filter).data!="":
-                    unis=unis.filter(getattr(Uni, filter)<=getattr(form, 'max_'+filter).data)
-        
-            if form.min_gpa.data!="":
-                unis=unis.filter(Uni.min_gpa>=form.min_gpa.data)
-            if form.max_gpa.data!="":
-                unis=unis.filter(Uni.min_gpa<=form.max_gpa.data)
+        unis_query = Uni.query.filter_by(is_draft=False)
 
-            if form.location.data!='None':
-                unis=unis.filter_by(location=Location.query.filter_by(exact_location=form.location.data).first())
-        
-            if form.courses.data !='None':
-                unis=unis.filter(Uni.courses.contains(Course.query.filter_by(name=form.courses.data).first()))
+        if form.submit.data:
+            for filter in ['acceptance_rate', 'ib_cutoff']:
+                if getattr(form, 'min_' + filter).data != "":
+                    unis_query = unis_query.filter(getattr(Uni, filter) >= getattr(form, 'min_' + filter).data)
+                if getattr(form, 'max_' + filter).data != "":
+                    unis_query = unis_query.filter(getattr(Uni, filter) <= getattr(form, 'max_' + filter).data)
+
+            if form.min_gpa.data != "":
+                unis_query = unis_query.filter(Uni.min_gpa >= form.min_gpa.data)
+            if form.max_gpa.data != "":
+                unis_query = unis_query.filter(Uni.min_gpa <= form.max_gpa.data)
+
+            if form.location.data != 'None':
+                unis_query = unis_query.filter_by(location=Location.query.filter_by(exact_location=form.location.data).first())
+
+            if form.courses.data != 'None':
+                unis_query = unis_query.filter(Uni.courses.contains(Course.query.filter_by(name=form.courses.data).first()))
 
             for filter in ['requirements', 'scholarships']:
-                if getattr(form, filter).data!="":
-                    unis=unis.filter(getattr(Uni, filter).contains(getattr(form, filter).data))
+                if getattr(form, filter).data != "":
+                    unis_query = unis_query.filter(getattr(Uni, filter).contains(getattr(form, filter).data))
 
-            unis=unis.all()
-            
+            unis_paginated, pagination_info = paginate_list(unis_query.all(), page, per_page)
+
             if form.coisstudents.data:
-                no_add, no_app = GetAppAndAddNo(unis.items)
-                temp = unis
-                unis = []
+                no_add, no_app = GetAppAndAddNo(unis_paginated)
+                temp = unis_paginated
+                unis_paginated = []
                 for i in range(len(temp)):
                     if no_add[i] + no_app[i] != 0:
-                        unis.append(temp[i])
-                
-            for uni in Uni.query.filter_by(is_draft=False).all():
-                if uni not in unis:
-                    unis.append(uni)
+                        unis_paginated.append(temp[i])
 
-            no_add, no_app = GetAppAndAddNo(unis.items)
-            return render_template("unis.html", uni_query = unis, unis=unis.items, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
-    
-    no_add, no_app = GetAppAndAddNo(unis.items)
-    return render_template("unis.html", uni_query = unis, unis=unis.items, form=form, courses=courses, locations=locations, no_add = no_add, no_app = no_app, len = len, zip = zip)
+            no_add, no_app = GetAppAndAddNo(unis_paginated)
+            return render_template("unis.html", uni_query=pagination_info, unis=unis_paginated, form=form, courses=courses, locations=locations, no_add=no_add, no_app=no_app, len=len, zip=zip)
+
+    no_add, no_app = GetAppAndAddNo(unis_paginated)
+    return render_template("unis.html", uni_query=pagination_info, unis=unis_paginated, form=form, courses=courses, locations=locations, no_add=no_add, no_app=no_app, len=len, zip=zip)
 
 @app.route("/add_uni", methods=['GET', 'POST'])
 @login_required
@@ -325,54 +326,61 @@ def manage_unis():
     if allow_access("admins") is not None: return allow_access("admins")
 
     page = request.args.get('page', 1, type=int)
-    per_page = 10
+    per_page = 5
 
     keyword = request.args.get('keyword')
-    draft_unis_query = Uni.query.filter_by(is_draft=True).paginate(page=page, per_page=per_page, error_out=False)
-    published_unis_query = Uni.query.filter_by(is_draft=False).paginate(page=page, per_page=per_page, error_out=False)
-    
-    if keyword is not None and keyword != '':
-        draft_unis_query=sort_by_similarity(draft_unis_query, keyword, 'name')
-        published_unis_query=sort_by_similarity(published_unis_query, keyword, 'name')
 
-    draft_unis = []
-    published_unis = []
-    
-    for uni in draft_unis_query.items:
-        draft_unis.append(uni)
-    for uni in published_unis_query.items:
-        published_unis.append(uni)
-        
-    d_unis_len=len(draft_unis)
-    p_unis_len=len(published_unis)
+    draft_unis_query = Uni.query.filter_by(is_draft=True).all()
+    published_unis_query = Uni.query.filter_by(is_draft=False).all()
+
+    if keyword is not None and keyword.strip() != '':
+        draft_unis = sort_by_similarity(draft_unis_query, keyword, 'name')
+        published_unis = sort_by_similarity(published_unis_query, keyword, 'name')
+    else:
+        draft_unis = draft_unis_query
+        published_unis = published_unis_query
+
+    draft_unis_paginated, draft_pagination = paginate_list(draft_unis, page, per_page)
+    published_unis_paginated, published_pagination = paginate_list(published_unis, page, per_page)
+
+    courses = [(course.name, course.name) for course in Course.query.with_entities(Course.name).all()]
+    locations = [(location.exact_location, location.exact_location) for location in Location.query.with_entities(Location.exact_location).all()]
+    form = FilterForm(formdata=request.form, courses=courses, locations=locations)
+
+    d_unis_len = len(draft_unis)
+    p_unis_len = len(published_unis)
+
     flash = "University Deleted Successfully!"
-    no_add, no_app = GetAppAndAddNo(published_unis)
-    return render_template("manage_unis.html", published_unis = published_unis, draft_unis=draft_unis, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add = no_add, no_app = no_app, flash=flash)
+
+    no_add, no_app = GetAppAndAddNo(published_unis_paginated)
+
+    return render_template("manage_unis.html", form=form, published_unis=published_unis_paginated, draft_unis=draft_unis_paginated, published_unis_query=published_pagination, draft_unis_query=draft_pagination, d_unis_len=d_unis_len, p_unis_len=p_unis_len, zip=zip, no_add=no_add, no_app=no_app, flash=flash)
 
 @app.route("/manage_courses", methods=['GET', 'POST'])
 @login_required
 def manage_courses():
-    if allow_access("admins") is not None: return allow_access("admins")
+    if allow_access("admins") is not None: 
+        return allow_access("admins")
 
     page = request.args.get("page", 1, type=int)
     per_page = 15
-
     keyword = request.args.get('keyword')
-    courses_query= Course.query.with_entities(Course.id, Course.name).paginate(page=page, per_page=per_page)
-    
-    if keyword is not None and keyword != '':
-        courses_query=sort_by_similarity(courses_query, keyword, 'name')
 
-    courses = []
-    
-    for course in courses_query.items:
-        courses.append(course)
+    courses_query = Course.query.with_entities(Course.id, Course.name).all()
 
-    courses_len=len(courses)
+    if keyword is not None and keyword.strip() != '':
+        courses = sort_by_similarity(courses_query, keyword, 'name')
+    else:
+        courses = courses_query
+
+    courses_paginated, pagination_info = paginate_list(courses, page, per_page)
+
+    courses_len = len(courses)
+
     flash = "Course Deleted Successfully!"
 
-    return render_template("manage_courses.html", courses_query=courses_query, courses = courses, courses_len=courses_len, flash=flash)
-
+    return render_template("manage_courses.html", courses_query=pagination_info, courses=courses_paginated, courses_len=courses_len, flash=flash)
+                           
 @app.route('/delete_course/<int:course_id>', methods=['GET', 'POST'])
 @login_required
 def delete_course(course_id):
@@ -398,26 +406,31 @@ def edit_course(course_id, course_name):
 @app.route("/manage_locations", methods=['GET', 'POST'])
 @login_required
 def manage_locations():
-    if allow_access("admins") is not None: return allow_access("admins")
+    if allow_access("admins") is not None: 
+        return allow_access("admins")
+    
     page = request.args.get("page", 1, type=int)
     per_page = 15
-    
     keyword = request.args.get('keyword')
-    locations_query= Location.query.paginate(page=page, per_page=per_page)
-    
-    if keyword is not None and keyword != '':
-        locations_query=sort_by_similarity(locations_query, keyword, 'exact_location')
 
-    locations = []
-    
-    for location in locations_query.items:
-        locations.append(location)
+    locations_query = Location.query.all()
 
-    locations_len=len(locations)
+    if keyword is not None and keyword.strip() != '':
+        locations = sort_by_similarity(locations_query, keyword, 'exact_location')
+    else:
+        locations = locations_query
+
+    locations_paginated, pagination_info = paginate_list(locations, page, per_page)
+
+    locations_len = len(locations)
+
     flash = "Location Deleted Successfully!"
 
-    return render_template("manage_locations.html", locations_query=locations_query, locations = locations, locations_len=locations_len, flash=flash)
-
+    return render_template("manage_locations.html", 
+                           locations_query=pagination_info, 
+                           locations=locations_paginated, 
+                           locations_len=locations_len, 
+                           flash=flash)
 @app.route('/delete_location/<int:location_id>', methods=['GET', 'POST'])
 @login_required
 def delete_location(location_id):
@@ -618,26 +631,34 @@ def add_location(name):
 @app.route("/manage_admins", methods=["GET", "POST"])
 @login_required
 def manage_admins():
-    if allow_access("SUPERUSER") is not None: return allow_access("SUPERUSER")
-    keyword = request.args.get('keyword')
+    if allow_access("SUPERUSER") is not None: 
+        return allow_access("SUPERUSER")
 
+    # Get pagination and keyword data
     page = request.args.get('page', 1, type=int)
     per_page = 10
+    keyword = request.args.get('keyword')
 
-    user_query = User.query.filter(User.is_student == False, User.username != 'SUPERUSER').paginate(page=page, per_page=per_page, error_out=False)
-    users = []
-    for user in user_query.items:
-        users.append(user)
-    print('users', users)
-    if keyword is not None and keyword!='':
-        users = sort_by_similarity(users, keyword, column='username')
-    
-    if len(users) == 0:
-        return render_template("manage_admins.html", users=users, user_query=user_query)
-    
+    # Get all admins (non-students, excluding SUPERUSER)
+    user_query = User.query.filter(User.is_student == False, User.username != 'SUPERUSER').all()
+
+    # Apply search if keyword is provided
+    if keyword is not None and keyword.strip() != '':
+        users = sort_by_similarity(user_query, keyword, 'username')
+    else:
+        users = user_query
+
+    # Paginate the filtered results
+    users_paginated, pagination_info = paginate_list(users, page, per_page)
+
+    # Flash message
     del_flash = "User Deleted successfully!"
-    return render_template("manage_admins.html", del_flash=del_flash, users=users, user_query=user_query)
-    
+
+    return render_template("manage_admins.html", 
+                           del_flash=del_flash, 
+                           users=users_paginated, 
+                           user_query=pagination_info)
+                               
 @app.route('/delete_admin/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def delete_admin(user_id):
@@ -809,22 +830,32 @@ def student_register():
 @app.route("/manage_students")
 @login_required
 def manage_students():
-    if allow_access("admins") is not None: return allow_access("admins")
-    
+    if allow_access("admins") is not None: 
+        return allow_access("admins")
+
     page = request.args.get('page', 1, type=int)
     per_page = 10
-
-    students = User.query.filter_by(is_student = True).paginate(page=page, per_page=per_page, error_out=False)
-    student_details = []
     keyword = request.args.get('keyword')
-    if keyword is not None and keyword != '':
-        students=sort_by_similarity(students, keyword, column='fullname')
-    for student in students:
-        student_details.append(Student_details.query.filter_by(user_id = student.id).first())
-    
+
+    students_query = User.query.filter_by(is_student=True).all()
+
+    if keyword is not None and keyword.strip() != '':
+        students = sort_by_similarity(students_query, keyword, 'fullname')
+    else:
+        students = students_query
+
+    students_paginated, pagination_info = paginate_list(students, page, per_page)
+
+    student_details = [Student_details.query.filter_by(user_id=student.id).first() for student in students_paginated]
+
     del_flash = "Student Deleted successfully!"
 
-    return render_template('manage_students.html', students_query = students, students = students.items, student_details = student_details, zip=zip, del_flash=del_flash)
+    return render_template('manage_students.html', 
+                           students_query=pagination_info, 
+                           students=students_paginated, 
+                           student_details=student_details, 
+                           zip=zip, 
+                           del_flash=del_flash)
 
 @app.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
 @login_required
@@ -1059,79 +1090,92 @@ def profile(username):
 @app.route('/students', methods=['GET', 'POST'])
 @login_required
 def students():
-    courses=[(None, 'Courses')]
-    minors=[(None, 'Minors')]
-    unis=[(None, 'University')]
-    locations=[(None, 'Location')]
-    courses_query= Course.query.with_entities(Course.id, Course.name).all()
+    courses = [(None, 'Courses')]
+    minors = [(None, 'Minors')]
+    unis = [(None, 'University')]
+    locations = [(None, 'Location')]
+
+    courses_query = Course.query.with_entities(Course.id, Course.name).all()
     unis_query = Uni.query.with_entities(Uni.id, Uni.name).all()
     locations_query = Location.query.with_entities(Location.id, Location.exact_location).all()
 
     for course in courses_query:
         courses.append((course.id, course.name))
-    for course in courses_query:
         minors.append((course.name, course.name))
     for uni in unis_query:
         unis.append((uni.id, uni.name))
     for location in locations_query:
         locations.append((location.id, location.exact_location))
 
-    form = FilterStudentsForm(formdata = request.form, courses=courses, minors=minors, unis=unis, locations=locations)
-    students = User.query.filter_by(is_student=True).paginate(page=page, per_page=per_page, error_out=False)
-    student_details=[]
-    applications=[]
-    for student in students.items:
+    form = FilterStudentsForm(formdata=request.form, courses=courses, minors=minors, unis=unis, locations=locations)
+
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    students_query = User.query.filter_by(is_student=True)
+
+    keyword = request.args.get('keyword')
+    if keyword and keyword.strip() != '':
+        students_query = students_query.filter(User.fullname.ilike(f"%{keyword}%"))
+
+    if form.validate_on_submit():
+        app_query = Application.query
+
+        if form.uni.data and form.uni.data != 'None':
+            app_query = app_query.filter_by(uni_id=form.uni.data)
+        if form.location.data and form.location.data != 'None':
+            app_query = app_query.filter_by(location_id=form.location.data)
+        if form.course.data and form.course.data != 'None':
+            app_query = app_query.filter_by(course_id=form.course.data)
+        if form.status.data and form.status.data != 'none':
+            app_query = app_query.filter_by(status=form.status.data)
+        if form.is_early.data:
+            app_query = app_query.filter_by(is_early=form.is_early.data)
+        if form.selected_uni.data:
+            app_query = app_query.filter(Application.id == Student_details.query.filter_by(id=Application.student_id).first().selected_app_id)
+
+        print(f"Filtered application query: {app_query.all()}")
+
+        app_student_ids = app_query.with_entities(Application.student_id).all()
+        student_ids = [id[0] for id in app_student_ids]
+
+        if student_ids:
+            students_query = students_query.filter(User.id.in_(student_ids))
+
+        student_details_query = Student_details.query
+        if form.has_diploma.data:
+            student_details_query = student_details_query.filter_by(has_diploma=form.has_diploma.data)
+        if form.graduation_year.data:
+            student_details_query = student_details_query.filter_by(graduation_year=form.graduation_year.data)
+        if form.myp_score_min.data:
+            student_details_query = student_details_query.filter(Student_details.myp_score >= form.myp_score_min.data)
+        if form.myp_score_max.data:
+            student_details_query = student_details_query.filter(Student_details.myp_score <= form.myp_score_max.data)
+        if form.dp_predicted_min.data:
+            student_details_query = student_details_query.filter(Student_details.dp_predicted >= form.dp_predicted_min.data)
+        if form.dp_predicted_max.data:
+            student_details_query = student_details_query.filter(Student_details.dp_predicted <= form.dp_predicted_max.data)
+        if form.dp_score_min.data:
+            student_details_query = student_details_query.filter(Student_details.dp_score >= form.dp_score_min.data)
+        if form.dp_score_max.data:
+            student_details_query = student_details_query.filter(Student_details.dp_score <= form.dp_score_max.data)
+
+        filtered_student_ids = student_details_query.with_entities(Student_details.user_id).all()
+        final_student_ids = [id[0] for id in filtered_student_ids]
+
+        if final_student_ids:
+            students_query = students_query.filter(User.id.in_(final_student_ids))
+
+    students_paginated = students_query.paginate(page=page, per_page=per_page, error_out=False)
+
+    student_details = []
+    applications = []
+    for student in students_paginated.items:
         details = Student_details.query.filter_by(user_id=student.id).first_or_404()
         student_details.append(details)
         applications.append(Application.query.filter_by(student_id=details.id).all())
 
-    keyword = request.args.get('keyword')
-    if keyword is not None and keyword != '':
-        students=sort_by_similarity(students, keyword, column='fullname')
-
-    if form.validate_on_submit():
-        if form.clear.data:
-            return redirect(url_for("students"))
-        
-        
-        app_query = Application.query
-        if form.uni.data and form.uni.data != 'None':app_query=app_query.filter_by(uni_id = form.uni.data)
-        if form.location.data and form.location.data != 'None':app_query=app_query.filter_by(location_id = form.location.data)
-        if form.course.data and form.course.data != 'None':app_query=app_query.filter_by(course_id = form.course.data)
-        if form.status.data and form.status.data != 'none':app_query=app_query.filter_by(status = form.status.data)
-        if form.is_early.data:app_query=app_query.filter_by(is_early = form.is_early.data)
-        if form.selected_uni.data:
-            app_query = app_query.filter(Application.id == Student_details.query.filter_by(id = Application.student_id).first().selected_app_id)
-        app_query = app_query.with_entities(Application.student_id).all()
-
-        if len(Application.query.all()) != len(app_query):
-            ids= [ id[0] for id in app_query ]
-            query = Student_details.query.filter(Student_details.id.in_(ids))
-        else:
-            query = Student_details.query
-        
-        if form.has_diploma.data: query = query.filter_by(has_diploma = form.has_diploma.data)
-        if form.graduation_year.data: query = query.filter_by(graduation_year = form.graduation_year.data)
-        if form.myp_score_min.data: query = query.filter(Student_details.myp_score>=form.myp_score_min.data)
-        if form.myp_score_max.data: query = query.filter(Student_details.myp_score<=form.myp_score_max.data)
-        if form.dp_predicted_min.data: query = query.filter(Student_details.dp_predicted>=form.dp_predicted_min.data)
-        if form.dp_predicted_max.data: query = query.filter(Student_details.dp_predicted<=form.dp_predicted_max.data)
-        if form.dp_score_min.data: query = query.filter(Student_details.dp_score>=form.dp_score_min.data)
-        if form.dp_score_max.data: query = query.filter(Student_details.dp_score<=form.dp_score_max.data)
-
-        student_details=query.all()
-        students=[]
-        applications=[]
-        for details in student_details:
-            user = User.query.filter_by(id=details.user_id).first_or_404()
-            students.append(user)
-            applications.append(Application.query.filter_by(student_id=details.id).all())
-        return render_template("students.html", form=form, students_query=students, students=students.items, student_details=student_details, applications=applications, zip=zip)
-    else:
-        if form.clear.data:
-            return redirect(url_for("students"))    
-    
-    return render_template("students.html", form=form, students_query=students, students=students.items, student_details=student_details, applications=applications, zip=zip)
+    return render_template("students.html", form=form, students_query=students_paginated, students=students_paginated.items, student_details=student_details, applications=applications, zip=zip)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -1140,3 +1184,62 @@ def page_not_found(e):
 @app.errorhandler(403)
 def access_restricted(e):
     return render_template('403.html'), 403
+
+@app.route('/admission', methods=['GET', 'POST'])
+def admission():
+    form = AdmissionForm()
+    
+    if form.validate_on_submit():  # If form validation passes
+        new_admission = Admission(
+            grade_sought=form.grade_sought.data,
+            academic_year=form.academic_year.data,
+            student_first_name=form.student_first_name.data,
+            student_middle_name=form.student_middle_name.data,
+            student_last_name=form.student_last_name.data,
+            dob=datetime.strftime(form.dob.data, '%Y-%m-%d'),
+            place_of_birth=form.place_of_birth.data,
+            nationality=form.nationality.data,
+            religion=form.religion.data,
+            father_name=form.father_name.data,
+            father_nationality=form.father_nationality.data,
+            father_profession=form.father_profession.data,
+            father_designation=form.father_designation.data,
+            father_organisation=form.father_organisation.data,
+            father_mobile=form.father_mobile.data,
+            father_email=form.father_email.data,
+            mother_name=form.mother_name.data,
+            mother_nationality=form.mother_nationality.data,
+            mother_profession=form.mother_profession.data,
+            mother_designation=form.mother_designation.data,
+            mother_organisation=form.mother_organisation.data,
+            mother_mobile=form.mother_mobile.data,
+            mother_email=form.mother_email.data,
+            home_address=form.home_address.data,
+            home_phone=form.home_phone.data,
+            school_last_attended=form.school_last_attended.data,
+            board=form.board.data,
+            class_studying=form.class_studying.data,
+            extra_curricular_interests=form.extra_curricular_interests.data,
+            allergies=form.allergies.data,
+            blood_group=form.blood_group.data
+        )
+
+        # Add to the database
+        db.session.add(new_admission)
+        db.session.commit()
+
+        # Flash a success message and redirect
+        flash('Admission form successfully submitted!')
+        return redirect(url_for('index'))  # Redirect to another page after submission
+
+    # Debugging info to print form errors
+    else:
+        if form.errors:
+            print("Form Errors: ", form.errors)  # Print errors to the console for debugging
+
+    # Render the template, passing the form object
+    return render_template('admission.html', form=form)
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
